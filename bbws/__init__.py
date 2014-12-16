@@ -37,4 +37,7 @@ def create_app(config_file):
     oauth_routes.init(app)
     test.init(app)
 
+    import bbws.entity
+    bbws.entity.create_views(api)
+
     return app

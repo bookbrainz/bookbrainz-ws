@@ -1,7 +1,7 @@
 
 from flask import request, make_response, session
 from bbschema import OAuthClient, User
-from . import db, cache, oauth
+from . import db, cache, oauth_provider
 import sqlalchemy.orm.exc
 import functools
 import uuid
