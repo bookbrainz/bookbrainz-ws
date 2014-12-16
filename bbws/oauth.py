@@ -159,9 +159,9 @@ class MyRequestValidator(OAuth2RequestValidator):
 
 
 def init(app):
-    oauth._validator = MyRequestValidator()
+    oauth_provider._validator = MyRequestValidator()
 
     @app.route('/oauth/token', methods=['POST'])
-    @oauth.token_handler
+    @oauth_provider.token_handler
     def access_token():
         return None
