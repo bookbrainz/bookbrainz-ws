@@ -33,5 +33,5 @@ class EntityResourceList(Resource):
 
 
 def create_views(api):
-    api.add_resource(EntityResource, '/entity/<string:gid>')
+    api.add_resource(EntityResource, '/entity/<string:gid>', endpoint='entity_get_single')
     api.add_resource(EntityResourceList, '/entity')
