@@ -3,15 +3,12 @@ from flask.ext.restful import abort, fields, marshal_with, marshal, reqparse, Re
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import db
-
+from .entity import entity_stub_fields
 
 entity_revision_fields = {
     'id': fields.Integer,
     'created_at': fields.DateTime(dt_format='iso8601'),
-    'entity': fields.Nested({
-        'gid': fields.String,
-        'uri': fields.Url('entity_get_single', True)
-    }),
+    'entity': fields.Nested(entity_stub_fields),
     'user': fields.Nested({
         'id': fields.Integer,
     })
@@ -25,7 +22,6 @@ class RevisionResource(Resource):
         except NoResultFound:
             abort(404)
 
-        revision.uri = revision.id
         if isinstance(revision, EntityRevision):
             return marshal(revision, entity_revision_fields)
         else:
