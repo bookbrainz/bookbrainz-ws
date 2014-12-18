@@ -1,6 +1,7 @@
 from bbschema import EntityRevision, Revision, Edit
 from flask.ext.restful import abort, fields, marshal_with, marshal, reqparse, Resource
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import with_polymorphic
 
 from . import db
 from .entity import entity_stub_fields
@@ -11,7 +12,8 @@ entity_revision_fields = {
     'entity': fields.Nested(entity_stub_fields),
     'user': fields.Nested({
         'id': fields.Integer,
-    })
+    }),
+    'uri': fields.Url('revision_get_single', True)
 }
 
 
@@ -33,26 +35,82 @@ class RevisionResource(Resource):
 
 
 revision_list_fields = {
-    'objects': fields.List(fields.Nested({
-        'id': fields.Integer,
-        'uri': fields.Url('revision_get_single', True)
-    }))
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(entity_revision_fields))
 }
 
 
 class RevisionResourceList(Resource):
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('limit', type=int, default=20)
+    get_parser.add_argument('offset', type=int, default=0)
+
     def get(self, edit_id=None):
+        args = self.get_parser.parse_args()
         query = db.session.query(Revision)
 
         if edit_id is not None:
             query = query.join(Revision.edits).filter(Edit.id == edit_id)
 
-        revisions = query.offset(0).limit(20).all()
+        revisions = query.offset(args.offset).limit(args.limit).all()
         return marshal({
+            'offset': args.offset,
+            'count': len(revisions),
             'objects': revisions
         }, revision_list_fields)
+
+edit_fields = {
+    'id': fields.Integer,
+    'status': fields.Integer,
+    'uri': fields.Url('edit_get_single', True)
+}
+
+
+class EditResource(Resource):
+    def get(self, id):
+        try:
+            edit = db.session.query(Edit).filter_by(id=id).one()
+        except NoResultFound:
+            abort(404)
+
+        return marshal(edit, edit_fields)
+
+edit_list_fields = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(edit_fields))
+}
+
+
+class EditResourceList(Resource):
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('limit', type=int, default=20)
+    get_parser.add_argument('offset', type=int, default=0)
+
+    def get(self, entity_gid=None):
+        args = self.get_parser.parse_args()
+
+        q = db.session.query(Edit)
+
+        if entity_gid is not None:
+            entity_revision_ = with_polymorphic(Revision, EntityRevision)
+            q = q.join(Edit.revisions).join(EntityRevision).filter(
+                EntityRevision.entity_gid == entity_gid
+            )
+
+        q = q.offset(args.offset).limit(args.limit)
+        edits = q.all()
+
+        return marshal({
+            'offset': args.offset,
+            'count': len(edits),
+            'objects': edits
+        }, edit_list_fields)
 
 
 def create_views(api):
     api.add_resource(RevisionResource, '/revision/<int:id>', endpoint='revision_get_single')
     api.add_resource(RevisionResourceList, '/revisions', '/edit/<int:edit_id>/revisions')
+    api.add_resource(EditResource, '/edit/<int:id>', endpoint='edit_get_single')
+    api.add_resource(EditResourceList, '/edits', '/entity/<string:entity_gid>/edits')
