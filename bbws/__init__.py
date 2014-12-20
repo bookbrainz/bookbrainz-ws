@@ -43,4 +43,7 @@ def create_app(config_file):
     import bbws.revision
     bbws.revision.create_views(api)
 
+    import bbws.user
+    bbws.user.create_views(api)
+
     return app

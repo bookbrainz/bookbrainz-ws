@@ -1,7 +1,8 @@
-from bbschema import EntityRevision, Revision, Edit
-from flask.ext.restful import abort, fields, marshal_with, marshal, reqparse, Resource
-from sqlalchemy.orm.exc import NoResultFound
+from bbschema import Edit, EntityRevision, Revision
+from flask.ext.restful import (abort, fields, marshal, marshal_with, reqparse,
+                               Resource)
 from sqlalchemy.orm import with_polymorphic
+from sqlalchemy.orm.exc import NoResultFound
 
 from . import db
 from .entity import entity_stub_fields
