@@ -89,7 +89,7 @@ class EditResourceList(Resource):
     get_parser.add_argument('limit', type=int, default=20)
     get_parser.add_argument('offset', type=int, default=0)
 
-    def get(self, entity_gid=None):
+    def get(self, entity_gid=None, user_id=None):
         args = self.get_parser.parse_args()
 
         q = db.session.query(Edit)
@@ -99,6 +99,8 @@ class EditResourceList(Resource):
             q = q.join(Edit.revisions).join(EntityRevision).filter(
                 EntityRevision.entity_gid == entity_gid
             )
+        elif user_id is not None:
+            q = q.filter_by(user_id=user_id)
 
         q = q.offset(args.offset).limit(args.limit)
         edits = q.all()
@@ -114,4 +116,4 @@ def create_views(api):
     api.add_resource(RevisionResource, '/revision/<int:id>', endpoint='revision_get_single')
     api.add_resource(RevisionResourceList, '/revisions', '/edit/<int:edit_id>/revisions')
     api.add_resource(EditResource, '/edit/<int:id>', endpoint='edit_get_single')
-    api.add_resource(EditResourceList, '/edits', '/entity/<string:entity_gid>/edits')
+    api.add_resource(EditResourceList, '/edits', '/entity/<string:entity_gid>/edits', '/user/<int:user_id>/edits')
