@@ -1,10 +1,11 @@
 from bbschema import Edit, EntityRevision, Revision
 from flask.ext.restful import (abort, fields, marshal, marshal_with, reqparse,
                                Resource)
+from flask import request
 from sqlalchemy.orm import with_polymorphic
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db
+from . import db, oauth_provider
 from .entity import entity_stub_fields
 
 entity_revision_fields = {
@@ -64,7 +65,10 @@ class RevisionResourceList(Resource):
 edit_fields = {
     'id': fields.Integer,
     'status': fields.Integer,
-    'uri': fields.Url('edit_get_single', True)
+    'uri': fields.Url('edit_get_single', True),
+    'user': fields.Nested({
+        'id': fields.Integer,
+    }),
 }
 
 
@@ -110,6 +114,20 @@ class EditResourceList(Resource):
             'count': len(edits),
             'objects': edits
         }, edit_list_fields)
+
+    # This takes no parameters - creates a blank edit by the authenticated user.
+    @oauth_provider.require_oauth()
+    def post(self):
+        # This will be valid here, due to authentication.
+        user = request.oauth.user
+
+        edit = Edit(status=0, user_id=user.id)
+        db.session.add(edit)
+        db.session.commit()
+
+        return marshal(edit, edit_fields)
+
+
 
 
 def create_views(api):
