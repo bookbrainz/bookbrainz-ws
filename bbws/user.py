@@ -46,6 +46,20 @@ class UserResourceList(Resource):
             'objects': users
         }, user_list_fields)
 
+    post_parser = reqparse.RequestParser()
+    post_parser.add_argument('name', type=unicode, required=True)
+    post_parser.add_argument('email', type=unicode, required=True)
+    post_parser.add_argument('user_type_id', type=unicode, required=True)
+
+    def post(self):
+        args = self.post_parser.parse_args()
+        user = User(name=args.name, email=args.email,
+                    user_type_id=args.user_type_id)
+        db.session.add(user)
+        db.session.commit()
+
+        return marshal(user, user_fields)
+
 
 def create_views(api):
     api.add_resource(UserResource, '/user/<int:id>',
