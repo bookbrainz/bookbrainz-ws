@@ -142,8 +142,8 @@ creator_data_fields = {
 }
 
 data_mapper = {
-    PublicationData: publication_data_fields,
-    CreatorData: creator_data_fields
+    PublicationData: ('publication_data', publication_data_fields),
+    CreatorData: ('creator_data', creator_data_fields)
 }
 
 
@@ -165,12 +165,12 @@ class EntityDataResource(Resource):
 
         entity_data_fields = {
             'entity': fields.Nested(entity_stub_fields),
-            'data': fields.Nested(data_fields, allow_null=True)
+            data_fields[0]: fields.Nested(data_fields[1], allow_null=True)
         }
 
         return marshal({
             'entity': entity,
-            'data': data
+            data_fields[0]: data
         }, entity_data_fields)
 
 

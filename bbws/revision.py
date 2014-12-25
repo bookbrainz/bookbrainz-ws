@@ -5,7 +5,7 @@ from flask import request
 from sqlalchemy.orm import with_polymorphic
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db, oauth_provider
+from . import db, oauth_provider, revision_json
 from .entity import entity_stub_fields
 
 entity_revision_fields = {
@@ -61,6 +61,24 @@ class RevisionResourceList(Resource):
             'count': len(revisions),
             'objects': revisions
         }, revision_list_fields)
+
+    @oauth_provider.require_oauth()
+    def post(self):
+        rev_json = request.get_json()
+        entity, entity_tree = revision_json.parse(rev_json)
+
+        # This will be valid here, due to authentication.
+        user = request.oauth.user
+
+        revision = EntityRevision(user_id=user.id)
+        revision.entity = entity
+        revision.entity_tree = entity_tree
+
+        db.session.add(revision)
+        # Commit entity, tree and revision
+        db.session.commit()
+
+        return marshal(revision, entity_revision_fields)
 
 edit_fields = {
     'id': fields.Integer,
