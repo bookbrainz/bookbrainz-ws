@@ -1,4 +1,4 @@
-from bbschema import CreatorData, Entity, PublicationData
+from bbschema import CreatorData, Entity, PublicationData, EntityRevision
 from flask.ext.restful import (abort, fields, marshal, marshal_with, reqparse,
                                Resource)
 from sqlalchemy.orm import joinedload
@@ -44,18 +44,38 @@ entity_alias_fields = {
 
 class EntityAliasResource(Resource):
 
-    def get(self, gid):
-        try:
-            entity = db.session.query(Entity).options(
-                joinedload('master_revision.entity_tree.aliases')
-            ).filter_by(gid=gid).one()
-        except NoResultFound:
-            abort(404)
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('revision', type=int, default=None)
 
-        if entity.master_revision is None:
+    def get(self, gid):
+        args = self.get_parser.parse_args()
+        if args.revision is None:
+            try:
+                entity = db.session.query(Entity).options(
+                    joinedload('master_revision.entity_tree.aliases')
+                ).filter_by(gid=gid).one()
+            except NoResultFound:
+                abort(404)
+            else:
+                revision = entity.master_revision
+        else:
+            try:
+                revision = db.session.query(EntityRevision).options(
+                    joinedload('entity_tree.aliases'),
+                    joinedload('entity')
+                ).filter_by(
+                    id=args.revision,
+                    entity_gid=gid
+                ).one()
+            except NoResultFound:
+                abort(404)
+            else:
+                entity = revision.entity
+
+        if revision is None:
             alises = []
         else:
-            aliases = entity.master_revision.entity_tree.aliases
+            aliases = revision.entity_tree.aliases
 
         return marshal({
             'entity': entity,
@@ -72,18 +92,38 @@ entity_disambiguation_fields = {
 
 
 class EntityDisambiguationResource(Resource):
-    def get(self, gid):
-        try:
-            entity = db.session.query(Entity).options(
-                joinedload('master_revision.entity_tree.disambiguation')
-            ).filter_by(gid=gid).one()
-        except NoResultFound:
-            abort(404)
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('revision', type=int, default=None)
 
-        if entity.master_revision is None:
+    def get(self, gid):
+        args = self.get_parser.parse_args()
+        if args.revision is None:
+            try:
+                entity = db.session.query(Entity).options(
+                    joinedload('master_revision.entity_tree.disambiguation')
+                ).filter_by(gid=gid).one()
+            except NoResultFound:
+                abort(404)
+            else:
+                revision = entity.master_revision
+        else:
+            try:
+                revision = db.session.query(EntityRevision).options(
+                    joinedload('entity_tree.disambiguation'),
+                    joinedload('entity')
+                ).filter_by(
+                    id=args.revision,
+                    entity_gid=gid
+                ).one()
+            except NoResultFound:
+                abort(404)
+            else:
+                entity = revision.entity
+
+        if revision is None:
             disambiguation = None
         else:
-            disambiguation = entity.master_revision.entity_tree.disambiguation
+            disambiguation = revision.entity_tree.disambiguation
 
         return marshal({
             'entity': entity,
@@ -102,18 +142,38 @@ entity_annotation_fields = {
 
 
 class EntityAnnotationResource(Resource):
-    def get(self, gid):
-        try:
-            entity = db.session.query(Entity).options(
-                joinedload('master_revision.entity_tree.annotation')
-            ).filter_by(gid=gid).one()
-        except NoResultFound:
-            abort(404)
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('revision', type=int, default=None)
 
-        if entity.master_revision is None:
+    def get(self, gid):
+        args = self.get_parser.parse_args()
+        if args.revision is None:
+            try:
+                entity = db.session.query(Entity).options(
+                    joinedload('master_revision.entity_tree.annotation')
+                ).filter_by(gid=gid).one()
+            except NoResultFound:
+                abort(404)
+            else:
+                revision = entity.master_revision
+        else:
+            try:
+                revision = db.session.query(EntityRevision).options(
+                    joinedload('entity_tree.annotation'),
+                    joinedload('entity')
+                ).filter_by(
+                    id=args.revision,
+                    entity_gid=gid
+                ).one()
+            except NoResultFound:
+                abort(404)
+            else:
+                entity = revision.entity
+
+        if revision is None:
             annotation = None
         else:
-            annotation = entity.master_revision.entity_tree.annotation
+            annotation = revision.entity_tree.annotation
 
         return marshal({
             'entity': entity,
@@ -148,18 +208,38 @@ data_mapper = {
 
 
 class EntityDataResource(Resource):
-    def get(self, gid):
-        try:
-            entity = db.session.query(Entity).options(
-                joinedload('master_revision.entity_tree.data')
-            ).filter_by(gid=gid).one()
-        except NoResultFound:
-            abort(404)
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('revision', type=int, default=None)
 
-        if entity.master_revision is None:
+    def get(self, gid):
+        args = self.get_parser.parse_args()
+        if args.revision is None:
+            try:
+                entity = db.session.query(Entity).options(
+                    joinedload('master_revision.entity_tree.data')
+                ).filter_by(gid=gid).one()
+            except NoResultFound:
+                abort(404)
+            else:
+                revision = entity.master_revision
+        else:
+            try:
+                revision = db.session.query(EntityRevision).options(
+                    joinedload('entity_tree.data'),
+                    joinedload('entity')
+                ).filter_by(
+                    id=args.revision,
+                    entity_gid=gid
+                ).one()
+            except NoResultFound:
+                abort(404)
+            else:
+                entity = revision.entity
+
+        if revision is None:
             data = None
         else:
-            data = entity.master_revision.entity_tree.data
+            data = revision.entity_tree.data
 
         data_fields = data_mapper.get(type(data), data_mapper[PublicationData])
 
