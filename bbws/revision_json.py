@@ -1,5 +1,6 @@
 import uuid
-from bbschema import (Entity, EntityTree, PublicationData, CreatorData,
+from . import db
+from bbschema import (Entity, EntityTree, EntityRevision, PublicationData, CreatorData,
                       Annotation, Disambiguation, Alias)
 
 class JSONParseError(Exception):
@@ -76,8 +77,42 @@ def parse(revision_json):
         return merge_entity(revision_json)
 
 
-
-def format(base_revision, new_revision):
+def format(base_revision_id, new_revision_id):
     """This analyzes the changes from one revision to another, and formats
     them into a single JSON structure for serving through the webservice.
     """
+
+    # This may throw a "NoResultsFound" exception.
+    new_revision = \
+        db.session.query(EntityRevision).filter_by(id=new_revision_id).one()
+
+    new_tree = new_revision.entity_tree
+    new_data = new_tree.data
+    new_annotation = new_tree.annotation.content
+    new_disambiguation = new_tree.disambiguation.comment
+    new_aliases = new_tree.aliases
+
+    if base_revision_id is None:
+        base_data = None
+        base_annotation = None
+        base_disambiguation = None
+        base_aliases = None
+    else:
+        base_revision = db.session.query(EntityRevision).filter_by(
+            id=base_revision_id
+        ).one()
+        base_tree = base_revision.entity_tree
+
+        base_data = base_tree.data
+        base_annotation = (base_tree.annotation.content
+                           if base_tree.annotation is not None else None)
+        base_disambiguation = (base_tree.disambiguation.comment
+                               if base_tree.disambiguation is not None else None)
+        base_aliases = base_tree.aliases
+
+    return {
+        'data': [base_data, new_data],
+        'annotation': [base_annotation, new_annotation],
+        'disambiguation': [base_disambiguation, new_disambiguation],
+        'aliases': [base_aliases, new_aliases]
+    }

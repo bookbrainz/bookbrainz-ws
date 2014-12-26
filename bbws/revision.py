@@ -1,4 +1,4 @@
-from bbschema import Edit, EntityRevision, Revision
+from bbschema import Edit, EntityRevision, Revision, PublicationData
 from flask.ext.restful import (abort, fields, marshal, marshal_with, reqparse,
                                Resource)
 from flask import request
@@ -6,25 +6,57 @@ from sqlalchemy.orm import with_polymorphic
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import db, oauth_provider, revision_json
-from .entity import entity_stub_fields
+from .entity import entity_stub_fields, data_mapper
 
-entity_revision_fields = {
+entity_revision_stub = {
     'id': fields.Integer,
     'created_at': fields.DateTime(dt_format='iso8601'),
     'entity': fields.Nested(entity_stub_fields),
     'user': fields.Nested({
         'id': fields.Integer,
     }),
-    'uri': fields.Url('revision_get_single', True)
+    'uri': fields.Url('revision_get_single', True),
 }
 
-
 class RevisionResource(Resource):
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('base', type=int, default=None)
+
     def get(self, id):
+        args = self.get_parser.parse_args()
+
         try:
             revision = db.session.query(Revision).filter_by(id=id).one()
         except NoResultFound:
             abort(404)
+
+        changes = revision_json.format(args.base, revision.id)
+
+        data_fields = data_mapper.get(type(changes['data'][1]),
+                                      data_mapper[PublicationData])
+        entity_revision_fields = {
+            'id': fields.Integer,
+            'created_at': fields.DateTime(dt_format='iso8601'),
+            'entity': fields.Nested(entity_stub_fields),
+            'user': fields.Nested({
+                'id': fields.Integer,
+            }),
+            'uri': fields.Url('revision_get_single', True),
+            'changes': fields.Nested({
+                data_fields[0]: fields.List(fields.Nested(data_fields[1], allow_null=True)),
+                'annotation': fields.List(fields.String),
+                'disambiguation': fields.List(fields.String),
+                'aliases': fields.List(fields.Nested({
+                    'name': fields.String,
+                    'sort_name': fields.String,
+                    'language_id': fields.Integer,
+                }, allow_null=True)),
+            })
+        }
+
+        changes[data_fields[0]] = changes['data']
+        del changes['data']
+        revision.changes = changes
 
         if isinstance(revision, EntityRevision):
             return marshal(revision, entity_revision_fields)
@@ -39,7 +71,7 @@ class RevisionResource(Resource):
 revision_list_fields = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(entity_revision_fields))
+    'objects': fields.List(fields.Nested(entity_revision_stub))
 }
 
 
