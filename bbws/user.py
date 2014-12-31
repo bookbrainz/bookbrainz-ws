@@ -24,6 +24,7 @@ class UserResource(Resource):
 
         return marshal(user, user_fields)
 
+
 user_list_fields = {
     'offset': fields.Integer,
     'count': fields.Integer,

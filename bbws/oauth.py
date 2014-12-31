@@ -1,12 +1,13 @@
 
-from flask import request, make_response, session
-from bbschema import OAuthClient, User
-from . import db, cache, oauth_provider
-import sqlalchemy.orm.exc
-import functools
-import uuid
 import datetime
+import uuid
+
+from bbschema import OAuthClient, User
+from flask import session, request
+from sqlalchemy.orm.exc import NoResultFound
 from flask_oauthlib.provider import OAuth2RequestValidator
+
+from . import cache, db, oauth_provider
 
 
 class Grant(object):
@@ -25,7 +26,7 @@ class Grant(object):
         if r is None:
             return None
 
-        expires = datetime.strptime(r['expires'], '%Y-%m-%d %H:%M:%S')
+        expires = datetime.datetime.strptime(r['expires'], '%Y-%m-%d %H:%M:%S')
         return cls(r['client_id'], r['user_id'], code, r['redirect_uri'],
                    expires, r['scopes'].split())
 
@@ -138,8 +139,8 @@ class MyRequestValidator(OAuth2RequestValidator):
     def _tokensetter(self, token, request):
         existing = cache.get(request.user.id)
         if existing is not None:
-            token = BearerToken.load(access_token=existing)
-            token.delete()
+            stored_token = BearerToken.load(access_token=existing)
+            stored_token.delete()
 
         expires_in = token.pop(u'expires_in')
         expires = (datetime.datetime.utcnow() +
@@ -163,5 +164,12 @@ def init(app):
 
     @app.route('/oauth/token', methods=['POST'])
     @oauth_provider.token_handler
-    def access_token():
-        return None
+    def access_token(*args, **kwargs):
+        try:
+            user = db.session.query(User).filter_by(
+                name=request.form['username']
+            ).one()
+        except NoResultFound:
+            return None
+        else:
+            return {'user_id': user.id}

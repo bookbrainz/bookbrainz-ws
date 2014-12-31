@@ -1,4 +1,4 @@
-from bbschema import CreatorData, Entity, PublicationData, EntityRevision
+from bbschema import CreatorData, Entity, EntityRevision, PublicationData
 from flask.ext.restful import (abort, fields, marshal, marshal_with, reqparse,
                                Resource)
 from sqlalchemy.orm import joinedload
@@ -73,7 +73,7 @@ class EntityAliasResource(Resource):
                 entity = revision.entity
 
         if revision is None:
-            alises = []
+            aliases = []
         else:
             aliases = revision.entity_tree.aliases
 
