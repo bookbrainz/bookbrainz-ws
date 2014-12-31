@@ -46,4 +46,7 @@ def create_app(config_file):
     import bbws.user
     bbws.user.create_views(api)
 
+    import bbws.entityspecific
+    bbws.entityspecific.create_views(api)
+
     return app
