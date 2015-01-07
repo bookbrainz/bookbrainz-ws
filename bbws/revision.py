@@ -110,7 +110,7 @@ class RevisionResourceList(Resource):
         # Commit entity, tree and revision
         db.session.commit()
 
-        return marshal(revision, entity_revision_fields)
+        return marshal(revision, entity_revision_stub)
 
 edit_fields = {
     'id': fields.Integer,
