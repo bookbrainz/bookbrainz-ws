@@ -1,0 +1,6 @@
+flask
+flask-redis
+flask-restful
+flask-sqlalchemy
+sqlalchemy
+psycopg2
