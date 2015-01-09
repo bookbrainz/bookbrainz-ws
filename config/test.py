@@ -3,3 +3,4 @@ SQLALCHEMY_DATABASE_URI = (
 )
 
 REDIS_URL = 'redis://:@localhost:6379'
+TESTING = True
