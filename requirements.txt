@@ -2,6 +2,8 @@ flask
 flask-redis
 flask-restful
 flask-sqlalchemy
+flask-oauthlib
 flask-testing
 sqlalchemy
 psycopg2
+https://bitbucket.org/lalinsky/mbdata/get/master.zip
