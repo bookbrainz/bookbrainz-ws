@@ -2,5 +2,6 @@ flask
 flask-redis
 flask-restful
 flask-sqlalchemy
+flask-testing
 sqlalchemy
 psycopg2
