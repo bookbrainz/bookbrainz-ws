@@ -25,6 +25,58 @@ in the correct order.
 
 from flask.ext.restful import fields
 
+entity_stub = {
+    'gid': fields.String,
+    'uri': fields.Url('entity_get_single', True)
+}
+
+
+entity = entity_stub.copy()
+entity.update({
+    'master_revision_id': fields.Integer,
+    'last_updated': fields.DateTime(dt_format='iso8601'),
+    'aliases_uri': fields.Url('entity_get_aliases', True),
+    'disambiguation_uri': fields.Url('entity_get_disambiguation', True),
+    'annotation_uri': fields.Url('entity_get_annotation', True),
+    'data_uri': fields.Url('entity_get_data', True)
+})
+
+
+entity_alias = {
+    'entity': fields.Nested(entity_stub),
+    'aliases': fields.List(fields.Nested({
+        'id': fields.Integer,
+        'name': fields.String,
+        'sort_name': fields.String
+    }))
+}
+
+
+entity_disambiguation = {
+    'entity': fields.Nested(entity_stub),
+    'disambiguation': fields.Nested({
+        'id': fields.Integer(),
+        'comment': fields.String()
+    }, allow_null=True)
+}
+
+
+entity_annotation = {
+    'entity': fields.Nested(entity_stub),
+    'annotation': fields.Nested({
+        'id': fields.Integer(),
+        'created_at': fields.DateTime(dt_format='iso8601'),
+        'content': fields.String()
+    }, allow_null=True)
+}
+
+
+entity_list_fields = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(entity))
+}
+
 
 user = {
     'name': fields.String,
@@ -39,4 +91,30 @@ user_list = {
     'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested(user))
+}
+
+
+# These fields definitions are specific to BookBrainz
+
+
+creator_data = {
+    'id': fields.Integer,
+    'begin_date': fields.DateTime(dt_format='iso8601'),
+    'begin_date_precision': fields.String,
+    'end_date': fields.DateTime(dt_format='iso8601'),
+    'end_date_precision': fields.String,
+    'ended': fields.Boolean,
+    'creator_type': fields.Nested({
+        'id': fields.Integer,
+        'label': fields.String
+    })
+}
+
+
+publication_data = {
+    'id': fields.Integer,
+    'publication_type': fields.Nested({
+        'id': fields.Integer,
+        'label': fields.String
+    })
 }

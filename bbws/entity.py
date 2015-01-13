@@ -1,26 +1,33 @@
+# -*- coding: utf8 -*-
+
+# Copyright (C) 2014-2015  Ben Ockmore
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
+""" This module contains the definitions for generic entity and entity-related
+resources.
+"""
+
+
 from bbschema import CreatorData, Entity, EntityRevision, PublicationData
-from flask.ext.restful import (abort, fields, marshal, marshal_with, reqparse,
-                               Resource)
+from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db
-
-entity_stub_fields = {
-    'gid': fields.String,
-    'uri': fields.Url('entity_get_single', True)
-}
-
-entity_fields = {
-    u'gid': fields.String,
-    u'master_revision_id': fields.Integer,
-    u'last_updated': fields.DateTime(dt_format='iso8601'),
-    u'uri': fields.Url('entity_get_single', True),
-    u'aliases_uri': fields.Url('entity_get_aliases', True),
-    u'disambiguation_uri': fields.Url('entity_get_disambiguation', True),
-    u'annotation_uri': fields.Url('entity_get_annotation', True),
-    u'data_uri': fields.Url('entity_get_data', True)
-}
+from . import db, fields
 
 
 class EntityResource(Resource):
@@ -30,16 +37,7 @@ class EntityResource(Resource):
         except NoResultFound:
             abort(404)
 
-        return marshal(entity, entity_fields)
-
-entity_alias_fields = {
-    'entity': fields.Nested(entity_stub_fields),
-    'aliases': fields.List(fields.Nested({
-        'id': fields.Integer,
-        'name': fields.String,
-        'sort_name': fields.String
-    }))
-}
+        return marshal(entity, fields.entity)
 
 
 class EntityAliasResource(Resource):
@@ -80,15 +78,7 @@ class EntityAliasResource(Resource):
         return marshal({
             'entity': entity,
             'aliases': aliases
-        }, entity_alias_fields)
-
-entity_disambiguation_fields = {
-    'entity': fields.Nested(entity_stub_fields),
-    'disambiguation': fields.Nested({
-        'id': fields.Integer(),
-        'comment': fields.String()
-    }, allow_null=True)
-}
+        }, fields.entity_alias)
 
 
 class EntityDisambiguationResource(Resource):
@@ -128,17 +118,7 @@ class EntityDisambiguationResource(Resource):
         return marshal({
             'entity': entity,
             'disambiguation': disambiguation
-        }, entity_disambiguation_fields)
-
-
-entity_annotation_fields = {
-    'entity': fields.Nested(entity_stub_fields),
-    'annotation': fields.Nested({
-        'id': fields.Integer(),
-        'created_at': fields.DateTime(dt_format='iso8601'),
-        'content': fields.String()
-    }, allow_null=True)
-}
+        }, fields.entity_disambiguation)
 
 
 class EntityAnnotationResource(Resource):
@@ -178,32 +158,12 @@ class EntityAnnotationResource(Resource):
         return marshal({
             'entity': entity,
             'annotation': annotation
-        }, entity_annotation_fields)
+        }, fields.entity_annotation)
 
-publication_data_fields = {
-    'id': fields.Integer,
-    'publication_type': fields.Nested({
-        'id': fields.Integer,
-        'label': fields.String
-    })
-}
-
-creator_data_fields = {
-    'id': fields.Integer,
-    'begin_date': fields.DateTime(dt_format='iso8601'),
-    'begin_date_precision': fields.String,
-    'end_date': fields.DateTime(dt_format='iso8601'),
-    'end_date_precision': fields.String,
-    'ended': fields.Boolean,
-    'creator_type': fields.Nested({
-        'id': fields.Integer,
-        'label': fields.String
-    })
-}
 
 data_mapper = {
-    PublicationData: ('publication_data', publication_data_fields),
-    CreatorData: ('creator_data', creator_data_fields)
+    PublicationData: ('publication_data', fields.publication_data),
+    CreatorData: ('creator_data', fields.creator_data)
 }
 
 
@@ -237,14 +197,15 @@ class EntityDataResource(Resource):
                 entity = revision.entity
 
         if revision is None:
-            data = None
+            # No data, so 404
+            abort(404)
         else:
             data = revision.entity_tree.data
 
-        data_fields = data_mapper.get(type(data), data_mapper[PublicationData])
+        data_fields = fields.data_mapper[type(data)]
 
         entity_data_fields = {
-            'entity': fields.Nested(entity_stub_fields),
+            'entity': fields.Nested(fields.entity_stub),
             data_fields[0]: fields.Nested(data_fields[1], allow_null=True)
         }
 
@@ -252,13 +213,6 @@ class EntityDataResource(Resource):
             'entity': entity,
             data_fields[0]: data
         }, entity_data_fields)
-
-
-entity_list_fields = {
-    'offset': fields.Integer,
-    'count': fields.Integer,
-    'objects': fields.List(fields.Nested(entity_fields))
-}
 
 
 class EntityResourceList(Resource):
@@ -275,7 +229,7 @@ class EntityResourceList(Resource):
             'offset': args.offset,
             'count': len(entities),
             'objects': entities
-        }, entity_list_fields)
+        }, fields.entity_list)
 
 
 def create_views(api):
