@@ -18,10 +18,10 @@
 
 from bbschema import Edit, EntityRevision, PublicationData, Revision
 from flask import request
-from flask.ext.restful import Resource, abort, fields, marshal, reqparse
+from flask.ext.restful import Resource, abort, marshal, reqparse, fields
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db, oauth_provider, revision_json, fields
+from . import db, oauth_provider, revision_json, structures
 from .entity import data_mapper
 
 
@@ -44,7 +44,7 @@ class RevisionResource(Resource):
         entity_revision_fields = {
             'id': fields.Integer,
             'created_at': fields.DateTime(dt_format='iso8601'),
-            'entity': fields.Nested(fields.entity_stub),
+            'entity': fields.Nested(structures.entity_stub),
             'user': fields.Nested({
                 'id': fields.Integer,
             }),
@@ -93,7 +93,7 @@ class RevisionResourceList(Resource):
             'offset': args.offset,
             'count': len(revisions),
             'objects': revisions
-        }, fields.revision_list)
+        }, structures.revision_list)
 
     @oauth_provider.require_oauth()
     def post(self):
@@ -111,7 +111,7 @@ class RevisionResourceList(Resource):
         # Commit entity, tree and revision
         db.session.commit()
 
-        return marshal(revision, fields.entity_revision_stub)
+        return marshal(revision, structures.entity_revision_stub)
 
 
 class EditResource(Resource):
@@ -121,7 +121,7 @@ class EditResource(Resource):
         except NoResultFound:
             abort(404)
 
-        return marshal(edit, fields.edit)
+        return marshal(edit, structures.edit)
 
 
 class EditResourceList(Resource):
@@ -148,7 +148,7 @@ class EditResourceList(Resource):
             'offset': args.offset,
             'count': len(edits),
             'objects': edits
-        }, fields.edit_list)
+        }, structures.edit_list)
 
     # Takes no parameters - creates a blank edit by the authenticated user.
     @oauth_provider.require_oauth()
@@ -160,7 +160,7 @@ class EditResourceList(Resource):
         db.session.add(edit)
         db.session.commit()
 
-        return marshal(edit, fields.edit)
+        return marshal(edit, structures.edit)
 
 
 def create_views(api):

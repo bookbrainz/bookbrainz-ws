@@ -21,7 +21,7 @@ from bbschema import User
 from flask.ext.restful import abort, marshal, reqparse, Resource
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db, fields
+from . import db, structures
 
 
 class UserResource(Resource):
@@ -32,7 +32,7 @@ class UserResource(Resource):
         except NoResultFound:
             abort(404)
 
-        return marshal(user, fields.user)
+        return marshal(user, structures.user)
 
 
 class UserResourceList(Resource):
@@ -51,7 +51,7 @@ class UserResourceList(Resource):
             'offset': args.offset,
             'count': len(users),
             'objects': users
-        }, fields.user_list)
+        }, structures.user_list)
 
     post_parser = reqparse.RequestParser()
     post_parser.add_argument('name', type=unicode, required=True)
@@ -65,7 +65,7 @@ class UserResourceList(Resource):
         db.session.add(user)
         db.session.commit()
 
-        return marshal(user, fields.user)
+        return marshal(user, structures.user)
 
 
 def create_views(api):

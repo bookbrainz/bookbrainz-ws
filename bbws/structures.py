@@ -17,9 +17,9 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-""" This module contains the field definitions for all of the responses the
-webservice can provide. Fields can reference each other, but must be declared
-in the correct order.
+""" This module contains the field structure definitions for all of the
+responses the webservice can provide. Fields can reference each other, but must
+be declared in the correct order.
 """
 
 

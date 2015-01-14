@@ -18,9 +18,9 @@
 
 
 from bbschema import PublicationType
-from flask.ext.restful import Resource, fields, marshal
+from flask.ext.restful import Resource, marshal
 
-from . import db, fields
+from . import db, structures
 
 
 class PublicationTypeResourceList(Resource):
@@ -30,7 +30,7 @@ class PublicationTypeResourceList(Resource):
         return marshal({
             'count': len(types),
             'objects': types
-        }, fields.publication_type_list)
+        }, structures.publication_type_list)
 
 
 def create_views(api):

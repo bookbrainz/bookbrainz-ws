@@ -27,7 +27,7 @@ from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db, fields
+from . import db, structures
 
 
 class EntityResource(Resource):
@@ -37,7 +37,7 @@ class EntityResource(Resource):
         except NoResultFound:
             abort(404)
 
-        return marshal(entity, fields.entity)
+        return marshal(entity, structures.entity)
 
 
 class EntityAliasResource(Resource):
@@ -78,7 +78,7 @@ class EntityAliasResource(Resource):
         return marshal({
             'entity': entity,
             'aliases': aliases
-        }, fields.entity_alias)
+        }, structures.entity_alias)
 
 
 class EntityDisambiguationResource(Resource):
@@ -118,7 +118,7 @@ class EntityDisambiguationResource(Resource):
         return marshal({
             'entity': entity,
             'disambiguation': disambiguation
-        }, fields.entity_disambiguation)
+        }, structures.entity_disambiguation)
 
 
 class EntityAnnotationResource(Resource):
@@ -158,12 +158,12 @@ class EntityAnnotationResource(Resource):
         return marshal({
             'entity': entity,
             'annotation': annotation
-        }, fields.entity_annotation)
+        }, structures.entity_annotation)
 
 
 data_mapper = {
-    PublicationData: ('publication_data', fields.publication_data),
-    CreatorData: ('creator_data', fields.creator_data)
+    PublicationData: ('publication_data', structures.publication_data),
+    CreatorData: ('creator_data', structures.creator_data)
 }
 
 
@@ -202,10 +202,10 @@ class EntityDataResource(Resource):
         else:
             data = revision.entity_tree.data
 
-        data_fields = fields.data_mapper[type(data)]
+        data_fields = structures.data_mapper[type(data)]
 
         entity_data_fields = {
-            'entity': fields.Nested(fields.entity_stub),
+            'entity': fields.Nested(structures.entity_stub),
             data_fields[0]: fields.Nested(data_fields[1], allow_null=True)
         }
 
@@ -229,7 +229,7 @@ class EntityResourceList(Resource):
             'offset': args.offset,
             'count': len(entities),
             'objects': entities
-        }, fields.entity_list)
+        }, structures.entity_list)
 
 
 def create_views(api):
