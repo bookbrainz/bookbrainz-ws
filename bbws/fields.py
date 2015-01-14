@@ -25,6 +25,21 @@ in the correct order.
 
 from flask.ext.restful import fields
 
+edit = {
+    'id': fields.Integer,
+    'status': fields.Integer,
+    'uri': fields.Url('edit_get_single', True),
+    'user': fields.Nested({
+        'id': fields.Integer,
+    }),
+}
+
+edit_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(edit))
+}
+
 entity_stub = {
     'gid': fields.String,
     'uri': fields.Url('entity_get_single', True)
@@ -78,6 +93,22 @@ entity_list_fields = {
 }
 
 
+entity_revision_stub = {
+    'id': fields.Integer,
+    'created_at': fields.DateTime(dt_format='iso8601'),
+    'entity': fields.Nested(entity_stub),
+    'user': fields.Nested({
+        'id': fields.Integer,
+    }),
+    'uri': fields.Url('revision_get_single', True),
+}
+
+revision_list_fields = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(entity_revision_stub))
+}
+
 user = {
     'name': fields.String,
     'reputation': fields.Integer,
@@ -117,4 +148,12 @@ publication_data = {
         'id': fields.Integer,
         'label': fields.String
     })
+}
+
+publication_type_list = {
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested({
+        'id': fields.Integer,
+        'label': fields.String
+    }))
 }

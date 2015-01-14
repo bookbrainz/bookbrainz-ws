@@ -1,7 +1,26 @@
-import uuid
+# -*- coding: utf8 -*-
+
+# Copyright (C) 2014-2015  Ben Ockmore
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+from bbschema import (Alias, Annotation, CreatorData, Disambiguation, Entity,
+                      EntityRevision, EntityTree, PublicationData)
+
 from . import db
-from bbschema import (Entity, EntityTree, EntityRevision, PublicationData, CreatorData,
-                      Annotation, Disambiguation, Alias)
+
 
 class JSONParseError(Exception):
     pass
@@ -30,7 +49,9 @@ def create_entity(revision_json):
         entity_tree.annotation = annotation
 
     if 'disambiguation' in revision_json:
-        disambiguation = Disambiguation(comment=revision_json['disambiguation'])
+        disambiguation = Disambiguation(
+            comment=revision_json['disambiguation']
+        )
         entity_tree.disambiguation = disambiguation
 
     if 'aliases' in revision_json:
@@ -106,8 +127,10 @@ def format(base_revision_id, new_revision_id):
         base_data = base_tree.data
         base_annotation = (base_tree.annotation.content
                            if base_tree.annotation is not None else None)
-        base_disambiguation = (base_tree.disambiguation.comment
-                               if base_tree.disambiguation is not None else None)
+        base_disambiguation = (
+            base_tree.disambiguation.comment
+            if base_tree.disambiguation is not None else None
+        )
         base_aliases = base_tree.aliases
 
     return {

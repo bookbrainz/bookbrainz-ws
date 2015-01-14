@@ -1,32 +1,39 @@
-from bbschema import Edit, EntityRevision, Revision, PublicationData
-from flask.ext.restful import (abort, fields, marshal, marshal_with, reqparse,
-                               Resource)
+# -*- coding: utf8 -*-
+
+# Copyright (C) 2014-2015  Ben Ockmore
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+from bbschema import Edit, EntityRevision, PublicationData, Revision
 from flask import request
-from sqlalchemy.orm import with_polymorphic
+from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db, oauth_provider, revision_json
-from .entity import entity_stub_fields, data_mapper
+from . import db, oauth_provider, revision_json, fields
+from .entity import data_mapper
 
-entity_revision_stub = {
-    'id': fields.Integer,
-    'created_at': fields.DateTime(dt_format='iso8601'),
-    'entity': fields.Nested(entity_stub_fields),
-    'user': fields.Nested({
-        'id': fields.Integer,
-    }),
-    'uri': fields.Url('revision_get_single', True),
-}
 
 class RevisionResource(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('base', type=int, default=None)
 
-    def get(self, id):
+    def get(self, _id):
         args = self.get_parser.parse_args()
 
         try:
-            revision = db.session.query(Revision).filter_by(id=id).one()
+            revision = db.session.query(Revision).filter_by(id=_id).one()
         except NoResultFound:
             abort(404)
 
@@ -37,13 +44,14 @@ class RevisionResource(Resource):
         entity_revision_fields = {
             'id': fields.Integer,
             'created_at': fields.DateTime(dt_format='iso8601'),
-            'entity': fields.Nested(entity_stub_fields),
+            'entity': fields.Nested(fields.entity_stub),
             'user': fields.Nested({
                 'id': fields.Integer,
             }),
             'uri': fields.Url('revision_get_single', True),
             'changes': fields.Nested({
-                data_fields[0]: fields.List(fields.Nested(data_fields[1], allow_null=True)),
+                data_fields[0]: fields.List(fields.Nested(data_fields[1],
+                                                          allow_null=True)),
                 'annotation': fields.List(fields.String),
                 'disambiguation': fields.List(fields.String),
                 'aliases': fields.List(fields.Nested({
@@ -68,13 +76,6 @@ class RevisionResource(Resource):
             }
 
 
-revision_list_fields = {
-    'offset': fields.Integer,
-    'count': fields.Integer,
-    'objects': fields.List(fields.Nested(entity_revision_stub))
-}
-
-
 class RevisionResourceList(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('limit', type=int, default=20)
@@ -92,7 +93,7 @@ class RevisionResourceList(Resource):
             'offset': args.offset,
             'count': len(revisions),
             'objects': revisions
-        }, revision_list_fields)
+        }, fields.revision_list)
 
     @oauth_provider.require_oauth()
     def post(self):
@@ -110,32 +111,17 @@ class RevisionResourceList(Resource):
         # Commit entity, tree and revision
         db.session.commit()
 
-        return marshal(revision, entity_revision_stub)
-
-edit_fields = {
-    'id': fields.Integer,
-    'status': fields.Integer,
-    'uri': fields.Url('edit_get_single', True),
-    'user': fields.Nested({
-        'id': fields.Integer,
-    }),
-}
+        return marshal(revision, fields.entity_revision_stub)
 
 
 class EditResource(Resource):
-    def get(self, id):
+    def get(self, _id):
         try:
-            edit = db.session.query(Edit).filter_by(id=id).one()
+            edit = db.session.query(Edit).filter_by(id=_id).one()
         except NoResultFound:
             abort(404)
 
-        return marshal(edit, edit_fields)
-
-edit_list_fields = {
-    'offset': fields.Integer,
-    'count': fields.Integer,
-    'objects': fields.List(fields.Nested(edit_fields))
-}
+        return marshal(edit, fields.edit)
 
 
 class EditResourceList(Resource):
@@ -149,7 +135,6 @@ class EditResourceList(Resource):
         q = db.session.query(Edit)
 
         if entity_gid is not None:
-            entity_revision_ = with_polymorphic(Revision, EntityRevision)
             q = q.join(Edit.revisions).join(EntityRevision).filter(
                 EntityRevision.entity_gid == entity_gid
             )
@@ -163,9 +148,9 @@ class EditResourceList(Resource):
             'offset': args.offset,
             'count': len(edits),
             'objects': edits
-        }, edit_list_fields)
+        }, fields.edit_list)
 
-    # This takes no parameters - creates a blank edit by the authenticated user.
+    # Takes no parameters - creates a blank edit by the authenticated user.
     @oauth_provider.require_oauth()
     def post(self):
         # This will be valid here, due to authentication.
@@ -175,13 +160,17 @@ class EditResourceList(Resource):
         db.session.add(edit)
         db.session.commit()
 
-        return marshal(edit, edit_fields)
-
-
+        return marshal(edit, fields.edit)
 
 
 def create_views(api):
-    api.add_resource(RevisionResource, '/revision/<int:id>', endpoint='revision_get_single')
-    api.add_resource(RevisionResourceList, '/revisions', '/edit/<int:edit_id>/revisions')
-    api.add_resource(EditResource, '/edit/<int:id>', endpoint='edit_get_single')
-    api.add_resource(EditResourceList, '/edits', '/entity/<string:entity_gid>/edits', '/user/<int:user_id>/edits')
+    api.add_resource(RevisionResource, '/revision/<int:id>',
+                     endpoint='revision_get_single')
+    api.add_resource(RevisionResourceList, '/revisions',
+                     '/edit/<int:edit_id>/revisions')
+    api.add_resource(EditResource, '/edit/<int:id>',
+                     endpoint='edit_get_single')
+    api.add_resource(
+        EditResourceList, '/edits', '/entity/<string:entity_gid>/edits',
+        '/user/<int:user_id>/edits'
+    )
