@@ -26,7 +26,6 @@ class TestUserViews(TestCase):
         new_user = User(name=u'test_user1', email=u'test_user1@users.org', user_type_id=1)
         db.session.add(new_user)
         db.session.commit()
-        print new_user.id
 
         created_at = new_user.created_at.replace(microsecond=0)
         active_at = new_user.active_at.replace(microsecond=0)

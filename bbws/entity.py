@@ -202,7 +202,7 @@ class EntityDataResource(Resource):
         else:
             data = revision.entity_tree.data
 
-        data_fields = structures.data_mapper[type(data)]
+        data_fields = data_mapper[type(data)]
 
         entity_data_fields = {
             'entity': fields.Nested(structures.entity_stub),

@@ -86,7 +86,7 @@ entity_annotation = {
 }
 
 
-entity_list_fields = {
+entity_list = {
     'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested(entity))
