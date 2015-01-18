@@ -17,8 +17,11 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from bbschema import (Alias, Annotation, CreatorData, Disambiguation, Entity,
-                      EntityRevision, EntityTree, PublicationData)
+                      EntityRevision, EntityTree, PublicationData,
+                      Relationship, RelationshipEntity, RelationshipText,
+                      RelationshipTree)
 from sqlalchemy.orm.exc import NoResultFound
+
 from . import db
 
 
@@ -71,7 +74,7 @@ def update_aliases(entity_tree, alias_json):
     # If id is null, add, if second object is null, delete,
     # otherwise, update.
 
-    ids = [x for x, y in alias_json if x is not None]
+    ids = [x for x, _ in alias_json if x is not None]
 
     # This removes all entries where id is not None
     aliases = [alias for alias in entity_tree.aliases
@@ -104,9 +107,12 @@ def update_aliases(entity_tree, alias_json):
 
     return aliases
 
+
 def update_entity(revision_json):
     try:
-        entity = db.session.query(Entity).filter_by(gid=revision_json['entity_gid'][0]).one()
+        entity = db.session.query(Entity).filter_by(
+            gid=revision_json['entity_gid'][0]
+        ).one()
     except NoResultFound:
         return (None, None)
 
@@ -160,11 +166,39 @@ def update_entity(revision_json):
 
     return (entity, entity_tree)
 
+
 def merge_entity(revision_json):
     pass
 
 
 def delete_entity(revision_json):
+    pass
+
+
+def create_relationship(revision_json):
+    relationship = Relationship()
+
+    tree = RelationshipTree()
+    tree.relationship_type_id = revision_json['relationship_type_id']
+
+    for entity in revision_json.get('entities', []):
+        rel_entity = RelationshipEntity(entity_gid=entity['gid'],
+                                        position=entity['position'])
+        tree.entities.append(rel_entity)
+
+    for text in revision_json.get('text', []):
+        rel_text = RelationshipText(text=text['text'],
+                                    position=text['position'])
+        tree.text.append(rel_text)
+
+    return (relationship, tree)
+
+
+def update_relationship(revision_json):
+    pass
+
+
+def delete_relationship(revision_json):
     pass
 
 
@@ -174,19 +208,31 @@ def parse_changes(revision_json):
     """
 
     # First, determine which type of edit this is.
-    entity_gid = revision_json['entity_gid']
-    if not entity_gid:
-        # If entity_gid is empty, then this is a CREATE.
-        return create_entity(revision_json)
-    elif len(entity_gid) == 1:
-        # Otherwise, if there is 1 element in entity_gid, attempt an update.
-        return update_entity(revision_json)
-    elif entity_gid[-1] is None:
-        # If entity_gid[-1] is None, then this is a deletion.
-        return delete_entity(revision_json)
-    else:
-        # If entity_gid[-1] is not None, then this is a merge.
-        return merge_entity(revision_json)
+    if 'entity_gid' in revision_json:
+        entity_gid = revision_json['entity_gid']
+        if not entity_gid:
+            # If entity_gid is empty, then this is a CREATE.
+            return create_entity(revision_json)
+        elif len(entity_gid) == 1:
+            # If there is 1 element in entity_gid, attempt an update.
+            return update_entity(revision_json)
+        elif entity_gid[-1] is None:
+            # If entity_gid[-1] is None, then this is a deletion.
+            return delete_entity(revision_json)
+        else:
+            # If entity_gid[-1] is not None, then this is a merge.
+            return merge_entity(revision_json)
+    elif 'relationship_id' in revision_json:
+        relationship_id = revision_json['relationship_id']
+        if not relationship_id:
+            # If relationship_id is empty, then CREATE a new relationship.
+            return create_relationship(revision_json)
+        elif relationship_id[-1] is None:
+            # Delete the relationship
+            delete_relationship(revision_json)
+        else:
+            # Update the relationship
+            update_relationship(revision_json)
 
 
 def format_changes(base_revision_id, new_revision_id):
