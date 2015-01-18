@@ -37,7 +37,7 @@ class RevisionResource(Resource):
         except NoResultFound:
             abort(404)
 
-        changes = revision_json.format(args.base, revision.id)
+        changes = revision_json.format_changes(args.base, revision.id)
 
         data_fields = data_mapper.get(type(changes['data'][1]),
                                       data_mapper[PublicationData])
@@ -98,7 +98,7 @@ class RevisionResourceList(Resource):
     @oauth_provider.require_oauth()
     def post(self):
         rev_json = request.get_json()
-        entity, entity_tree = revision_json.parse(rev_json)
+        entity, entity_tree = revision_json.parse_changes(rev_json)
 
         # This will be valid here, due to authentication.
         user = request.oauth.user

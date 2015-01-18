@@ -18,7 +18,7 @@
 
 from bbschema import (Alias, Annotation, CreatorData, Disambiguation, Entity,
                       EntityRevision, EntityTree, PublicationData)
-
+from sqlalchemy.orm.exc import NoResultFound
 from . import db
 
 
@@ -65,9 +65,100 @@ def create_entity(revision_json):
     return (entity, entity_tree)
 
 
-def update_entity(revision_json):
-    pass
+def update_aliases(entity_tree, alias_json):
+    # Aliases will be a list of:
+    # [id, {name:'', sort_name:'', language_id:''}]
+    # If id is null, add, if second object is null, delete,
+    # otherwise, update.
 
+    ids = [x for x, y in alias_json if x is not None]
+
+    # This removes all entries where id is not None
+    aliases = [alias for alias in entity_tree.aliases
+               if alias.id not in ids]
+
+    # Then re-add them, with modified properties
+    for alias_id, alias_props in alias_json:
+        if alias_props is not None:
+            if alias_id is None:
+                # Create new alias
+                new_alias = Alias(
+                    name=alias_props['name'],
+                    sort_name=alias_props['sort_name'],
+                    language_id=alias_props['language_id']
+                )
+            else:
+                # Copy existing alias, and modify
+                qry = db.session.query(Alias).filter_by(id=alias_id)
+                try:
+                    existing = qry.one()
+                except NoResultFound:
+                    # Ignore the error, and move to the next id.
+                    continue
+                new_alias = Alias.copy(existing)
+                for attr, val in alias_props.items():
+                    if attr != 'id':
+                        setattr(new_alias, attr, val)
+
+            aliases.append(new_alias)
+
+    return aliases
+
+def update_entity(revision_json):
+    try:
+        entity = db.session.query(Entity).filter_by(gid=revision_json['entity_gid'][0]).one()
+    except NoResultFound:
+        return (None, None)
+
+    entity_tree = entity.master_revision.entity_tree
+
+    data = entity_tree.data
+    annotation = entity_tree.annotation
+    disambiguation = entity_tree.disambiguation
+
+    if 'publication_data' in revision_json:
+        data = PublicationData.copy(data)
+        for attr, val in revision_json['publication_data'].items():
+            if attr != 'id':
+                setattr(data, attr, val)
+    elif 'creator_data' in revision_json:
+        data = CreatorData.copy(data)
+        for attr, val in revision_json['creator_data'].items():
+            if attr != 'id':
+                setattr(data, attr, val)
+
+    if 'annotation' in revision_json:
+        annotation = Annotation(
+            content=revision_json['annotation']
+        )
+
+    if 'disambiguation' in revision_json:
+        # Create new disambiguation object
+        disambiguation = Disambiguation(
+            comment=revision_json['disambiguation']
+        )
+
+    if 'aliases' in revision_json:
+        aliases = update_aliases(entity_tree, revision_json['aliases'])
+    else:
+        aliases = entity_tree.aliases
+
+    entity_changed = (
+        (disambiguation is not None and disambiguation.id is None) or
+        (annotation is not None and annotation.id is None) or
+        (data.id is None) or (aliases != entity_tree.aliases)
+    )
+
+    if entity_changed:
+        new_tree = EntityTree()
+        new_tree.aliases = aliases
+        new_tree.annotation = annotation
+        new_tree.disambiguation = disambiguation
+        new_tree.data = data
+
+        return (entity, new_tree)
+
+    return (entity, entity_tree)
 
 def merge_entity(revision_json):
     pass
@@ -77,7 +168,7 @@ def delete_entity(revision_json):
     pass
 
 
-def parse(revision_json):
+def parse_changes(revision_json):
     """Parses the recieved JSON and attempts to create a new revision using the
     specified changes.
     """
@@ -98,7 +189,7 @@ def parse(revision_json):
         return merge_entity(revision_json)
 
 
-def format(base_revision_id, new_revision_id):
+def format_changes(base_revision_id, new_revision_id):
     """This analyzes the changes from one revision to another, and formats
     them into a single JSON structure for serving through the webservice.
     """
