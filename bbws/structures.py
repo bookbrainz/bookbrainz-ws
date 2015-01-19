@@ -93,20 +93,35 @@ entity_list = {
 }
 
 
-entity_revision_stub = {
+relationship_stub = {
+    'id': fields.Integer,
+    'uri': fields.Url('relationship_get_single', True)
+}
+
+revision_stub = {
     'id': fields.Integer,
     'created_at': fields.DateTime(dt_format='iso8601'),
-    'entity': fields.Nested(entity_stub),
     'user': fields.Nested({
         'id': fields.Integer,
     }),
     'uri': fields.Url('revision_get_single', True),
 }
 
-revision_list_fields = {
+entity_revision = revision_stub.copy()
+entity_revision.update({
+    'entity': fields.Nested(entity_stub),
+})
+
+relationship_revision = revision_stub.copy()
+relationship_revision.update({
+    'relationship': fields.Nested(relationship_stub),
+})
+
+
+revision_list = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(entity_revision_stub))
+    'objects': fields.List(fields.Nested(revision_stub))
 }
 
 user = {

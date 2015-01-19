@@ -98,20 +98,32 @@ class RevisionResourceList(Resource):
     @oauth_provider.require_oauth()
     def post(self):
         rev_json = request.get_json()
-        entity, entity_tree = revision_json.parse_changes(rev_json)
+        subject, tree = revision_json.parse_changes(rev_json)
 
         # This will be valid here, due to authentication.
         user = request.oauth.user
 
-        revision = EntityRevision(user_id=user.id)
-        revision.entity = entity
-        revision.entity_tree = entity_tree
+        is_entity_revision = isinstance(subject, Entity)
+
+        if is_entity_revision:
+            revision = EntityRevision(user_id=user.id)
+            revision.entity = subject
+            revision.entity_tree = tree
+        else:
+            revision = RelationshipRevision(user_id=user.id)
+            revision.relationship = subject
+            revision.relationship_tree = tree
+
 
         db.session.add(revision)
         # Commit entity, tree and revision
         db.session.commit()
 
-        return marshal(revision, structures.entity_revision_stub)
+        if is_entity_revision:
+            return marshal(revision, structures.entity_revision)
+        else:
+            return marshal(revision, structures.relationship_revision)
+
 
 
 class EditResource(Resource):

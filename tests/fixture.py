@@ -1,6 +1,10 @@
 # -*- coding: utf8 -*-
 
-from bbschema import CreatorData, Edit, Entity, PublicationData, User, UserType, EntityTree, CreatorType, PublicationType, Alias, EntityRevision, Disambiguation
+from bbschema import (Alias, CreatorData, CreatorType, Disambiguation, Edit,
+                      Entity, EntityRevision, EntityTree, PublicationData,
+                      PublicationType, Relationship, RelationshipEntity,
+                      RelationshipRevision, RelationshipText, RelationshipTree,
+                      RelationshipType, User, UserType)
 
 
 def load_data(db):
@@ -74,8 +78,82 @@ def load_data(db):
     revision2.edits = [edit1]
     revision3.edits = [edit2]
 
+    relationship_type1 = RelationshipType(
+        label='First Relationship',
+        description='A relationship which is first.',
+        forward_template='<%= subjects[0] %> is authored by <%= subjects[1] %>',
+        reverse_template='<%= subjects[1] %> is the author of <%= subjects[0] %>',
+    )
+
+    relationship_type2 = RelationshipType(
+        label='Second Relationship',
+        description='A relationship which is second.',
+        forward_template='<%= subjects[0] %> is translated by <%= subjects[1] %>',
+        reverse_template='<%= subjects[1] %> is the translator of <%= subjects[0] %>',
+    )
+
+    relationship_type3 = RelationshipType(
+        label='Third Relationship',
+        description='A relationship which is third.',
+        forward_template='<%= subjects[0] %> has profession <%= subjects[1] %>',
+        reverse_template='<%= subjects[1] %> is the profession of <%= subjects[0] %>',
+    )
+    db.session.add_all((relationship_type1, relationship_type2, relationship_type3))
+    db.session.commit()
+
+    relationship1 = Relationship()
+    relationship2 = Relationship()
+    relationship3 = Relationship()
+    db.session.add_all((relationship1, relationship2, relationship3))
+    db.session.commit()
+
+    relationship_tree1 = RelationshipTree(relationship_type_id=relationship_type1.id)
+    relationship_tree1.entities = [
+        RelationshipEntity(entity_gid=entity1.gid, position=1),
+        RelationshipEntity(entity_gid=entity2.gid, position=2)
+    ]
+    relationship_tree2 = RelationshipTree(relationship_type_id=relationship_type2.id)
+    relationship_tree2.entities = [
+        RelationshipEntity(entity_gid=entity1.gid, position=1),
+        RelationshipEntity(entity_gid=entity3.gid, position=2)
+    ]
+    relationship_tree3 = RelationshipTree(relationship_type_id=relationship_type3.id)
+    relationship_tree3.entities = [
+        RelationshipEntity(entity_gid=entity3.gid, position=1),
+    ]
+    relationship_tree3.text = [
+        RelationshipText(text='translator', position=2),
+    ]
+
+    db.session.add_all([relationship_tree1, relationship_tree2, relationship_tree3])
+    db.session.commit()
+
+    revision4 = RelationshipRevision(
+        user_id=editor.id, relationship_id=relationship1.id,
+        relationship_tree_id=relationship_tree1.id
+    )
+
+    revision5 = RelationshipRevision(
+        user_id=editor.id, relationship_id=relationship2.id,
+        relationship_tree_id=relationship_tree2.id
+    )
+
+    revision6 = RelationshipRevision(
+        user_id=editor.id, relationship_id=relationship3.id,
+        relationship_tree_id=relationship_tree3.id
+    )
+
+    revision4.edits = [edit1]
+    revision5.edits = [edit2]
+    revision6.edits = [edit2]
+
     entity1.master_revision = revision1
     entity2.master_revision = revision2
     entity3.master_revision = revision3
-    db.session.add_all([revision1, revision2, revision3])
+    relationship1.master_revision = revision4
+    relationship2.master_revision = revision5
+    relationship3.master_revision = revision6
+
+    db.session.add_all([revision1, revision2, revision3, revision4, revision5,
+                        revision6])
     db.session.commit()
