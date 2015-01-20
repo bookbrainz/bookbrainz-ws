@@ -79,24 +79,24 @@ def load_data(db):
     revision3.edits = [edit2]
 
     relationship_type1 = RelationshipType(
-        label='First Relationship',
-        description='A relationship which is first.',
-        forward_template='<%= subjects[0] %> is authored by <%= subjects[1] %>',
-        reverse_template='<%= subjects[1] %> is the author of <%= subjects[0] %>',
+        label=u'First Relationship',
+        description=u'A relationship which is first.',
+        forward_template=u'<%= subjects[0] %> is authored by <%= subjects[1] %>',
+        reverse_template=u'<%= subjects[1] %> is the author of <%= subjects[0] %>',
     )
 
     relationship_type2 = RelationshipType(
-        label='Second Relationship',
-        description='A relationship which is second.',
-        forward_template='<%= subjects[0] %> is translated by <%= subjects[1] %>',
-        reverse_template='<%= subjects[1] %> is the translator of <%= subjects[0] %>',
+        label=u'Second Relationship',
+        description=u'A relationship which is second.',
+        forward_template=u'<%= subjects[0] %> is translated by <%= subjects[1] %>',
+        reverse_template=u'<%= subjects[1] %> is the translator of <%= subjects[0] %>',
     )
 
     relationship_type3 = RelationshipType(
-        label='Third Relationship',
-        description='A relationship which is third.',
-        forward_template='<%= subjects[0] %> has profession <%= subjects[1] %>',
-        reverse_template='<%= subjects[1] %> is the profession of <%= subjects[0] %>',
+        label=u'Third Relationship',
+        description=u'A relationship which is third.',
+        forward_template=u'<%= subjects[0] %> has profession <%= subjects[1] %>',
+        reverse_template=u'<%= subjects[1] %> is the profession of <%= subjects[0] %>',
     )
     db.session.add_all((relationship_type1, relationship_type2, relationship_type3))
     db.session.commit()
@@ -121,8 +121,8 @@ def load_data(db):
     relationship_tree3.entities = [
         RelationshipEntity(entity_gid=entity3.gid, position=1),
     ]
-    relationship_tree3.text = [
-        RelationshipText(text='translator', position=2),
+    relationship_tree3.texts = [
+        RelationshipText(text=u'translator', position=2),
     ]
 
     db.session.add_all([relationship_tree1, relationship_tree2, relationship_tree3])

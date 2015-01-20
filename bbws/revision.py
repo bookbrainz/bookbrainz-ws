@@ -29,11 +29,11 @@ class RevisionResource(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('base', type=int, default=None)
 
-    def get(self, _id):
+    def get(self, id):
         args = self.get_parser.parse_args()
 
         try:
-            revision = db.session.query(Revision).filter_by(id=_id).one()
+            revision = db.session.query(Revision).filter_by(id=id).one()
         except NoResultFound:
             abort(404)
 
@@ -127,9 +127,9 @@ class RevisionResourceList(Resource):
 
 
 class EditResource(Resource):
-    def get(self, _id):
+    def get(self, id):
         try:
-            edit = db.session.query(Edit).filter_by(id=_id).one()
+            edit = db.session.query(Edit).filter_by(id=id).one()
         except NoResultFound:
             abort(404)
 

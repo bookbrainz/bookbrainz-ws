@@ -98,6 +98,28 @@ relationship_stub = {
     'uri': fields.Url('relationship_get_single', True)
 }
 
+relationship = relationship_stub.copy()
+relationship.update({
+    'master_revision_id': fields.Integer,
+    'last_updated': fields.DateTime(dt_format='iso8601'),
+    'relationship_type': fields.Integer(attribute='master_revision.relationship_tree.id'),
+    'entities': fields.List(fields.Nested({
+        'entity': fields.Nested(entity_stub),
+        'position': fields.Integer
+    }), attribute='master_revision.relationship_tree.entities'),
+    'texts': fields.List(fields.Nested({
+        'text': fields.String,
+        'position': fields.Integer
+    }), attribute='master_revision.relationship_tree.texts')
+})
+
+
+relationship_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(relationship_stub))
+}
+
 revision_stub = {
     'id': fields.Integer,
     'created_at': fields.DateTime(dt_format='iso8601'),

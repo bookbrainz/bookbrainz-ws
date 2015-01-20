@@ -26,9 +26,9 @@ from . import db, structures
 
 class UserResource(Resource):
     """ A Resource representing a User of the webservice. """
-    def get(self, _id):
+    def get(self, id):
         try:
-            user = db.session.query(User).filter_by(id=_id).one()
+            user = db.session.query(User).filter_by(id=id).one()
         except NoResultFound:
             abort(404)
 
@@ -71,6 +71,6 @@ class UserResourceList(Resource):
 def create_views(api):
     """ Create the views relating to Users, on the Restful API. """
 
-    api.add_resource(UserResource, '/user/<int:_id>',
+    api.add_resource(UserResource, '/user/<int:id>',
                      endpoint='user_get_single')
     api.add_resource(UserResourceList, '/user', endpoint='user_get_many')

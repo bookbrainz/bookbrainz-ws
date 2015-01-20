@@ -76,10 +76,12 @@ def create_app(config_file):
     import bbws.revision
     import bbws.user
     import bbws.entityspecific
+    import bbws.relationship
 
     bbws.entity.create_views(api)
     bbws.revision.create_views(api)
     bbws.user.create_views(api)
     bbws.entityspecific.create_views(api)
+    bbws.relationship.create_views(api)
 
     return app
