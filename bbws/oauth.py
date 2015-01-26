@@ -190,4 +190,4 @@ def init(app):
         except NoResultFound:
             return None
         else:
-            return {'user_id': user.id}
+            return {'user_id': user.id, 'user_email': user.email}

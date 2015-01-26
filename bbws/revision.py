@@ -133,6 +133,8 @@ class EditResource(Resource):
         except NoResultFound:
             abort(404)
 
+        edit.edit_id = edit.id
+
         return marshal(edit, structures.edit)
 
 
@@ -156,6 +158,9 @@ class EditResourceList(Resource):
         q = q.offset(args.offset).limit(args.limit)
         edits = q.all()
 
+        for edit in edits:
+            edit.edit_id = edit.id
+
         return marshal({
             'offset': args.offset,
             'count': len(edits),
@@ -172,6 +177,8 @@ class EditResourceList(Resource):
         db.session.add(edit)
         db.session.commit()
 
+        edit.edit_id = edit.id
+
         return marshal(edit, structures.edit)
 
 
@@ -179,7 +186,7 @@ def create_views(api):
     api.add_resource(RevisionResource, '/revision/<int:id>',
                      endpoint='revision_get_single')
     api.add_resource(RevisionResourceList, '/revisions',
-                     '/edit/<int:edit_id>/revisions')
+                     '/edit/<int:edit_id>/revisions', endpoint='revision_get_many')
     api.add_resource(EditResource, '/edit/<int:id>',
                      endpoint='edit_get_single')
     api.add_resource(

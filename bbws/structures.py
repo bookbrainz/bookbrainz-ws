@@ -32,6 +32,7 @@ edit = {
     'user': fields.Nested({
         'id': fields.Integer,
     }),
+    'revisions_uri': fields.Url('revision_get_many', True)
 }
 
 edit_list = {
@@ -146,12 +147,37 @@ revision_list = {
     'objects': fields.List(fields.Nested(revision_stub))
 }
 
-user = {
-    'name': fields.String,
+user_type = {
+    'id': fields.Integer,
+    'label': fields.String
+}
+
+user_type_list = {
+    'objects': fields.Nested(user_type)
+}
+
+user_stub = {
+    'id': fields.Integer,
+    'name': fields.String
+}
+
+user = user_stub.copy()
+user.update({
     'reputation': fields.Integer,
     'bio': fields.String,
     'created_at': fields.DateTime(dt_format='iso8601'),
     'active_at': fields.DateTime(dt_format='iso8601'),
+    'stats_uri': fields.Url('editor_stats', True),
+    'user_type': fields.Nested(user_type)
+})
+
+editor_stats = {
+    'user': fields.Nested(user_stub),
+    'total_edits': fields.Integer,
+    'total_revisions': fields.Integer,
+    'edits_accepted': fields.Integer,
+    'edits_rejected': fields.Integer,
+    'edits_failed': fields.Integer,
 }
 
 

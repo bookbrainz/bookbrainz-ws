@@ -1,6 +1,7 @@
 from bbws import create_app, db
 from bbschema import User, create_all
 from flask.ext.testing import TestCase
+from flask import url_for
 
 import datetime
 
@@ -31,10 +32,18 @@ class TestUserViews(TestCase):
         active_at = new_user.active_at.replace(microsecond=0)
 
         response = self.client.get('/user/{}'.format(new_user.id))
-        self.assertEquals(response.json, {
-            u'name': new_user.name,
-            u'reputation': new_user.reputation,
-            u'bio': new_user.bio,
-            u'created_at': datetime.datetime.isoformat(created_at),
-            u'active_at': datetime.datetime.isoformat(active_at)
+        self.assertEquals(response.json.get(u'name'), new_user.name)
+        self.assertEquals(response.json.get(u'reputation'),
+                          new_user.reputation)
+        self.assertEquals(response.json.get(u'bio'), new_user.bio)
+        self.assertEquals(response.json.get(u'created_at'),
+                          datetime.datetime.isoformat(created_at))
+        self.assertEquals(response.json.get(u'active_at'),
+                          datetime.datetime.isoformat(active_at))
+        self.assertTrue(response.json.get(u'stats_uri', '').endswith(
+            url_for('editor_stats', id=new_user.id))
+        )
+        self.assertEquals(response.json.get(u'user_type', {}), {
+            'id': 1,
+            'label': 'Editor'
         })

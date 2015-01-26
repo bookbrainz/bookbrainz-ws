@@ -17,7 +17,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-from bbschema import User
+from bbschema import User, EditorStats, UserType
 from flask.ext.restful import abort, marshal, reqparse, Resource
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -33,6 +33,19 @@ class UserResource(Resource):
             abort(404)
 
         return marshal(user, structures.user)
+
+
+class UserStatsResource(Resource):
+    """ A Resource providing statistics about a User of the webservice. """
+
+    def get(self, id):
+        try:
+            stats = db.session.query(EditorStats).filter_by(user_id=id).one()
+        except NoResultFound:
+            abort(404)
+
+        return marshal(stats, structures.editor_stats)
+
 
 
 class UserResourceList(Resource):
@@ -68,9 +81,19 @@ class UserResourceList(Resource):
         return marshal(user, structures.user)
 
 
+class UserTypeResourceList(Resource):
+    def get(self):
+        types = db.session.query(UserType).all()
+        return marshal({
+            'objects': types
+        }, structures.user_type_list)
+
+
 def create_views(api):
     """ Create the views relating to Users, on the Restful API. """
 
     api.add_resource(UserResource, '/user/<int:id>',
                      endpoint='user_get_single')
+    api.add_resource(UserStatsResource, '/user/<int:id>/stats', endpoint='editor_stats')
+    api.add_resource(UserTypeResourceList, '/userType')
     api.add_resource(UserResourceList, '/user', endpoint='user_get_many')
