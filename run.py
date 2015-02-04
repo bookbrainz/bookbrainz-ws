@@ -30,20 +30,21 @@ import os
 
 from bbws import create_app
 
+parser = argparse.ArgumentParser(description='BookBrainz Web Service')
+parser.add_argument(
+    'config', type=str,
+    help='the configuration file used to initialize the application'
+)
+parser.add_argument('-d', '--debug', action='store_true')
+parser.add_argument('--host', type=str, default='0.0.0.0',
+                    help='the desired hostname/IP for the server')
+parser.add_argument('--port', type=int, default=5000,
+                    help='the desired port number for the server')
+
+args = parser.parse_args()
+
+# Use absolute path here, otherwise config.from_pyfile makes it invalid.
+app = create_app(os.path.abspath(args.config))
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='BookBrainz Web Service')
-    parser.add_argument(
-        'config', type=str,
-        help='the configuration file used to initialize the application'
-    )
-    parser.add_argument('-d', '--debug', action='store_true')
-    parser.add_argument('--host', type=str, default='0.0.0.0',
-                        help='the desired hostname/IP for the server')
-    parser.add_argument('--port', type=int, default=5000,
-                        help='the desired port number for the server')
-
-    args = parser.parse_args()
-
-    # Use absolute path here, otherwise config.from_pyfile makes it invalid.
-    app = create_app(os.path.abspath(args.config))
     app.run(debug=args.debug, host=args.host, port=args.port)

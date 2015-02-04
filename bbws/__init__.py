@@ -62,7 +62,7 @@ def create_app(config_file):
     app.after_request(add_cors_header)
 
     # Initialize Flask extensions
-    api = Api(app)
+    api = Api(app, '/ws')
     db.init_app(app)
     cache.init_app(app)
     oauth_provider.init_app(app)
