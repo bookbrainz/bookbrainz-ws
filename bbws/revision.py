@@ -16,7 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from bbschema import Edit, EntityRevision, PublicationData, Revision
+from bbschema import Edit, EntityRevision, PublicationData, Revision, Entity, RelationshipRevision
 from flask import request
 from flask.ext.restful import Resource, abort, marshal, reqparse, fields
 from sqlalchemy.orm.exc import NoResultFound
@@ -114,6 +114,15 @@ class RevisionResourceList(Resource):
             revision.relationship = subject
             revision.relationship_tree = tree
 
+        if 'edit_id' in rev_json:
+            try:
+                edit = db.session.query(Edit).filter_by(
+                    id=rev_json['edit_id']
+                ).one()
+            except NoResultFound:
+                pass
+            else:
+                revision.edits = [edit]
 
         db.session.add(revision)
         # Commit entity, tree and revision
@@ -123,7 +132,6 @@ class RevisionResourceList(Resource):
             return marshal(revision, structures.entity_revision)
         else:
             return marshal(revision, structures.relationship_revision)
-
 
 
 class EditResource(Resource):

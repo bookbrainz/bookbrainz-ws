@@ -246,8 +246,10 @@ def format_changes(base_revision_id, new_revision_id):
 
     new_tree = new_revision.entity_tree
     new_data = new_tree.data
-    new_annotation = new_tree.annotation.content
-    new_disambiguation = new_tree.disambiguation.comment
+    new_annotation = (new_tree.annotation.content
+                      if new_tree.annotation is not None else None)
+    new_disambiguation = (new_tree.disambiguation.comment
+                          if new_tree.disambiguation is not None else None)
     new_aliases = new_tree.aliases
 
     if base_revision_id is None:
