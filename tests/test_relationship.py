@@ -18,23 +18,23 @@ class TestRelationshipViews(TestCase):
         load_data(db)
 
     def test_relationship_get_single(self):
-        response = self.client.get('/relationship/3')
+        response = self.client.get('/ws/relationship/3')
         self.assertEquals(response.json.get('id'), 3)
         self.assertEquals(response.json.get('uri'),
-                          'http://localhost/relationship/3')
+                          'http://localhost/ws/relationship/3')
         self.assertEquals(response.json.get('master_revision_id'), 6)
         self.assertTrue('last_updated' in response.json)
         self.assertEquals(len(response.json.get('entities', [])), 1)
         self.assertEquals(len(response.json.get('texts', [])), 1)
 
     def test_relationship_get_many(self):
-        response = self.client.get('/relationship')
+        response = self.client.get('/ws/relationship')
         self.assertEquals(response.json.get('count'), 3)
         self.assertEquals(response.json.get('offset'), 0)
         self.assertEquals(len(response.json.get('objects', [])), 3)
         self.assertEquals(response.json['objects'][0],
-                          {'id':1, 'uri': 'http://localhost/relationship/1'})
+                          {'id':1, 'uri': 'http://localhost/ws/relationship/1'})
         self.assertEquals(response.json['objects'][1],
-                          {'id':2, 'uri': 'http://localhost/relationship/2'})
+                          {'id':2, 'uri': 'http://localhost/ws/relationship/2'})
         self.assertEquals(response.json['objects'][2],
-                          {'id':3, 'uri': 'http://localhost/relationship/3'})
+                          {'id':3, 'uri': 'http://localhost/ws/relationship/3'})

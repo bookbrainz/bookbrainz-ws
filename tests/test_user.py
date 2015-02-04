@@ -31,7 +31,7 @@ class TestUserViews(TestCase):
         created_at = new_user.created_at.replace(microsecond=0)
         active_at = new_user.active_at.replace(microsecond=0)
 
-        response = self.client.get('/user/{}'.format(new_user.id))
+        response = self.client.get('/ws/user/{}'.format(new_user.id))
         self.assertEquals(response.json.get(u'name'), new_user.name)
         self.assertEquals(response.json.get(u'reputation'),
                           new_user.reputation)
