@@ -171,6 +171,13 @@ user.update({
     'user_type': fields.Nested(user_type)
 })
 
+user_secrets = user_stub.copy()
+user_secrets.update({
+    'email': fields.String,
+    'birth_date': fields.DateTime(dt_format='iso8601'),
+    'gender_id': fields.Integer
+})
+
 editor_stats = {
     'user': fields.Nested(user_stub),
     'total_edits': fields.Integer,

@@ -18,10 +18,11 @@
 
 
 from bbschema import User, EditorStats, UserType
+from flask import request
 from flask.ext.restful import abort, marshal, reqparse, Resource
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db, structures
+from . import db, structures, oauth_provider
 
 
 class UserResource(Resource):
@@ -46,6 +47,21 @@ class UserStatsResource(Resource):
 
         return marshal(stats, structures.editor_stats)
 
+
+class UserSecretsResource(Resource):
+    """ Provides the user's own secrets for authenticated users. """
+
+    @oauth_provider.require_oauth()
+    def get(self, id):
+        if id != request.oauth.user.id:
+            abort(401) # Unauthorized
+
+        try:
+            user = db.session.query(User).filter_by(id=id).one()
+        except NoResultFound:
+            abort(404)
+
+        return marshal(user, structures.user_secrets)
 
 
 class UserResourceList(Resource):
@@ -94,6 +110,9 @@ def create_views(api):
 
     api.add_resource(UserResource, '/user/<int:id>',
                      endpoint='user_get_single')
-    api.add_resource(UserStatsResource, '/user/<int:id>/stats', endpoint='editor_stats')
+    api.add_resource(UserSecretsResource, '/user/<int:id>/secrets',
+                     endpoint='user_get_secrets')
+    api.add_resource(UserStatsResource, '/user/<int:id>/stats',
+                     endpoint='editor_stats')
     api.add_resource(UserTypeResourceList, '/userType')
     api.add_resource(UserResourceList, '/user', endpoint='user_get_many')
