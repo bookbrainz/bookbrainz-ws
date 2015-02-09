@@ -150,6 +150,7 @@ class EditResourceList(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('limit', type=int, default=20)
     get_parser.add_argument('offset', type=int, default=0)
+    get_parser.add_argument('status', type=int)
 
     def get(self, entity_gid=None, user_id=None):
         args = self.get_parser.parse_args()
@@ -162,6 +163,9 @@ class EditResourceList(Resource):
             )
         elif user_id is not None:
             q = q.filter_by(user_id=user_id)
+
+        if args.status is not None:
+            q = q.filter_by(status=args.status)
 
         q = q.offset(args.offset).limit(args.limit)
         edits = q.all()
