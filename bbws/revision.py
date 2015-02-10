@@ -114,6 +114,10 @@ class RevisionResourceList(Resource):
             revision.relationship = subject
             revision.relationship_tree = tree
 
+        # Set entity master revision
+        # TODO: properly close edits
+        subject.master_revision = revision
+
         if 'edit_id' in rev_json:
             try:
                 edit = db.session.query(Edit).filter_by(
@@ -123,6 +127,7 @@ class RevisionResourceList(Resource):
                 pass
             else:
                 revision.edits = [edit]
+                edit.status = 1
 
         db.session.add(revision)
         # Commit entity, tree and revision
