@@ -220,7 +220,53 @@ publication_data = {
     })
 }
 
-publication_type_list = {
+
+publisher_data = {
+    'id': fields.Integer,
+    'begin_date': fields.DateTime(dt_format='iso8601'),
+    'begin_date_precision': fields.String,
+    'end_date': fields.DateTime(dt_format='iso8601'),
+    'end_date_precision': fields.String,
+    'ended': fields.Boolean,
+    'publisher_type': fields.Nested({
+        'id': fields.Integer,
+        'label': fields.String
+    })
+}
+
+
+edition_data = {
+    'id': fields.Integer,
+    'begin_date': fields.DateTime(dt_format='iso8601'),
+    'begin_date_precision': fields.String,
+    'end_date': fields.DateTime(dt_format='iso8601'),
+    'end_date_precision': fields.String,
+    'ended': fields.Boolean,
+    'language': fields.Nested({
+        'id': fields.Integer,
+        'name': fields.String,
+    }),
+    'edition_status': fields.Nested({
+        'id': fields.Integer,
+        'label': fields.String
+    })
+}
+
+
+work_data = {
+    'id': fields.Integer,
+    'languages': fields.List(fields.Nested({
+        'id': fields.Integer,
+        'name': fields.String,
+    })),
+    'work_type': fields.Nested({
+        'id': fields.Integer,
+        'label': fields.String
+    })
+}
+
+
+type_list = {
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
         'id': fields.Integer,

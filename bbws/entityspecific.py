@@ -17,8 +17,10 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-from bbschema import PublicationType
 from flask.ext.restful import Resource, marshal
+
+from bbschema import (CreatorType, EditionStatus, PublicationType,
+                      PublisherType, WorkType)
 
 from . import db, structures
 
@@ -30,8 +32,52 @@ class PublicationTypeResourceList(Resource):
         return marshal({
             'count': len(types),
             'objects': types
-        }, structures.publication_type_list)
+        }, structures.type_list)
+
+
+class CreatorTypeResourceList(Resource):
+    def get(self):
+        types = db.session.query(CreatorType).all()
+
+        return marshal({
+            'count': len(types),
+            'objects': types
+        }, structures.type_list)
+
+
+class PublisherTypeResourceList(Resource):
+    def get(self):
+        types = db.session.query(PublisherType).all()
+
+        return marshal({
+            'count': len(types),
+            'objects': types
+        }, structures.type_list)
+
+
+class EditionStatusResourceList(Resource):
+    def get(self):
+        types = db.session.query(EditionStatus).all()
+
+        return marshal({
+            'count': len(types),
+            'objects': types
+        }, structures.type_list)
+
+
+class WorkTypeResourceList(Resource):
+    def get(self):
+        types = db.session.query(WorkType).all()
+
+        return marshal({
+            'count': len(types),
+            'objects': types
+        }, structures.type_list)
 
 
 def create_views(api):
     api.add_resource(PublicationTypeResourceList, '/publicationType')
+    api.add_resource(CreatorTypeResourceList, '/creatorType')
+    api.add_resource(PublisherTypeResourceList, '/publisherType')
+    api.add_resource(EditionStatusResourceList, '/editionStatus')
+    api.add_resource(WorkTypeResourceList, '/workType')

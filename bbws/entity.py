@@ -22,8 +22,10 @@ resources.
 """
 
 
-from bbschema import CreatorData, Entity, EntityRevision, PublicationData
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
+
+from bbschema import (CreatorData, EditionData, Entity, EntityRevision,
+                      PublicationData, PublisherData, WorkData)
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -163,7 +165,10 @@ class EntityAnnotationResource(Resource):
 
 data_mapper = {
     PublicationData: ('publication_data', structures.publication_data),
-    CreatorData: ('creator_data', structures.creator_data)
+    CreatorData: ('creator_data', structures.creator_data),
+    EditionData: ('edition_data', structures.edition_data),
+    PublisherData: ('publisher_data', structures.publisher_data),
+    WorkData: ('work_data', structures.work_data),
 }
 
 

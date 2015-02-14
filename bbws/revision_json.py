@@ -16,10 +16,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from bbschema import (Alias, Annotation, CreatorData, Disambiguation, Entity,
-                      EntityRevision, EntityTree, PublicationData,
-                      Relationship, RelationshipEntity, RelationshipText,
-                      RelationshipTree)
+from bbschema import (Alias, Annotation, CreatorData, Disambiguation,
+                      EditionData, Entity, EntityRevision, EntityTree,
+                      PublicationData, PublisherData, Relationship,
+                      RelationshipEntity, RelationshipText, RelationshipTree,
+                      WorkData)
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import db
@@ -38,6 +39,12 @@ def create_entity(revision_json):
         data = PublicationData(**revision_json['publication_data'])
     elif 'creator_data' in revision_json:
         data = CreatorData(**revision_json['creator_data'])
+    elif 'edition_data' in revision_json:
+        data = EditionData(**revision_json['edition_data'])
+    elif 'publisher_data' in revision_json:
+        data = PublisherData(**revision_json['publisher_data'])
+    elif 'work_data' in revision_json:
+        data = WorkData(**revision_json['work_data'])
     else:
         raise JSONParseError('Unrecognized entity type!')
 
@@ -122,14 +129,26 @@ def update_entity(revision_json):
     annotation = entity_tree.annotation
     disambiguation = entity_tree.disambiguation
 
+    # TODO: Refactor this in some nice OO way.
+    data_key = None
     if 'publication_data' in revision_json:
         data = PublicationData.copy(data)
-        for attr, val in revision_json['publication_data'].items():
-            if attr != 'id':
-                setattr(data, attr, val)
+        data_key = 'publication_data'
     elif 'creator_data' in revision_json:
         data = CreatorData.copy(data)
-        for attr, val in revision_json['creator_data'].items():
+        data_key = 'creator_data'
+    elif 'edition_data' in revision_json:
+        data = EditionData.copy(data)
+        data_key = 'edition_data'
+    elif 'publisher_data' in revision_json:
+        data = PublisherData.copy(data)
+        data_key = 'publisher_data'
+    elif 'work_data' in revision_json:
+        data = WorkData.copy(data)
+        data_key = 'work_data'
+
+    if data_key is not None:
+        for attr, val in revision_json[data_key].items():
             if attr != 'id':
                 setattr(data, attr, val)
 
