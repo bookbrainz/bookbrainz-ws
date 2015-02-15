@@ -208,7 +208,7 @@ creator_data = {
     'creator_type': fields.Nested({
         'id': fields.Integer,
         'label': fields.String
-    })
+    }, allow_null=True)
 }
 
 
@@ -217,7 +217,7 @@ publication_data = {
     'publication_type': fields.Nested({
         'id': fields.Integer,
         'label': fields.String
-    })
+    }, allow_null=True)
 }
 
 
@@ -231,7 +231,7 @@ publisher_data = {
     'publisher_type': fields.Nested({
         'id': fields.Integer,
         'label': fields.String
-    })
+    }, allow_null=True)
 }
 
 
@@ -245,11 +245,11 @@ edition_data = {
     'language': fields.Nested({
         'id': fields.Integer,
         'name': fields.String,
-    }),
+    }, allow_null=True),
     'edition_status': fields.Nested({
         'id': fields.Integer,
         'label': fields.String
-    })
+    }, allow_null=True)
 }
 
 
@@ -262,7 +262,7 @@ work_data = {
     'work_type': fields.Nested({
         'id': fields.Integer,
         'label': fields.String
-    })
+    }, allow_null=True)
 }
 
 
