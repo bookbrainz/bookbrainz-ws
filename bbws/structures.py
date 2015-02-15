@@ -200,15 +200,19 @@ user_list = {
 
 creator_data = {
     'id': fields.Integer,
-    'begin_date': fields.DateTime(dt_format='iso8601'),
+    'begin_date': fields.String,
     'begin_date_precision': fields.String,
-    'end_date': fields.DateTime(dt_format='iso8601'),
+    'end_date': fields.String,
     'end_date_precision': fields.String,
     'ended': fields.Boolean,
     'creator_type': fields.Nested({
         'id': fields.Integer,
         'label': fields.String
-    }, allow_null=True)
+    }, allow_null=True),
+    'gender': fields.Nested({
+        'id': fields.Integer,
+        'name': fields.String
+    }, allow_null=True),
 }
 
 
@@ -223,9 +227,9 @@ publication_data = {
 
 publisher_data = {
     'id': fields.Integer,
-    'begin_date': fields.DateTime(dt_format='iso8601'),
+    'begin_date': fields.String,
     'begin_date_precision': fields.String,
-    'end_date': fields.DateTime(dt_format='iso8601'),
+    'end_date': fields.String,
     'end_date_precision': fields.String,
     'ended': fields.Boolean,
     'publisher_type': fields.Nested({
@@ -237,9 +241,9 @@ publisher_data = {
 
 edition_data = {
     'id': fields.Integer,
-    'begin_date': fields.DateTime(dt_format='iso8601'),
+    'begin_date': fields.String,
     'begin_date_precision': fields.String,
-    'end_date': fields.DateTime(dt_format='iso8601'),
+    'end_date': fields.String,
     'end_date_precision': fields.String,
     'ended': fields.Boolean,
     'language': fields.Nested({
