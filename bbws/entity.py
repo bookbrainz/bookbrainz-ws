@@ -228,7 +228,8 @@ class EntityResourceList(Resource):
 
     def get(self):
         args = self.get_parser.parse_args()
-        q = db.session.query(Entity).offset(args.offset).limit(args.limit)
+        q = db.session.query(Entity).order_by(Entity.last_updated.desc())
+        q = q.offset(args.offset).limit(args.limit)
         entities = q.all()
         return marshal({
             'offset': args.offset,
