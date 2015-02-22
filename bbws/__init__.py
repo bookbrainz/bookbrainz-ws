@@ -71,6 +71,10 @@ def create_app(config_file):
     import bbws.oauth
     bbws.oauth.init(app)
 
+    # Initialize custom endpoints
+    import bbws.custom
+    bbws.custom.init(app)
+
     # Initialize webservice routes
     import bbws.entity
     import bbws.revision
