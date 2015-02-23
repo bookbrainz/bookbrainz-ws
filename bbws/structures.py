@@ -121,6 +121,28 @@ relationship_list = {
     'objects': fields.List(fields.Nested(relationship_stub))
 }
 
+relationship_type_stub = {
+    'id': fields.Integer,
+    'label': fields.String,
+}
+
+relationship_type = relationship_type_stub.copy()
+relationship_type.update({
+    'parent': fields.Nested(relationship_type_stub),
+    'child_order': fields.Integer,
+    'description': fields.String,
+    'forward_template': fields.String,
+    'reverse_template': fields.String,
+    'deprecated': fields.Boolean,
+})
+
+
+relationship_type_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(relationship_type_stub))
+}
+
 revision_stub = {
     'id': fields.Integer,
     'created_at': fields.DateTime(dt_format='iso8601'),

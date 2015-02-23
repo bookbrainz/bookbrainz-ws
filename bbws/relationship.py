@@ -21,8 +21,10 @@ related resources.
 """
 
 
-from bbschema import Relationship
 from flask.ext.restful import Resource, abort, marshal, reqparse
+
+from bbschema import (Relationship, RelationshipEntity, RelationshipRevision,
+                      RelationshipTree, RelationshipType)
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import db, structures
@@ -45,11 +47,22 @@ class RelationshipResourceList(Resource):
     get_parser.add_argument('limit', type=int, default=20)
     get_parser.add_argument('offset', type=int, default=0)
 
-    def get(self):
+    def get(self, entity_gid=None):
         args = self.get_parser.parse_args()
-        qry = db.session.query(Relationship).offset(
-            args.offset
-        ).limit(args.limit)
+
+        if entity_gid is not None:
+            # Get the relationships for the specified entity.
+            qry = db.session.query(Relationship).\
+                join(RelationshipRevision, Relationship.master_revision).\
+                join(RelationshipTree).\
+                join(RelationshipEntity).\
+                filter(RelationshipEntity.entity_gid == entity_gid).\
+                offset(args.offset).limit(args.limit)
+        else:
+            # Get all relationships.
+            qry = db.session.query(Relationship).offset(
+                args.offset
+            ).limit(args.limit)
 
         relationships = qry.all()
 
@@ -59,7 +72,30 @@ class RelationshipResourceList(Resource):
             'objects': relationships
         }, structures.relationship_list)
 
+
+class RelationshipTypeResource(Resource):
+
+    def get(self, id):
+        qry = db.session.query(RelationshipType).filter_by(id=id)
+        try:
+            relationship_type = qry.one()
+        except NoResultFound:
+            abort(404)
+
+        return marshal(relationship_type, structures.relationship_type)
+
+
+class RelationshipTypeResourceList(Resource):
+    def get(self):
+        types = db.session.query(RelationshipType).all()
+
+        return marshal(types, structures.relationship_type_list)
+
+
 def create_views(api):
     api.add_resource(RelationshipResource, '/relationship/<int:id>',
                      endpoint='relationship_get_single')
-    api.add_resource(RelationshipResourceList, '/relationship')
+    api.add_resource(RelationshipResourceList, '/relationship',
+                     '/entity/<string:entity_gid>/relationships')
+    api.add_resource(RelationshipTypeResource, '/relationshipType/<int:id>')
+    api.add_resource(RelationshipTypeResourceList, '/relationshipType')
