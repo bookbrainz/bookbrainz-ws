@@ -32,9 +32,3 @@ class TestRelationshipViews(TestCase):
         self.assertEquals(response.json.get('count'), 3)
         self.assertEquals(response.json.get('offset'), 0)
         self.assertEquals(len(response.json.get('objects', [])), 3)
-        self.assertEquals(response.json['objects'][0],
-                          {'id':1, 'uri': 'http://localhost/ws/relationship/1'})
-        self.assertEquals(response.json['objects'][1],
-                          {'id':2, 'uri': 'http://localhost/ws/relationship/2'})
-        self.assertEquals(response.json['objects'][2],
-                          {'id':3, 'uri': 'http://localhost/ws/relationship/3'})
