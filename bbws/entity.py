@@ -21,7 +21,7 @@
 resources.
 """
 
-
+import uuid
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
 from bbschema import (CreatorData, EditionData, Entity, EntityRevision,
@@ -34,6 +34,11 @@ from . import db, structures
 
 class EntityResource(Resource):
     def get(self, gid):
+        try:
+            uuid.UUID(gid)
+        except ValueError:
+            abort(404)
+
         try:
             entity = db.session.query(Entity).filter_by(gid=gid).one()
         except NoResultFound:
@@ -88,6 +93,11 @@ class EntityDisambiguationResource(Resource):
     get_parser.add_argument('revision', type=int, default=None)
 
     def get(self, gid):
+        try:
+            uuid.UUID(gid)
+        except ValueError:
+            abort(404)
+
         args = self.get_parser.parse_args()
         if args.revision is None:
             try:
@@ -128,6 +138,11 @@ class EntityAnnotationResource(Resource):
     get_parser.add_argument('revision', type=int, default=None)
 
     def get(self, gid):
+        try:
+            uuid.UUID(gid)
+        except ValueError:
+            abort(404)
+
         args = self.get_parser.parse_args()
         if args.revision is None:
             try:
@@ -177,6 +192,11 @@ class EntityDataResource(Resource):
     get_parser.add_argument('revision', type=int, default=None)
 
     def get(self, gid):
+        try:
+            uuid.UUID(gid)
+        except ValueError:
+            abort(404)
+
         args = self.get_parser.parse_args()
         if args.revision is None:
             try:
