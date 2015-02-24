@@ -99,11 +99,36 @@ relationship_stub = {
     'uri': fields.Url('relationship_get_single', True)
 }
 
+relationship_type_stub = {
+    'id': fields.Integer,
+    'label': fields.String,
+}
+
+relationship_type = relationship_type_stub.copy()
+relationship_type.update({
+    'parent': fields.Nested(relationship_type_stub, allow_null=True),
+    'child_order': fields.Integer,
+    'description': fields.String,
+    'forward_template': fields.String,
+    'reverse_template': fields.String,
+    'deprecated': fields.Boolean,
+})
+
+
+relationship_type_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(relationship_type))
+}
+
 relationship = relationship_stub.copy()
 relationship.update({
     'master_revision_id': fields.Integer,
     'last_updated': fields.DateTime(dt_format='iso8601'),
-    'relationship_type': fields.Integer(attribute='master_revision.relationship_tree.id'),
+    'relationship_type': fields.Nested(
+        relationship_type,
+        attribute='master_revision.relationship_tree.relationship_type',
+    ),
     'entities': fields.List(fields.Nested({
         'entity': fields.Nested(entity_stub),
         'position': fields.Integer
@@ -118,29 +143,7 @@ relationship.update({
 relationship_list = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(relationship_stub))
-}
-
-relationship_type_stub = {
-    'id': fields.Integer,
-    'label': fields.String,
-}
-
-relationship_type = relationship_type_stub.copy()
-relationship_type.update({
-    'parent': fields.Nested(relationship_type_stub),
-    'child_order': fields.Integer,
-    'description': fields.String,
-    'forward_template': fields.String,
-    'reverse_template': fields.String,
-    'deprecated': fields.Boolean,
-})
-
-
-relationship_type_list = {
-    'offset': fields.Integer,
-    'count': fields.Integer,
-    'objects': fields.List(fields.Nested(relationship_type_stub))
+    'objects': fields.List(fields.Nested(relationship))
 }
 
 revision_stub = {

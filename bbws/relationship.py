@@ -86,10 +86,26 @@ class RelationshipTypeResource(Resource):
 
 
 class RelationshipTypeResourceList(Resource):
-    def get(self):
-        types = db.session.query(RelationshipType).all()
 
-        return marshal(types, structures.relationship_type_list)
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('limit', type=int)
+    get_parser.add_argument('offset', type=int, default=0)
+
+    def get(self):
+        args = self.get_parser.parse_args()
+        
+        qry = db.session.query(RelationshipType).offset(args.offset)
+
+        if args.limit is not None:
+            qry = qry.limit(args.limit)
+
+        types = qry.all()
+
+        return marshal({
+            'offset': args.offset,
+            'count': len(types),
+            'objects': types
+        }, structures.relationship_type_list)
 
 
 def create_views(api):
