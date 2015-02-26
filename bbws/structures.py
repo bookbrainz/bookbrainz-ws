@@ -25,6 +25,22 @@ be declared in the correct order.
 
 from flask.ext.restful import fields
 
+language_stub = {
+    'id': fields.Integer,
+    'name': fields.String
+}
+
+language_list = {
+    'objects': fields.List(fields.Nested({
+        'id': fields.Integer,
+        'iso_code_2t': fields.String,
+        'iso_code_2b': fields.String,
+        'iso_code_1': fields.String,
+        'name': fields.String,
+        'iso_code_3': fields.String,
+    }))
+}
+
 edit = {
     'id': fields.Integer,
     'status': fields.Integer,
@@ -60,10 +76,13 @@ entity.update({
 
 entity_alias = {
     'entity': fields.Nested(entity_stub),
+    'default_alias_id': fields.Integer(default=None),
     'aliases': fields.List(fields.Nested({
         'id': fields.Integer,
         'name': fields.String,
-        'sort_name': fields.String
+        'sort_name': fields.String,
+        'language': fields.Nested(language_stub, allow_null=True),
+        'primary': fields.Boolean
     }))
 }
 
@@ -308,17 +327,5 @@ gender_list = {
     'objects': fields.List(fields.Nested({
         'id': fields.Integer,
         'name': fields.String,
-    }))
-}
-
-
-language_list = {
-    'objects': fields.List(fields.Nested({
-        'id': fields.Integer,
-        'iso_code_2t': fields.String,
-        'iso_code_2b': fields.String,
-        'iso_code_1': fields.String,
-        'name': fields.String,
-        'iso_code_3': fields.String,
     }))
 }

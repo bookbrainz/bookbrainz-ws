@@ -84,6 +84,7 @@ class EntityAliasResource(Resource):
 
         return marshal({
             'entity': entity,
+            'default_alias_id': revision.entity_tree.default_alias_id,
             'aliases': aliases
         }, structures.entity_alias)
 

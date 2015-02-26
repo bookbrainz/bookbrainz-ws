@@ -68,8 +68,12 @@ def create_entity(revision_json):
         for alias_json in revision_json['aliases']:
             alias = Alias(
                 name=alias_json['name'], sort_name=alias_json['sort_name'],
-                language_id=alias_json['language_id']
+                language_id=alias_json['language_id'], primary=alias_json['primary'],
             )
+
+            if alias_json['default'] and (entity_tree.default_alias is None):
+                entity_tree.default_alias = alias
+
             entity_tree.aliases.append(alias)
 
     return (entity, entity_tree)
@@ -83,11 +87,13 @@ def update_aliases(entity_tree, alias_json):
 
     ids = [x for x, _ in alias_json if x is not None]
 
-    # This removes all entries where id is not None
+    # This removes all entries where id is not None (updated + deleted)
     aliases = [alias for alias in entity_tree.aliases
                if alias.id not in ids]
 
-    # Then re-add them, with modified properties
+    new_default = None
+
+    # Then re-add them, with modified properties (updated + new)
     for alias_id, alias_props in alias_json:
         if alias_props is not None:
             if alias_id is None:
@@ -95,8 +101,12 @@ def update_aliases(entity_tree, alias_json):
                 new_alias = Alias(
                     name=alias_props['name'],
                     sort_name=alias_props['sort_name'],
-                    language_id=alias_props['language_id']
+                    language_id=alias_props['language_id'],
+                    primary=alias_props['primary']
                 )
+
+                if alias_props['default'] and (new_default is None):
+                    new_default = new_alias
             else:
                 # Copy existing alias, and modify
                 qry = db.session.query(Alias).filter_by(id=alias_id)
@@ -110,7 +120,18 @@ def update_aliases(entity_tree, alias_json):
                     if attr != 'id':
                         setattr(new_alias, attr, val)
 
+                if alias_props['default'] and (new_default is None):
+                    new_default = new_alias
+
             aliases.append(new_alias)
+
+    # Now, unset the default alias if it was deleted
+    if entity_tree.default_alias not in aliases:
+        entity_tree.default_alias = None
+
+    # And set it to the new default is the default isn't already set
+    if entity_tree.default_alias is None:
+        entity_tree.default_alias = new_default
 
     return aliases
 
