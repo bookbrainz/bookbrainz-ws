@@ -44,6 +44,9 @@ class EntityResource(Resource):
         except NoResultFound:
             abort(404)
 
+        # Assign this, for relationships URL.
+        entity.entity_gid = entity.gid
+
         return marshal(entity, structures.entity)
 
 
@@ -252,6 +255,10 @@ class EntityResourceList(Resource):
         q = db.session.query(Entity).order_by(Entity.last_updated.desc())
         q = q.offset(args.offset).limit(args.limit)
         entities = q.all()
+
+        for entity in entities:
+            entity.entity_gid = entity.gid
+
         return marshal({
             'offset': args.offset,
             'count': len(entities),

@@ -70,7 +70,8 @@ entity.update({
     'aliases_uri': fields.Url('entity_get_aliases', True),
     'disambiguation_uri': fields.Url('entity_get_disambiguation', True),
     'annotation_uri': fields.Url('entity_get_annotation', True),
-    'data_uri': fields.Url('entity_get_data', True)
+    'data_uri': fields.Url('entity_get_data', True),
+    'relationships_uri': fields.Url('relationship_get_many', True)
 })
 
 

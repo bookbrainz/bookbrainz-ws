@@ -93,7 +93,7 @@ class RelationshipTypeResourceList(Resource):
 
     def get(self):
         args = self.get_parser.parse_args()
-        
+
         qry = db.session.query(RelationshipType).offset(args.offset)
 
         if args.limit is not None:
@@ -112,6 +112,7 @@ def create_views(api):
     api.add_resource(RelationshipResource, '/relationship/<int:id>',
                      endpoint='relationship_get_single')
     api.add_resource(RelationshipResourceList, '/relationship',
-                     '/entity/<string:entity_gid>/relationships')
+                     '/entity/<string:entity_gid>/relationships',
+                     endpoint='relationship_get_many')
     api.add_resource(RelationshipTypeResource, '/relationshipType/<int:id>')
     api.add_resource(RelationshipTypeResourceList, '/relationshipType')
