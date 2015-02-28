@@ -143,7 +143,7 @@ class UserMessageInboxResource(Resource):
         args = self.get_parser.parse_args()
         messages = db.session.query(Message).join(MessageReceipt).\
             filter(MessageReceipt.recipient_id == request.oauth.user.id).\
-            filter(not MessageReceipt.archived).\
+            filter(MessageReceipt.archived == False).\
             offset(args.offset).limit(args.limit).all()
 
         return marshal({
@@ -164,7 +164,7 @@ class UserMessageArchiveResource(Resource):
         args = self.get_parser.parse_args()
         messages = db.session.query(Message).join(MessageReceipt).\
             filter(MessageReceipt.recipient_id == request.oauth.user.id).\
-            filter(MessageReceipt.archived).\
+            filter(MessageReceipt.archived == True).\
             offset(args.offset).limit(args.limit).all()
 
         return marshal({
