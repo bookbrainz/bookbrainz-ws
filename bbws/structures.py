@@ -330,3 +330,30 @@ gender_list = {
         'name': fields.String,
     }))
 }
+
+message_receipt = {
+    'message_id': fields.Integer,
+    'recipient': fields.Nested(user_stub),
+    'archived': fields.Boolean,
+}
+
+message_stub = {
+    'message_id': fields.Integer,
+    'sender': fields.Nested(user_stub),
+    'subject': fields.String,
+}
+
+message = message_stub.copy()
+message.update({
+    'message_id': fields.Integer,
+    'sender': fields.Nested(user_stub),
+    'subject': fields.String,
+    'content': fields.String,
+    'receipt': fields.Nested(message_receipt, allow_null=True)
+})
+
+message_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(message_stub))
+}
