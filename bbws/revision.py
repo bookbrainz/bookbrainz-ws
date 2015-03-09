@@ -192,8 +192,6 @@ class EditResourceList(Resource):
         db.session.add(edit)
         db.session.commit()
 
-        edit.edit_id = edit.id
-
         return marshal(edit, structures.edit)
 
 
