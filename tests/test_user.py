@@ -28,8 +28,12 @@ class TestUserViews(TestCase):
         db.session.add(new_user)
         db.session.commit()
 
-        created_at = new_user.created_at.replace(microsecond=0)
-        active_at = new_user.active_at.replace(microsecond=0)
+        class utc_tz(datetime.tzinfo):
+            def utcoffset(self, dt): return datetime.timedelta(0)
+            def dst(self, dt): return datetime.timedelta(0)
+
+        created_at = new_user.created_at.replace(microsecond=0).astimezone(utc_tz())
+        active_at = new_user.active_at.replace(microsecond=0).astimezone(utc_tz())
 
         response = self.client.get('/ws/user/{}'.format(new_user.user_id))
         self.assertEquals(response.json.get(u'name'), new_user.name)
