@@ -54,16 +54,8 @@ class UserSecretsResource(Resource):
     """ Provides the user's own secrets for authenticated users. """
 
     @oauth_provider.require_oauth()
-    def get(self, user_id):
-        if user_id != request.oauth.user.user_id:
-            abort(401)  # Unauthorized
-
-        try:
-            user = db.session.query(User).filter_by(user_id=user_id).one()
-        except NoResultFound:
-            abort(404)
-
-        return marshal(user, structures.user_secrets)
+    def get(self):
+        return marshal(request.oauth.user, structures.user_secrets)
 
 
 class UserResourceList(Resource):
@@ -234,7 +226,7 @@ def create_views(api):
 
     api.add_resource(UserResource, '/user/<int:user_id>',
                      endpoint='user_get_single')
-    api.add_resource(UserSecretsResource, '/user/<int:user_id>/secrets',
+    api.add_resource(UserSecretsResource, '/user/secrets',
                      endpoint='user_get_secrets')
     api.add_resource(UserStatsResource, '/user/<int:user_id>/stats',
                      endpoint='editor_stats')
