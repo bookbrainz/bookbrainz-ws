@@ -42,11 +42,11 @@ language_list = {
 }
 
 edit = {
-    'id': fields.Integer,
+    'edit_id': fields.Integer,
     'status': fields.Integer,
     'uri': fields.Url('edit_get_single', True),
     'user': fields.Nested({
-        'id': fields.Integer,
+        'user_id': fields.Integer,
     }),
     'revisions_uri': fields.Url('revision_get_many', True)
 }
@@ -58,7 +58,7 @@ edit_list = {
 }
 
 entity_stub = {
-    'gid': fields.String,
+    'entity_gid': fields.String,
     'uri': fields.Url('entity_get_single', True)
 }
 
@@ -79,7 +79,7 @@ entity_alias = {
     'entity': fields.Nested(entity_stub),
     'default_alias_id': fields.Integer(default=None),
     'aliases': fields.List(fields.Nested({
-        'id': fields.Integer,
+        'alias_id': fields.Integer,
         'name': fields.String,
         'sort_name': fields.String,
         'language': fields.Nested(language_stub, allow_null=True),
@@ -91,7 +91,7 @@ entity_alias = {
 entity_disambiguation = {
     'entity': fields.Nested(entity_stub),
     'disambiguation': fields.Nested({
-        'id': fields.Integer(),
+        'disambiguation_id': fields.Integer(),
         'comment': fields.String()
     }, allow_null=True)
 }
@@ -100,7 +100,7 @@ entity_disambiguation = {
 entity_annotation = {
     'entity': fields.Nested(entity_stub),
     'annotation': fields.Nested({
-        'id': fields.Integer(),
+        'annotation_id': fields.Integer(),
         'created_at': fields.DateTime(dt_format='iso8601'),
         'content': fields.String()
     }, allow_null=True)
@@ -115,12 +115,12 @@ entity_list = {
 
 
 relationship_stub = {
-    'id': fields.Integer,
+    'relationship_id': fields.Integer,
     'uri': fields.Url('relationship_get_single', True)
 }
 
 relationship_type_stub = {
-    'id': fields.Integer,
+    'relationship_type_id': fields.Integer,
     'label': fields.String,
 }
 
@@ -167,10 +167,10 @@ relationship_list = {
 }
 
 revision_stub = {
-    'id': fields.Integer,
+    'revision_id': fields.Integer,
     'created_at': fields.DateTime(dt_format='iso8601'),
     'user': fields.Nested({
-        'id': fields.Integer,
+        'user_id': fields.Integer,
     }),
     'uri': fields.Url('revision_get_single', True),
 }
@@ -193,7 +193,7 @@ revision_list = {
 }
 
 user_type = {
-    'id': fields.Integer,
+    'user_type_id': fields.Integer,
     'label': fields.String
 }
 
@@ -202,7 +202,7 @@ user_type_list = {
 }
 
 user_stub = {
-    'id': fields.Integer,
+    'user_id': fields.Integer,
     'name': fields.String
 }
 
@@ -244,14 +244,14 @@ user_list = {
 
 
 creator_data = {
-    'id': fields.Integer,
+    'entity_data_id': fields.Integer,
     'begin_date': fields.String,
     'begin_date_precision': fields.String,
     'end_date': fields.String,
     'end_date_precision': fields.String,
     'ended': fields.Boolean,
     'creator_type': fields.Nested({
-        'id': fields.Integer,
+        'creator_type_id': fields.Integer,
         'label': fields.String
     }, allow_null=True),
     'gender': fields.Nested({
@@ -262,30 +262,30 @@ creator_data = {
 
 
 publication_data = {
-    'id': fields.Integer,
+    'entity_data_id': fields.Integer,
     'publication_type': fields.Nested({
-        'id': fields.Integer,
+        'publication_type_id': fields.Integer,
         'label': fields.String
     }, allow_null=True)
 }
 
 
 publisher_data = {
-    'id': fields.Integer,
+    'entity_data_id': fields.Integer,
     'begin_date': fields.String,
     'begin_date_precision': fields.String,
     'end_date': fields.String,
     'end_date_precision': fields.String,
     'ended': fields.Boolean,
     'publisher_type': fields.Nested({
-        'id': fields.Integer,
+        'publisher_type_id': fields.Integer,
         'label': fields.String
     }, allow_null=True)
 }
 
 
 edition_data = {
-    'id': fields.Integer,
+    'entity_data_id': fields.Integer,
     'begin_date': fields.String,
     'begin_date_precision': fields.String,
     'end_date': fields.String,
@@ -296,33 +296,64 @@ edition_data = {
         'name': fields.String,
     }, allow_null=True),
     'edition_status': fields.Nested({
-        'id': fields.Integer,
+        'edition_type_id': fields.Integer,
         'label': fields.String
     }, allow_null=True)
 }
 
 
 work_data = {
-    'id': fields.Integer,
+    'entity_data_id': fields.Integer,
     'languages': fields.List(fields.Nested({
         'id': fields.Integer,
         'name': fields.String,
     })),
     'work_type': fields.Nested({
-        'id': fields.Integer,
+        'work_type_id': fields.Integer,
         'label': fields.String
     }, allow_null=True)
 }
 
 
-type_list = {
+publication_type_list = {
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
-        'id': fields.Integer,
+        'publication_type_id': fields.Integer,
         'label': fields.String
     }))
 }
 
+creator_type_list = {
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested({
+        'creator_type_id': fields.Integer,
+        'label': fields.String
+    }))
+}
+
+publisher_type_list = {
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested({
+        'publisher_type_id': fields.Integer,
+        'label': fields.String
+    }))
+}
+
+edition_type_list = {
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested({
+        'edition_type_id': fields.Integer,
+        'label': fields.String
+    }))
+}
+
+work_type_list = {
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested({
+        'work_type_id': fields.Integer,
+        'label': fields.String
+    }))
+}
 
 gender_list = {
     'objects': fields.List(fields.Nested({

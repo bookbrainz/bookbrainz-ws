@@ -32,13 +32,14 @@ from . import cache, db, structures
 def init(app):
     # Book of the Week
     @app.route('/ws/botw', methods=['GET'])
-    def botw(*args, **kwargs):
+    def botw():
         stored_gid = cache.get('botw')
         if stored_gid is None:
             abort(404)
 
         try:
-            entity = db.session.query(Entity).filter_by(gid=stored_gid).one()
+            entity = db.session.query(Entity).\
+                filter_by(entity_gid=stored_gid).one()
         except NoResultFound:
             abort(404)
 

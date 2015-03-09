@@ -120,16 +120,12 @@ class BearerToken(object):
 
     @property
     def user(self):
-        return db.session.query(User).filter_by(id=self.user_id).first()
+        return db.session.query(User).filter_by(user_id=self.user_id).first()
 
     def delete(self):
         cache.delete(self.access_token)
         cache.delete(self.refresh_token)
         return self
-
-
-def current_user_id():
-    return session.get('id', None)
 
 
 class MyRequestValidator(OAuth2RequestValidator):
@@ -155,7 +151,7 @@ class MyRequestValidator(OAuth2RequestValidator):
             return BearerToken.load(refresh_token=refresh_token)
 
     def _tokensetter(self, token, request):
-        existing = cache.get(request.user.id)
+        existing = cache.get(request.user.user_id)
         if existing is not None:
             stored_token = BearerToken.load(access_token=existing)
             stored_token.delete()
@@ -190,4 +186,4 @@ def init(app):
         except NoResultFound:
             return None
         else:
-            return {'user_id': user.id}
+            return {'user_id': user.user_id}

@@ -28,9 +28,9 @@ from . import db, oauth_provider, structures
 
 class UserResource(Resource):
     """ A Resource representing a User of the webservice. """
-    def get(self, id):
+    def get(self, user_id):
         try:
-            user = db.session.query(User).filter_by(id=id).one()
+            user = db.session.query(User).filter_by(user_id=user_id).one()
         except NoResultFound:
             abort(404)
 
@@ -40,9 +40,10 @@ class UserResource(Resource):
 class UserStatsResource(Resource):
     """ A Resource providing statistics about a User of the webservice. """
 
-    def get(self, id):
+    def get(self, user_id):
         try:
-            stats = db.session.query(EditorStats).filter_by(user_id=id).one()
+            stats = db.session.query(EditorStats).\
+                filter_by(user_id=user_id).one()
         except NoResultFound:
             abort(404)
 
@@ -53,12 +54,12 @@ class UserSecretsResource(Resource):
     """ Provides the user's own secrets for authenticated users. """
 
     @oauth_provider.require_oauth()
-    def get(self, id):
-        if id != request.oauth.user.id:
+    def get(self, user_id):
+        if user_id != request.oauth.user.user_id:
             abort(401)  # Unauthorized
 
         try:
-            user = db.session.query(User).filter_by(id=id).one()
+            user = db.session.query(User).filter_by(user_id=user_id).one()
         except NoResultFound:
             abort(404)
 
@@ -118,7 +119,7 @@ class UserMessageResource(Resource):
 
         # We have a message - check that the user should see it
         for receipt in message.receipts:
-            if receipt.recipient_id == request.oauth.user.id:
+            if receipt.recipient_id == request.oauth.user.user_id:
                 message.receipt = receipt
                 data = marshal(message, structures.message)
                 # For now, archive the message once GET has run once
@@ -126,7 +127,7 @@ class UserMessageResource(Resource):
                 db.session.commit()
                 return data
 
-        if message.sender_id == request.oauth.user.id:
+        if message.sender_id == request.oauth.user.user_id:
             return marshal(message, structures.message)
 
         abort(401)  # Unauthorized
@@ -142,7 +143,7 @@ class UserMessageInboxResource(Resource):
     def get(self):
         args = self.get_parser.parse_args()
         messages = db.session.query(Message).join(MessageReceipt).\
-            filter(MessageReceipt.recipient_id == request.oauth.user.id).\
+            filter(MessageReceipt.recipient_id == request.oauth.user.user_id).\
             filter(MessageReceipt.archived == False).\
             offset(args.offset).limit(args.limit).all()
 
@@ -163,7 +164,7 @@ class UserMessageArchiveResource(Resource):
     def get(self):
         args = self.get_parser.parse_args()
         messages = db.session.query(Message).join(MessageReceipt).\
-            filter(MessageReceipt.recipient_id == request.oauth.user.id).\
+            filter(MessageReceipt.recipient_id == request.oauth.user.user_id).\
             filter(MessageReceipt.archived == True).\
             offset(args.offset).limit(args.limit).all()
 
@@ -184,7 +185,7 @@ class UserMessageSentResource(Resource):
     def get(self):
         args = self.get_parser.parse_args()
         messages = db.session.query(Message).\
-            filter(Message.sender_id == request.oauth.user.id).\
+            filter(Message.sender_id == request.oauth.user.user_id).\
             offset(args.offset).limit(args.limit).all()
 
         return marshal({
@@ -206,14 +207,14 @@ class UserMessageSentResource(Resource):
         """
         args = self.post_parser.parse_args()
 
-        new_message = Message(sender_id=request.oauth.user.id,
+        new_message = Message(sender_id=request.oauth.user.user_id,
                               subject=args.subject, content=args.content)
 
         recipients = []
         try:
             for recipient_id in args.recipient_ids:
                 recipients.append(db.session.query(User).
-                                  filter_by(id=recipient_id).one())
+                                  filter_by(user_id=recipient_id).one())
         except NoResultFound:
             abort(404)
 
@@ -231,11 +232,11 @@ class UserMessageSentResource(Resource):
 def create_views(api):
     """ Create the views relating to Users, on the Restful API. """
 
-    api.add_resource(UserResource, '/user/<int:id>',
+    api.add_resource(UserResource, '/user/<int:user_id>',
                      endpoint='user_get_single')
-    api.add_resource(UserSecretsResource, '/user/<int:id>/secrets',
+    api.add_resource(UserSecretsResource, '/user/<int:user_id>/secrets',
                      endpoint='user_get_secrets')
-    api.add_resource(UserStatsResource, '/user/<int:id>/stats',
+    api.add_resource(UserStatsResource, '/user/<int:user_id>/stats',
                      endpoint='editor_stats')
     api.add_resource(UserTypeResourceList, '/userType')
     api.add_resource(UserResourceList, '/user', endpoint='user_get_many')

@@ -68,7 +68,8 @@ def create_entity(revision_json):
         for alias_json in revision_json['aliases']:
             alias = Alias(
                 name=alias_json['name'], sort_name=alias_json['sort_name'],
-                language_id=alias_json['language_id'], primary=alias_json['primary'],
+                language_id=alias_json['language_id'],
+                primary=alias_json['primary'],
             )
 
             if alias_json['default'] and (entity_tree.default_alias is None):
@@ -89,7 +90,7 @@ def update_aliases(entity_tree, alias_json):
 
     # This removes all entries where id is not None (updated + deleted)
     aliases = [alias for alias in entity_tree.aliases
-               if alias.id not in ids]
+               if alias.alias_id not in ids]
 
     new_default = None
 
@@ -109,7 +110,7 @@ def update_aliases(entity_tree, alias_json):
                     new_default = new_alias
             else:
                 # Copy existing alias, and modify
-                qry = db.session.query(Alias).filter_by(id=alias_id)
+                qry = db.session.query(Alias).filter_by(alias_id=alias_id)
                 try:
                     existing = qry.one()
                 except NoResultFound:
@@ -117,7 +118,7 @@ def update_aliases(entity_tree, alias_json):
                     continue
                 new_alias = Alias.copy(existing)
                 for attr, val in alias_props.items():
-                    if attr != 'id':
+                    if attr != 'alias_id':
                         setattr(new_alias, attr, val)
 
                 if alias_props['default'] and (new_default is None):
@@ -139,7 +140,7 @@ def update_aliases(entity_tree, alias_json):
 def update_entity(revision_json):
     try:
         entity = db.session.query(Entity).filter_by(
-            gid=revision_json['entity_gid'][0]
+            entity_gid=revision_json['entity_gid'][0]
         ).one()
     except NoResultFound:
         return (None, None)
@@ -170,7 +171,7 @@ def update_entity(revision_json):
 
     if data_key is not None:
         for attr, val in revision_json[data_key].items():
-            if attr != 'id':
+            if attr != 'entity_data_id':
                 setattr(data, attr, val)
 
     if 'annotation' in revision_json:
@@ -190,9 +191,10 @@ def update_entity(revision_json):
         aliases = entity_tree.aliases
 
     entity_changed = (
-        (disambiguation is not None and disambiguation.id is None) or
-        (annotation is not None and annotation.id is None) or
-        (data.id is None) or (aliases != entity_tree.aliases)
+        (disambiguation is not None and
+            disambiguation.disambiguation_id is None) or
+        (annotation is not None and annotation.annotation_id is None) or
+        (data.entity_data_id is None) or (aliases != entity_tree.aliases)
     )
 
     if entity_changed:
@@ -282,7 +284,8 @@ def format_changes(base_revision_id, new_revision_id):
 
     # This may throw a "NoResultsFound" exception.
     new_revision = \
-        db.session.query(EntityRevision).filter_by(id=new_revision_id).one()
+        db.session.query(EntityRevision).\
+        filter_by(revision_id=new_revision_id).one()
 
     new_tree = new_revision.entity_tree
     new_data = new_tree.data
@@ -299,7 +302,7 @@ def format_changes(base_revision_id, new_revision_id):
         base_aliases = None
     else:
         base_revision = db.session.query(EntityRevision).filter_by(
-            id=base_revision_id
+            revision_id=base_revision_id
         ).one()
         base_tree = base_revision.entity_tree
 

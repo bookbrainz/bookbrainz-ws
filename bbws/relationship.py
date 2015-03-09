@@ -31,8 +31,9 @@ from . import db, structures
 
 
 class RelationshipResource(Resource):
-    def get(self, id):
-        qry = db.session.query(Relationship).filter_by(id=id)
+    def get(self, relationship_id):
+        qry = db.session.query(Relationship).\
+            filter_by(relationship_id=relationship_id)
         try:
             relationship = qry.one()
         except NoResultFound:
@@ -75,8 +76,9 @@ class RelationshipResourceList(Resource):
 
 class RelationshipTypeResource(Resource):
 
-    def get(self, id):
-        qry = db.session.query(RelationshipType).filter_by(id=id)
+    def get(self, relationship_type_id):
+        qry = db.session.query(RelationshipType).\
+            filter_by(relationship_type_id=relationship_type_id)
         try:
             relationship_type = qry.one()
         except NoResultFound:
@@ -109,10 +111,15 @@ class RelationshipTypeResourceList(Resource):
 
 
 def create_views(api):
-    api.add_resource(RelationshipResource, '/relationship/<int:id>',
-                     endpoint='relationship_get_single')
-    api.add_resource(RelationshipResourceList, '/relationship',
-                     '/entity/<string:entity_gid>/relationships',
-                     endpoint='relationship_get_many')
-    api.add_resource(RelationshipTypeResource, '/relationshipType/<int:id>')
+    api.add_resource(
+        RelationshipResource, '/relationship/<int:relationship_id>',
+        endpoint='relationship_get_single'
+    )
+    api.add_resource(
+        RelationshipResourceList, '/relationship',
+        '/entity/<string:entity_gid>/relationships',
+        endpoint='relationship_get_many'
+    )
+    api.add_resource(RelationshipTypeResource,
+                     '/relationshipType/<int:relationship_type_id>')
     api.add_resource(RelationshipTypeResourceList, '/relationshipType')

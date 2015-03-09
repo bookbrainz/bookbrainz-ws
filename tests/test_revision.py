@@ -33,7 +33,9 @@ class TestRevisionJSON(TestCase):
                 {
                     'name': 'ABC',
                     'sort_name': 'CBA',
-                    'language_id': 1
+                    'language_id': 1,
+                    'default': False,
+                    'primary': True
                 }
             ]
         })[1]
@@ -50,13 +52,13 @@ class TestRevisionJSON(TestCase):
     def test_update_entity_add_alias(self):
         query = db.session.query(EntityRevision).join(EntityTree)
         query = query.join(PublicationData).filter(
-            PublicationData.id is not None
+            PublicationData.entity_data_id is not None
         )
 
         test_entity = query.first().entity
 
         entity_tree = revision_json.parse_changes({
-            'entity_gid': [test_entity.gid],
+            'entity_gid': [test_entity.entity_gid],
             'aliases': [
                 [None, {
                     'name': 'ABC',
@@ -74,13 +76,13 @@ class TestRevisionJSON(TestCase):
     def test_update_entity_delete_alias(self):
         query = db.session.query(EntityRevision).join(EntityTree)
         query = query.join(PublicationData).filter(
-            PublicationData.id is not None
+            PublicationData.entity_data_id is not None
         )
 
         test_entity = query.first().entity
 
         entity_tree = revision_json.parse_changes({
-            'entity_gid': [test_entity.gid],
+            'entity_gid': [test_entity.entity_gid],
             'aliases': [
                 [1, None],
                 [2, None]
@@ -92,13 +94,13 @@ class TestRevisionJSON(TestCase):
     def test_update_entity_modify_alias(self):
         query = db.session.query(EntityRevision).join(EntityTree)
         query = query.join(PublicationData).filter(
-            PublicationData.id is not None
+            PublicationData.entity_data_id is not None
         )
 
         test_entity = query.first().entity
 
         entity_tree = revision_json.parse_changes({
-            'entity_gid': [test_entity.gid],
+            'entity_gid': [test_entity.entity_gid],
             'aliases': [
                 [1, {
                     'name': 'Bob'
@@ -112,13 +114,13 @@ class TestRevisionJSON(TestCase):
     def test_update_entity_update_attribs(self):
         query = db.session.query(EntityRevision).join(EntityTree)
         query = query.join(PublicationData).filter(
-            PublicationData.id is not None
+            PublicationData.entity_data_id is not None
         )
 
         test_entity = query.first().entity
 
         entity_tree = revision_json.parse_changes({
-            'entity_gid': [test_entity.gid],
+            'entity_gid': [test_entity.entity_gid],
             'annotation': 'Hello!',
             'disambiguation': 'Goodbye!'
         })[1]
@@ -129,13 +131,13 @@ class TestRevisionJSON(TestCase):
     def test_update_entity_update_data(self):
         query = db.session.query(EntityRevision).join(EntityTree)
         query = query.join(PublicationData).filter(
-            PublicationData.id is not None
+            PublicationData.entity_data_id is not None
         )
 
         test_entity = query.first().entity
 
         entity_tree = revision_json.parse_changes({
-            'entity_gid': [test_entity.gid],
+            'entity_gid': [test_entity.entity_gid],
             'publication_data': {
                 'publication_type_id': 2
             }

@@ -19,7 +19,7 @@ class TestRelationshipViews(TestCase):
 
     def test_relationship_get_single(self):
         response = self.client.get('/ws/relationship/3')
-        self.assertEquals(response.json.get('id'), 3)
+        self.assertEquals(response.json.get('relationship_id'), 3)
         self.assertEquals(response.json.get('uri'),
                           'http://localhost/ws/relationship/3')
         self.assertEquals(response.json.get('master_revision_id'), 6)

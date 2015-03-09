@@ -13,7 +13,7 @@ def load_data(db):
     db.session.commit()
 
     editor = User(name=u'Bob', email=u'bob@bobville.org',
-                  user_type_id=editor_type.id)
+                  user_type_id=editor_type.editor_type_id)
     db.session.add(editor)
 
     pub_type = PublicationType(label=u'Book')
@@ -25,8 +25,8 @@ def load_data(db):
     db.session.add(creator_type)
     db.session.commit()
 
-    edit1 = Edit(user_id=editor.id, status=0)
-    edit2 = Edit(user_id=editor.id, status=0)
+    edit1 = Edit(user_id=editor.user_id, status=0)
+    edit2 = Edit(user_id=editor.user_id, status=0)
     db.session.add_all((edit1, edit2))
     db.session.commit()
 
@@ -36,9 +36,9 @@ def load_data(db):
     db.session.add_all((entity1, entity2, entity3))
     db.session.commit()
 
-    pub_data1 = PublicationData(publication_type_id=pub_type.id)
-    pub_data2 = PublicationData(publication_type_id=pub_type.id)
-    creator_data = CreatorData(creator_type_id=creator_type.id)
+    pub_data1 = PublicationData(publication_type_id=pub_type.publication_type_id)
+    pub_data2 = PublicationData(publication_type_id=pub_type.publication_type_id)
+    creator_data = CreatorData(creator_type_id=creator_type.creator_type_id)
     db.session.add_all([pub_data1, pub_data2, creator_data])
 
     entity_tree1 = EntityTree()
@@ -67,12 +67,12 @@ def load_data(db):
     db.session.add_all([entity_tree1, entity_tree2, entity_tree3])
     db.session.commit()
 
-    revision1 = EntityRevision(user_id=editor.id, entity_gid=entity1.gid,
-                               entity_tree_id=entity_tree1.id)
-    revision2 = EntityRevision(user_id=editor.id, entity_gid=entity2.gid,
-                               entity_tree_id=entity_tree2.id)
-    revision3 = EntityRevision(user_id=editor.id, entity_gid=entity3.gid,
-                               entity_tree_id=entity_tree3.id)
+    revision1 = EntityRevision(user_id=editor.user_id, entity_gid=entity1.entity_gid,
+                               entity_tree_id=entity_tree1.entity_tree_id)
+    revision2 = EntityRevision(user_id=editor.user_id, entity_gid=entity2.entity_gid,
+                               entity_tree_id=entity_tree2.entity_tree_id)
+    revision3 = EntityRevision(user_id=editor.user_id, entity_gid=entity3.entity_gid,
+                               entity_tree_id=entity_tree3.entity_tree_id)
 
     revision1.edits = [edit1]
     revision2.edits = [edit1]
@@ -107,19 +107,19 @@ def load_data(db):
     db.session.add_all((relationship1, relationship2, relationship3))
     db.session.commit()
 
-    relationship_tree1 = RelationshipTree(relationship_type_id=relationship_type1.id)
+    relationship_tree1 = RelationshipTree(relationship_type_id=relationship_type1.relationship_type_id)
     relationship_tree1.entities = [
-        RelationshipEntity(entity_gid=entity1.gid, position=1),
-        RelationshipEntity(entity_gid=entity2.gid, position=2)
+        RelationshipEntity(entity_gid=entity1.entity_gid, position=1),
+        RelationshipEntity(entity_gid=entity2.entity_gid, position=2)
     ]
-    relationship_tree2 = RelationshipTree(relationship_type_id=relationship_type2.id)
+    relationship_tree2 = RelationshipTree(relationship_type_id=relationship_type2.relationship_type_id)
     relationship_tree2.entities = [
-        RelationshipEntity(entity_gid=entity1.gid, position=1),
-        RelationshipEntity(entity_gid=entity3.gid, position=2)
+        RelationshipEntity(entity_gid=entity1.entity_gid, position=1),
+        RelationshipEntity(entity_gid=entity3.entity_gid, position=2)
     ]
-    relationship_tree3 = RelationshipTree(relationship_type_id=relationship_type3.id)
+    relationship_tree3 = RelationshipTree(relationship_type_id=relationship_type3.relationship_type_id)
     relationship_tree3.entities = [
-        RelationshipEntity(entity_gid=entity3.gid, position=1),
+        RelationshipEntity(entity_gid=entity3.entity_gid, position=1),
     ]
     relationship_tree3.texts = [
         RelationshipText(text=u'translator', position=2),
@@ -129,18 +129,18 @@ def load_data(db):
     db.session.commit()
 
     revision4 = RelationshipRevision(
-        user_id=editor.id, relationship_id=relationship1.id,
-        relationship_tree_id=relationship_tree1.id
+        user_id=editor.editor_id, relationship_id=relationship1.relationship_id,
+        relationship_tree_id=relationship_tree1.relationship_tree_id
     )
 
     revision5 = RelationshipRevision(
-        user_id=editor.id, relationship_id=relationship2.id,
-        relationship_tree_id=relationship_tree2.id
+        user_id=editor.editor_id, relationship_id=relationship2.relationship_id,
+        relationship_tree_id=relationship_tree2.relationship_tree_id
     )
 
     revision6 = RelationshipRevision(
-        user_id=editor.id, relationship_id=relationship3.id,
-        relationship_tree_id=relationship_tree3.id
+        user_id=editor.editor_id, relationship_id=relationship3.relationship_id,
+        relationship_tree_id=relationship_tree3.relationship_tree_id
     )
 
     revision4.edits = [edit1]

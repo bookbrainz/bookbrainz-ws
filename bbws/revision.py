@@ -16,9 +16,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from bbschema import Edit, EntityRevision, PublicationData, Revision, Entity, RelationshipRevision
 from flask import request
-from flask.ext.restful import Resource, abort, marshal, reqparse, fields
+from flask.ext.restful import Resource, abort, fields, marshal, reqparse
+
+from bbschema import (Edit, Entity, EntityRevision, PublicationData,
+                      RelationshipRevision, Revision)
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import db, oauth_provider, revision_json, structures
@@ -29,24 +31,25 @@ class RevisionResource(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('base', type=int, default=None)
 
-    def get(self, id):
+    def get(self, revision_id):
         args = self.get_parser.parse_args()
 
         try:
-            revision = db.session.query(Revision).filter_by(id=id).one()
+            revision = db.session.query(Revision).\
+                filter_by(revision_id=revision_id).one()
         except NoResultFound:
             abort(404)
 
-        changes = revision_json.format_changes(args.base, revision.id)
+        changes = revision_json.format_changes(args.base, revision.revision_id)
 
         data_fields = data_mapper.get(type(changes['data'][1]),
                                       data_mapper[PublicationData])
         entity_revision_fields = {
-            'id': fields.Integer,
+            'revision_id': fields.Integer,
             'created_at': fields.DateTime(dt_format='iso8601'),
             'entity': fields.Nested(structures.entity_stub),
             'user': fields.Nested({
-                'id': fields.Integer,
+                'user_id': fields.Integer,
             }),
             'uri': fields.Url('revision_get_single', True),
             'changes': fields.Nested({
@@ -70,7 +73,7 @@ class RevisionResource(Resource):
             return marshal(revision, entity_revision_fields)
         else:
             return {
-                'id': revision.id,
+                'revision_id': revision.revision_id,
                 'user_id': revision.user_id,
                 'created_at': str(revision.created_at)
             }
@@ -86,7 +89,7 @@ class RevisionResourceList(Resource):
         query = db.session.query(Revision)
 
         if edit_id is not None:
-            query = query.join(Revision.edits).filter(Edit.id == edit_id)
+            query = query.join(Revision.edits).filter(Edit.edit_id == edit_id)
 
         revisions = query.offset(args.offset).limit(args.limit).all()
         return marshal({
@@ -106,11 +109,11 @@ class RevisionResourceList(Resource):
         is_entity_revision = isinstance(subject, Entity)
 
         if is_entity_revision:
-            revision = EntityRevision(user_id=user.id)
+            revision = EntityRevision(user_id=user.user_id)
             revision.entity = subject
             revision.entity_tree = tree
         else:
-            revision = RelationshipRevision(user_id=user.id)
+            revision = RelationshipRevision(user_id=user.user_id)
             revision.relationship = subject
             revision.relationship_tree = tree
 
@@ -121,7 +124,7 @@ class RevisionResourceList(Resource):
         if 'edit_id' in rev_json:
             try:
                 edit = db.session.query(Edit).filter_by(
-                    id=rev_json['edit_id']
+                    edit_id=rev_json['edit_id']
                 ).one()
             except NoResultFound:
                 pass
@@ -140,13 +143,11 @@ class RevisionResourceList(Resource):
 
 
 class EditResource(Resource):
-    def get(self, id):
+    def get(self, edit_id):
         try:
-            edit = db.session.query(Edit).filter_by(id=id).one()
+            edit = db.session.query(Edit).filter_by(edit_id=edit_id).one()
         except NoResultFound:
             abort(404)
-
-        edit.edit_id = edit.id
 
         return marshal(edit, structures.edit)
 
@@ -175,9 +176,6 @@ class EditResourceList(Resource):
         q = q.offset(args.offset).limit(args.limit)
         edits = q.all()
 
-        for edit in edits:
-            edit.edit_id = edit.id
-
         return marshal({
             'offset': args.offset,
             'count': len(edits),
@@ -190,7 +188,7 @@ class EditResourceList(Resource):
         # This will be valid here, due to authentication.
         user = request.oauth.user
 
-        edit = Edit(status=0, user_id=user.id)
+        edit = Edit(status=0, user_id=user.user_id)
         db.session.add(edit)
         db.session.commit()
 
@@ -200,11 +198,13 @@ class EditResourceList(Resource):
 
 
 def create_views(api):
-    api.add_resource(RevisionResource, '/revision/<int:id>',
+    api.add_resource(RevisionResource, '/revision/<int:revision_id>',
                      endpoint='revision_get_single')
-    api.add_resource(RevisionResourceList, '/revisions',
-                     '/edit/<int:edit_id>/revisions', endpoint='revision_get_many')
-    api.add_resource(EditResource, '/edit/<int:id>',
+    api.add_resource(
+        RevisionResourceList, '/revisions', '/edit/<int:edit_id>/revisions',
+        endpoint='revision_get_many'
+    )
+    api.add_resource(EditResource, '/edit/<int:edit_id>',
                      endpoint='edit_get_single')
     api.add_resource(
         EditResourceList, '/edits', '/entity/<string:entity_gid>/edits',

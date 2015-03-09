@@ -31,7 +31,7 @@ class TestUserViews(TestCase):
         created_at = new_user.created_at.replace(microsecond=0)
         active_at = new_user.active_at.replace(microsecond=0)
 
-        response = self.client.get('/ws/user/{}'.format(new_user.id))
+        response = self.client.get('/ws/user/{}'.format(new_user.user_id))
         self.assertEquals(response.json.get(u'name'), new_user.name)
         self.assertEquals(response.json.get(u'reputation'),
                           new_user.reputation)
@@ -41,9 +41,9 @@ class TestUserViews(TestCase):
         self.assertEquals(response.json.get(u'active_at'),
                           datetime.datetime.isoformat(active_at))
         self.assertTrue(response.json.get(u'stats_uri', '').endswith(
-            url_for('editor_stats', id=new_user.id))
+            url_for('editor_stats', user_id=new_user.user_id))
         )
         self.assertEquals(response.json.get(u'user_type', {}), {
-            'id': 1,
+            'user_type_id': 1,
             'label': 'Editor'
         })

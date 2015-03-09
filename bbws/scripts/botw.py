@@ -53,8 +53,8 @@ def main(conn_string):
     # Randomly select a publication from the shortlist
     botw = random_selection[random.randint(0, len(random_selection) - 1)]
 
-    print "Book of the Week GID:", botw.gid
-    r.set('botw', botw.gid)
+    print "Book of the Week GID:", botw.entity_gid
+    r.set('botw', botw.entity_gid)
 
 
 if __name__ == '__main__':

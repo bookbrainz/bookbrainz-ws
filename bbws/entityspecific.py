@@ -32,7 +32,7 @@ class PublicationTypeResourceList(Resource):
         return marshal({
             'count': len(types),
             'objects': types
-        }, structures.type_list)
+        }, structures.publication_type_list)
 
 
 class CreatorTypeResourceList(Resource):
@@ -42,7 +42,7 @@ class CreatorTypeResourceList(Resource):
         return marshal({
             'count': len(types),
             'objects': types
-        }, structures.type_list)
+        }, structures.creator_type_list)
 
 
 class PublisherTypeResourceList(Resource):
@@ -52,7 +52,7 @@ class PublisherTypeResourceList(Resource):
         return marshal({
             'count': len(types),
             'objects': types
-        }, structures.type_list)
+        }, structures.publisher_type_list)
 
 
 class EditionStatusResourceList(Resource):
@@ -62,7 +62,7 @@ class EditionStatusResourceList(Resource):
         return marshal({
             'count': len(types),
             'objects': types
-        }, structures.type_list)
+        }, structures.edition_type_list)
 
 
 class WorkTypeResourceList(Resource):
@@ -72,7 +72,7 @@ class WorkTypeResourceList(Resource):
         return marshal({
             'count': len(types),
             'objects': types
-        }, structures.type_list)
+        }, structures.work_type_list)
 
 
 def create_views(api):

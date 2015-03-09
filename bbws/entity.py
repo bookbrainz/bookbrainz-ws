@@ -33,19 +33,17 @@ from . import db, structures
 
 
 class EntityResource(Resource):
-    def get(self, gid):
+    def get(self, entity_gid):
         try:
-            uuid.UUID(gid)
+            uuid.UUID(entity_gid)
         except ValueError:
             abort(404)
 
         try:
-            entity = db.session.query(Entity).filter_by(gid=gid).one()
+            entity = db.session.query(Entity).\
+                filter_by(entity_gid=entity_gid).one()
         except NoResultFound:
             abort(404)
-
-        # Assign this, for relationships URL.
-        entity.entity_gid = entity.gid
 
         return marshal(entity, structures.entity)
 
@@ -55,13 +53,13 @@ class EntityAliasResource(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('revision', type=int, default=None)
 
-    def get(self, gid):
+    def get(self, entity_gid):
         args = self.get_parser.parse_args()
         if args.revision is None:
             try:
                 entity = db.session.query(Entity).options(
                     joinedload('master_revision.entity_tree.aliases')
-                ).filter_by(gid=gid).one()
+                ).filter_by(entity_gid=entity_gid).one()
             except NoResultFound:
                 abort(404)
             else:
@@ -72,8 +70,8 @@ class EntityAliasResource(Resource):
                     joinedload('entity_tree.aliases'),
                     joinedload('entity')
                 ).filter_by(
-                    id=args.revision,
-                    entity_gid=gid
+                    revision_id=args.revision,
+                    entity_gid=entity_gid
                 ).one()
             except NoResultFound:
                 abort(404)
@@ -96,9 +94,9 @@ class EntityDisambiguationResource(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('revision', type=int, default=None)
 
-    def get(self, gid):
+    def get(self, entity_gid):
         try:
-            uuid.UUID(gid)
+            uuid.UUID(entity_gid)
         except ValueError:
             abort(404)
 
@@ -107,7 +105,7 @@ class EntityDisambiguationResource(Resource):
             try:
                 entity = db.session.query(Entity).options(
                     joinedload('master_revision.entity_tree.disambiguation')
-                ).filter_by(gid=gid).one()
+                ).filter_by(entity_gid=entity_gid).one()
             except NoResultFound:
                 abort(404)
             else:
@@ -118,8 +116,8 @@ class EntityDisambiguationResource(Resource):
                     joinedload('entity_tree.disambiguation'),
                     joinedload('entity')
                 ).filter_by(
-                    id=args.revision,
-                    entity_gid=gid
+                    revision_id=args.revision,
+                    entity_gid=entity_gid
                 ).one()
             except NoResultFound:
                 abort(404)
@@ -141,9 +139,9 @@ class EntityAnnotationResource(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('revision', type=int, default=None)
 
-    def get(self, gid):
+    def get(self, entity_gid):
         try:
-            uuid.UUID(gid)
+            uuid.UUID(entity_gid)
         except ValueError:
             abort(404)
 
@@ -152,7 +150,7 @@ class EntityAnnotationResource(Resource):
             try:
                 entity = db.session.query(Entity).options(
                     joinedload('master_revision.entity_tree.annotation')
-                ).filter_by(gid=gid).one()
+                ).filter_by(entity_gid=entity_gid).one()
             except NoResultFound:
                 abort(404)
             else:
@@ -163,8 +161,8 @@ class EntityAnnotationResource(Resource):
                     joinedload('entity_tree.annotation'),
                     joinedload('entity')
                 ).filter_by(
-                    id=args.revision,
-                    entity_gid=gid
+                    revision_id=args.revision,
+                    entity_gid=entity_gid
                 ).one()
             except NoResultFound:
                 abort(404)
@@ -195,9 +193,9 @@ class EntityDataResource(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('revision', type=int, default=None)
 
-    def get(self, gid):
+    def get(self, entity_gid):
         try:
-            uuid.UUID(gid)
+            uuid.UUID(entity_gid)
         except ValueError:
             abort(404)
 
@@ -206,7 +204,7 @@ class EntityDataResource(Resource):
             try:
                 entity = db.session.query(Entity).options(
                     joinedload('master_revision.entity_tree.data')
-                ).filter_by(gid=gid).one()
+                ).filter_by(entity_gid=entity_gid).one()
             except NoResultFound:
                 abort(404)
             else:
@@ -217,8 +215,8 @@ class EntityDataResource(Resource):
                     joinedload('entity_tree.data'),
                     joinedload('entity')
                 ).filter_by(
-                    id=args.revision,
-                    entity_gid=gid
+                    revision_id=args.revision,
+                    entity_gid=entity_gid
                 ).one()
             except NoResultFound:
                 abort(404)
@@ -256,9 +254,6 @@ class EntityResourceList(Resource):
         q = q.offset(args.offset).limit(args.limit)
         entities = q.all()
 
-        for entity in entities:
-            entity.entity_gid = entity.gid
-
         return marshal({
             'offset': args.offset,
             'count': len(entities),
@@ -267,18 +262,21 @@ class EntityResourceList(Resource):
 
 
 def create_views(api):
-    api.add_resource(EntityResource, '/entity/<string:gid>',
+    api.add_resource(EntityResource, '/entity/<string:entity_gid>',
                      endpoint='entity_get_single')
-    api.add_resource(EntityAliasResource, '/entity/<string:gid>/aliases',
-                     endpoint='entity_get_aliases')
     api.add_resource(
-        EntityDisambiguationResource, '/entity/<string:gid>/disambiguation',
+        EntityAliasResource, '/entity/<string:entity_gid>/aliases',
+        endpoint='entity_get_aliases'
+    )
+    api.add_resource(
+        EntityDisambiguationResource,
+        '/entity/<string:entity_gid>/disambiguation',
         endpoint='entity_get_disambiguation'
     )
     api.add_resource(
-        EntityAnnotationResource, '/entity/<string:gid>/annotation',
+        EntityAnnotationResource, '/entity/<string:entity_gid>/annotation',
         endpoint='entity_get_annotation'
     )
-    api.add_resource(EntityDataResource, '/entity/<string:gid>/data',
+    api.add_resource(EntityDataResource, '/entity/<string:entity_gid>/data',
                      endpoint='entity_get_data')
     api.add_resource(EntityResourceList, '/entity')
