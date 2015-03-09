@@ -3,7 +3,7 @@ python:
   - "2.7"
 
 install:
-  - git clone git@github.com:BookBrainz/bookbrainz-schema.git
+  - git clone https://github.com/BookBrainz/bookbrainz-schema.git
   - pushd bookbrainz-schema
   - sudo python setup.py install
   - popd
@@ -11,3 +11,6 @@ install:
 
 script:
   - python test.py
+
+notifications:
+  email: false
