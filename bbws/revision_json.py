@@ -106,7 +106,8 @@ def update_aliases(entity_tree, alias_json):
                     primary=alias_props['primary']
                 )
 
-                if alias_props['default'] and (new_default is None):
+                if ((alias_props.get('default', None) is not None) and
+                        (new_default is None)):
                     new_default = new_alias
             else:
                 # Copy existing alias, and modify
@@ -121,7 +122,8 @@ def update_aliases(entity_tree, alias_json):
                     if attr != 'alias_id':
                         setattr(new_alias, attr, val)
 
-                if alias_props['default'] and (new_default is None):
+                if ((alias_props.get('default', None) is not None) and
+                        (new_default is None)):
                     new_default = new_alias
 
             aliases.append(new_alias)

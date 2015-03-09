@@ -13,7 +13,7 @@ def load_data(db):
     db.session.commit()
 
     editor = User(name=u'Bob', email=u'bob@bobville.org',
-                  user_type_id=editor_type.editor_type_id)
+                  user_type_id=editor_type.user_type_id)
     db.session.add(editor)
 
     pub_type = PublicationType(label=u'Book')
@@ -129,17 +129,17 @@ def load_data(db):
     db.session.commit()
 
     revision4 = RelationshipRevision(
-        user_id=editor.editor_id, relationship_id=relationship1.relationship_id,
+        user_id=editor.user_id, relationship_id=relationship1.relationship_id,
         relationship_tree_id=relationship_tree1.relationship_tree_id
     )
 
     revision5 = RelationshipRevision(
-        user_id=editor.editor_id, relationship_id=relationship2.relationship_id,
+        user_id=editor.user_id, relationship_id=relationship2.relationship_id,
         relationship_tree_id=relationship_tree2.relationship_tree_id
     )
 
     revision6 = RelationshipRevision(
-        user_id=editor.editor_id, relationship_id=relationship3.relationship_id,
+        user_id=editor.user_id, relationship_id=relationship3.relationship_id,
         relationship_tree_id=relationship_tree3.relationship_tree_id
     )
 

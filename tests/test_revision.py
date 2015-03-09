@@ -63,7 +63,8 @@ class TestRevisionJSON(TestCase):
                 [None, {
                     'name': 'ABC',
                     'sort_name': 'CBA',
-                    'language_id': 1
+                    'language_id': 1,
+                    'primary': True
                 }]
             ]
         })[1]
