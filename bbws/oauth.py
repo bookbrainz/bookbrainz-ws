@@ -167,7 +167,7 @@ class MyRequestValidator(OAuth2RequestValidator):
             scopes=token[u'scope'].split(),
             expires=expires,
             client_id=request.client.client_id,
-            user_id=request.user.id,
+            user_id=request.user.user_id,
         )
         tok.save()
         return tok
