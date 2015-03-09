@@ -26,13 +26,13 @@ be declared in the correct order.
 from flask.ext.restful import fields
 
 language_stub = {
-    'id': fields.Integer,
+    'language_id': fields.Integer,
     'name': fields.String
 }
 
 language_list = {
     'objects': fields.List(fields.Nested({
-        'id': fields.Integer,
+        'language_id': fields.Integer,
         'iso_code_2t': fields.String,
         'iso_code_2b': fields.String,
         'iso_code_1': fields.String,
