@@ -19,7 +19,7 @@
 from flask import request
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
-from bbschema import (Edit, Entity, EntityRevision, PublicationData,
+from bbschema import (Entity, EntityRevision, PublicationData,
                       RelationshipRevision, Revision)
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -84,12 +84,9 @@ class RevisionResourceList(Resource):
     get_parser.add_argument('limit', type=int, default=20)
     get_parser.add_argument('offset', type=int, default=0)
 
-    def get(self, edit_id=None):
+    def get(self):
         args = self.get_parser.parse_args()
         query = db.session.query(Revision)
-
-        if edit_id is not None:
-            query = query.join(Revision.edits).filter(Edit.edit_id == edit_id)
 
         revisions = query.offset(args.offset).limit(args.limit).all()
         return marshal({
@@ -118,19 +115,8 @@ class RevisionResourceList(Resource):
             revision.relationship_tree = tree
 
         # Set entity master revision
-        # TODO: properly close edits
+        # TODO: Properly close revisions
         subject.master_revision = revision
-
-        if 'edit_id' in rev_json:
-            try:
-                edit = db.session.query(Edit).filter_by(
-                    edit_id=rev_json['edit_id']
-                ).one()
-            except NoResultFound:
-                pass
-            else:
-                revision.edits = [edit]
-                edit.status = 1
 
         db.session.add(revision)
         # Commit entity, tree and revision
@@ -142,69 +128,8 @@ class RevisionResourceList(Resource):
             return marshal(revision, structures.relationship_revision)
 
 
-class EditResource(Resource):
-    def get(self, edit_id):
-        try:
-            edit = db.session.query(Edit).filter_by(edit_id=edit_id).one()
-        except NoResultFound:
-            abort(404)
-
-        return marshal(edit, structures.edit)
-
-
-class EditResourceList(Resource):
-    get_parser = reqparse.RequestParser()
-    get_parser.add_argument('limit', type=int, default=20)
-    get_parser.add_argument('offset', type=int, default=0)
-    get_parser.add_argument('status', type=int)
-
-    def get(self, entity_gid=None, user_id=None):
-        args = self.get_parser.parse_args()
-
-        q = db.session.query(Edit)
-
-        if entity_gid is not None:
-            q = q.join(Edit.revisions).join(EntityRevision).filter(
-                EntityRevision.entity_gid == entity_gid
-            )
-        elif user_id is not None:
-            q = q.filter_by(user_id=user_id)
-
-        if args.status is not None:
-            q = q.filter_by(status=args.status)
-
-        q = q.offset(args.offset).limit(args.limit)
-        edits = q.all()
-
-        return marshal({
-            'offset': args.offset,
-            'count': len(edits),
-            'objects': edits
-        }, structures.edit_list)
-
-    # Takes no parameters - creates a blank edit by the authenticated user.
-    @oauth_provider.require_oauth()
-    def post(self):
-        # This will be valid here, due to authentication.
-        user = request.oauth.user
-
-        edit = Edit(status=0, user_id=user.user_id)
-        db.session.add(edit)
-        db.session.commit()
-
-        return marshal(edit, structures.edit)
-
-
 def create_views(api):
     api.add_resource(RevisionResource, '/revision/<int:revision_id>',
                      endpoint='revision_get_single')
-    api.add_resource(
-        RevisionResourceList, '/revisions', '/edit/<int:edit_id>/revisions',
-        endpoint='revision_get_many'
-    )
-    api.add_resource(EditResource, '/edit/<int:edit_id>',
-                     endpoint='edit_get_single')
-    api.add_resource(
-        EditResourceList, '/edits', '/entity/<string:entity_gid>/edits',
-        '/user/<int:user_id>/edits'
-    )
+    api.add_resource(RevisionResourceList, '/revisions',
+                     endpoint='revision_get_many')
