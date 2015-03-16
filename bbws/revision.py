@@ -114,8 +114,10 @@ class RevisionResourceList(Resource):
             revision.relationship = subject
             revision.relationship_tree = tree
 
-        # Set entity master revision
+        # Set entity master revision, and set parent of previous master revision
         # TODO: Properly close revisions
+        if subject.master_revision is not None:
+            subject.master_revision.parent = revision
         subject.master_revision = revision
 
         db.session.add(revision)
