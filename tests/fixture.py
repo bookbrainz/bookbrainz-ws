@@ -134,10 +134,6 @@ def load_data(db):
         relationship_tree_id=relationship_tree3.relationship_tree_id
     )
 
-    revision4.edits = [edit1]
-    revision5.edits = [edit2]
-    revision6.edits = [edit2]
-
     entity1.master_revision = revision1
     entity2.master_revision = revision2
     entity3.master_revision = revision3
