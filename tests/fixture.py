@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 
-from bbschema import (Alias, CreatorData, CreatorType, Disambiguation, Edit,
+from bbschema import (Alias, CreatorData, CreatorType, Disambiguation,
                       Entity, EntityRevision, EntityTree, PublicationData,
                       PublicationType, Relationship, RelationshipEntity,
                       RelationshipRevision, RelationshipText, RelationshipTree,
@@ -23,11 +23,6 @@ def load_data(db):
 
     creator_type = CreatorType(label=u'Author')
     db.session.add(creator_type)
-    db.session.commit()
-
-    edit1 = Edit(user_id=editor.user_id, status=0)
-    edit2 = Edit(user_id=editor.user_id, status=0)
-    db.session.add_all((edit1, edit2))
     db.session.commit()
 
     entity1 = Entity()
@@ -73,10 +68,6 @@ def load_data(db):
                                entity_tree_id=entity_tree2.entity_tree_id)
     revision3 = EntityRevision(user_id=editor.user_id, entity_gid=entity3.entity_gid,
                                entity_tree_id=entity_tree3.entity_tree_id)
-
-    revision1.edits = [edit1]
-    revision2.edits = [edit1]
-    revision3.edits = [edit2]
 
     relationship_type1 = RelationshipType(
         label=u'First Relationship',
