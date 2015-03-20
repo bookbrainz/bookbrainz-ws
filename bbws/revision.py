@@ -107,18 +107,32 @@ class RevisionResourceList(Resource):
     @oauth_provider.require_oauth()
     def post(self):
         rev_json = request.get_json()
-        subject, data = revision_json.parse_changes(rev_json)
+
+        # First, determine which type of edit this is.
+        if 'entity_gid' in rev_json:
+            entity_gid = rev_json['entity_gid']
+            if not entity_gid:
+                # If entity_gid is empty, then this is a CREATE.
+                revision = EntityRevision.create(rev_json)
+            elif len(entity_gid) == 1:
+                # If there is 1 element in entity_gid, attempt an update.
+                revision = EntityRevision.update(rev_json)
+
+            subject = revision.entity
+        elif 'relationship_id' in rev_json:
+            relationship_id = rev_json['relationship_id']
+            if not relationship_id:
+                # If relationship_id is empty, then CREATE a new relationship.
+                subject, tree = revision_json.create_relationship(revision_json)
+        else:
+            abort(400)
 
         # This will be valid here, due to authentication.
         user = request.oauth.user
 
         is_entity_revision = isinstance(subject, Entity)
 
-        if is_entity_revision:
-            revision = EntityRevision(user_id=user.user_id)
-            revision.entity = subject
-            revision.entity_data = data
-        else:
+        if not is_entity_revision:
             revision = RelationshipRevision(user_id=user.user_id)
             revision.relationship = subject
             revision.relationship_tree = data

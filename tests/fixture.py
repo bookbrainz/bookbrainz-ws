@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 
-from bbschema import (Alias, CreatorData, CreatorType, Disambiguation,
-                      Entity, EntityRevision, PublicationData,
+from bbschema import (Alias, Creator, CreatorData, CreatorType, Disambiguation,
+                      Entity, EntityRevision, Publication, PublicationData,
                       PublicationType, Relationship, RelationshipEntity,
                       RelationshipRevision, RelationshipText, RelationshipTree,
                       RelationshipType, User, UserType)
@@ -25,9 +25,9 @@ def load_data(db):
     db.session.add(creator_type)
     db.session.commit()
 
-    entity1 = Entity()
-    entity2 = Entity()
-    entity3 = Entity()
+    entity1 = Publication()
+    entity2 = Publication()
+    entity3 = Creator()
     db.session.add_all((entity1, entity2, entity3))
     db.session.commit()
 
