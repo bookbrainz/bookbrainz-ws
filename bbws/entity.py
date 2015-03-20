@@ -24,8 +24,7 @@ resources.
 import uuid
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
-from bbschema import (CreatorData, EditionData, Entity, EntityRevision,
-                      PublicationData, PublisherData, WorkData)
+from bbschema import (Entity, EntityRevision)
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -33,19 +32,55 @@ from . import db, structures
 
 
 class EntityResource(Resource):
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('revision', type=int, default=None)
+
+    entity_class = Entity
+    entity_fields = structures.entity
+    entity_data_fields = None
+
     def get(self, entity_gid):
         try:
             uuid.UUID(entity_gid)
         except ValueError:
             abort(404)
 
-        try:
-            entity = db.session.query(Entity).\
-                filter_by(entity_gid=entity_gid).one()
-        except NoResultFound:
-            abort(404)
+        args = self.get_parser.parse_args()
+        if args.revision is None:
+            try:
+                entity = db.session.query(self.entity_class).options(
+                    joinedload('master_revision.entity_data')
+                ).filter_by(entity_gid=entity_gid).one()
+            except NoResultFound:
+                abort(404)
+            else:
+                revision = entity.master_revision
+        else:
+            try:
+                revision = db.session.query(EntityRevision).options(
+                    joinedload('entity_data'),
+                    joinedload('entity')
+                ).filter_by(
+                    revision_id=args.revision,
+                    entity_gid=entity_gid
+                ).one()
+            except NoResultFound:
+                abort(404)
+            else:
+                entity = revision.entity
 
-        return marshal(entity, structures.entity)
+        if revision is None:
+            # No data, so 404
+            abort(404)
+        else:
+            entity_data = revision.entity_data
+
+        entity_out = marshal(entity, self.entity_fields)
+        data_out = marshal(entity_data, self.entity_data_fields)
+
+        entity_out.update(data_out)
+
+        return entity_out
 
 
 class EntityAliasResource(Resource):
@@ -180,77 +215,17 @@ class EntityAnnotationResource(Resource):
         }, structures.entity_annotation)
 
 
-data_mapper = {
-    PublicationData: ('publication_data', structures.publication_data),
-    CreatorData: ('creator_data', structures.creator_data),
-    EditionData: ('edition_data', structures.edition_data),
-    PublisherData: ('publisher_data', structures.publisher_data),
-    WorkData: ('work_data', structures.work_data),
-}
-
-
-class EntityDataResource(Resource):
-    get_parser = reqparse.RequestParser()
-    get_parser.add_argument('revision', type=int, default=None)
-
-    def get(self, entity_gid):
-        try:
-            uuid.UUID(entity_gid)
-        except ValueError:
-            abort(404)
-
-        args = self.get_parser.parse_args()
-        if args.revision is None:
-            try:
-                entity = db.session.query(Entity).options(
-                    joinedload('master_revision.entity_data')
-                ).filter_by(entity_gid=entity_gid).one()
-            except NoResultFound:
-                abort(404)
-            else:
-                revision = entity.master_revision
-        else:
-            try:
-                revision = db.session.query(EntityRevision).options(
-                    joinedload('entity_data'),
-                    joinedload('entity')
-                ).filter_by(
-                    revision_id=args.revision,
-                    entity_gid=entity_gid
-                ).one()
-            except NoResultFound:
-                abort(404)
-            else:
-                entity = revision.entity
-
-        if revision is None:
-            # No data, so 404
-            abort(404)
-        else:
-            entity_data = revision.entity_data
-
-        data_fields = data_mapper[type(entity_data)]
-
-        entity_data_fields = {
-            'entity': fields.Nested(structures.entity_stub),
-            data_fields[0]: fields.Nested(data_fields[1], allow_null=True)
-        }
-
-        return marshal({
-            'entity': entity,
-            data_fields[0]: data
-        }, entity_data_fields)
-
-
 class EntityResourceList(Resource):
-
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('limit', type=int, default=20)
     get_parser.add_argument('offset', type=int, default=0)
 
+    entity_class = Entity
+    entity_list_fields = structures.entity_list
+
     def get(self):
         args = self.get_parser.parse_args()
-        q = db.session.query(Entity).order_by(Entity.last_updated.desc())
+        q = db.session.query(self.entity_class).order_by(Entity.last_updated.desc())
         q = q.offset(args.offset).limit(args.limit)
         entities = q.all()
 
@@ -258,25 +233,4 @@ class EntityResourceList(Resource):
             'offset': args.offset,
             'count': len(entities),
             'objects': entities
-        }, structures.entity_list)
-
-
-def create_views(api):
-    api.add_resource(EntityResource, '/entity/<string:entity_gid>',
-                     endpoint='entity_get_single')
-    api.add_resource(
-        EntityAliasResource, '/entity/<string:entity_gid>/aliases',
-        endpoint='entity_get_aliases'
-    )
-    api.add_resource(
-        EntityDisambiguationResource,
-        '/entity/<string:entity_gid>/disambiguation',
-        endpoint='entity_get_disambiguation'
-    )
-    api.add_resource(
-        EntityAnnotationResource, '/entity/<string:entity_gid>/annotation',
-        endpoint='entity_get_annotation'
-    )
-    api.add_resource(EntityDataResource, '/entity/<string:entity_gid>/data',
-                     endpoint='entity_get_data')
-    api.add_resource(EntityResourceList, '/entity')
+        }, self.entity_list_fields)

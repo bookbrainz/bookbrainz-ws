@@ -19,12 +19,21 @@
 from flask import request
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
-from bbschema import (Entity, EntityRevision, PublicationData,
+from bbschema import (Entity, EntityRevision, CreatorData, PublicationData,
+                      EditionData, PublisherData, WorkData,
                       RelationshipRevision, Revision)
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import db, oauth_provider, revision_json, structures
-from .entity import data_mapper
+
+
+data_mapper = {
+    PublicationData: ('publication_data', structures.publication_data),
+    CreatorData: ('creator_data', structures.creator_data),
+    EditionData: ('edition_data', structures.edition_data),
+    PublisherData: ('publisher_data', structures.publisher_data),
+    WorkData: ('work_data', structures.work_data),
+}
 
 
 class RevisionResource(Resource):

@@ -70,7 +70,6 @@ entity.update({
     'aliases_uri': fields.Url('entity_get_aliases', True),
     'disambiguation_uri': fields.Url('entity_get_disambiguation', True),
     'annotation_uri': fields.Url('entity_get_annotation', True),
-    'data_uri': fields.Url('entity_get_data', True),
     'relationships_uri': fields.Url('relationship_get_many', True)
 })
 
@@ -110,7 +109,7 @@ entity_annotation = {
 entity_list = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(entity))
+    'objects': fields.List(fields.Nested(entity_stub))
 }
 
 
@@ -241,10 +240,30 @@ user_list = {
 
 
 # These fields definitions are specific to BookBrainz
+creator_stub = entity_stub.copy()
+creator_stub.update({
+    'uri': fields.Url('creator_get_single', True)
+})
+
+
+creator = entity.copy()
+creator.update(creator_stub)
+creator.update({
+    'aliases_uri': fields.Url('creator_get_aliases', True),
+    'disambiguation_uri': fields.Url('creator_get_disambiguation', True),
+    'annotation_uri': fields.Url('creator_get_annotation', True),
+    'relationships_uri': fields.Url('relationship_get_many', True)
+})
+
+
+creator_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(creator_stub))
+}
 
 
 creator_data = {
-    'entity_data_id': fields.Integer,
     'begin_date': fields.String,
     'begin_date_precision': fields.String,
     'end_date': fields.String,
@@ -261,8 +280,30 @@ creator_data = {
 }
 
 
+publication_stub = entity_stub.copy()
+publication_stub.update({
+    'uri': fields.Url('publication_get_single', True)
+})
+
+
+publication = entity.copy()
+publication.update(publication_stub)
+publication.update({
+    'aliases_uri': fields.Url('publication_get_aliases', True),
+    'disambiguation_uri': fields.Url('publication_get_disambiguation', True),
+    'annotation_uri': fields.Url('publication_get_annotation', True),
+    'relationships_uri': fields.Url('relationship_get_many', True)
+})
+
+
+publication_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(publication_stub))
+}
+
+
 publication_data = {
-    'entity_data_id': fields.Integer,
     'publication_type': fields.Nested({
         'publication_type_id': fields.Integer,
         'label': fields.String
@@ -270,8 +311,30 @@ publication_data = {
 }
 
 
+publisher_stub = entity_stub.copy()
+publisher_stub.update({
+    'uri': fields.Url('publisher_get_single', True)
+})
+
+
+publisher = entity.copy()
+publisher.update(publisher_stub)
+publisher.update({
+    'aliases_uri': fields.Url('publisher_get_aliases', True),
+    'disambiguation_uri': fields.Url('publisher_get_disambiguation', True),
+    'annotation_uri': fields.Url('publisher_get_annotation', True),
+    'relationships_uri': fields.Url('relationship_get_many', True)
+})
+
+
+publisher_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(publisher_stub))
+}
+
+
 publisher_data = {
-    'entity_data_id': fields.Integer,
     'begin_date': fields.String,
     'begin_date_precision': fields.String,
     'end_date': fields.String,
@@ -284,8 +347,30 @@ publisher_data = {
 }
 
 
+edition_stub = entity_stub.copy()
+edition_stub.update({
+    'uri': fields.Url('edition_get_single', True)
+})
+
+
+edition = entity.copy()
+edition.update(edition_stub)
+edition.update({
+    'aliases_uri': fields.Url('edition_get_aliases', True),
+    'disambiguation_uri': fields.Url('edition_get_disambiguation', True),
+    'annotation_uri': fields.Url('edition_get_annotation', True),
+    'relationships_uri': fields.Url('relationship_get_many', True)
+})
+
+
+edition_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(edition_stub))
+}
+
+
 edition_data = {
-    'entity_data_id': fields.Integer,
     'begin_date': fields.String,
     'begin_date_precision': fields.String,
     'end_date': fields.String,
@@ -302,8 +387,30 @@ edition_data = {
 }
 
 
+work_stub = entity_stub.copy()
+work_stub.update({
+    'uri': fields.Url('work_get_single', True)
+})
+
+
+work = entity.copy()
+work.update(work_stub)
+work.update({
+    'aliases_uri': fields.Url('work_get_aliases', True),
+    'disambiguation_uri': fields.Url('work_get_disambiguation', True),
+    'annotation_uri': fields.Url('work_get_annotation', True),
+    'relationships_uri': fields.Url('relationship_get_many', True)
+})
+
+
+work_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(work_stub))
+}
+
+
 work_data = {
-    'entity_data_id': fields.Integer,
     'languages': fields.List(fields.Nested({
         'id': fields.Integer,
         'name': fields.String,
