@@ -16,11 +16,10 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from bbschema import (Alias, Annotation, CreatorData, Disambiguation,
-                      EditionData, Entity, EntityRevision, EntityTree,
-                      PublicationData, PublisherData, Relationship,
-                      RelationshipEntity, RelationshipText, RelationshipTree,
-                      WorkData)
+from bbschema import (Alias, Annotation,  Disambiguation, Entity,
+                      EntityRevision, CreatorData, PublicationData, EditionData,
+                      PublisherData, WorkData, Relationship, RelationshipEntity,
+                      RelationshipText, RelationshipTree)
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import db
@@ -36,33 +35,28 @@ def create_entity(revision_json):
 
     # Create the correct type of data
     if 'publication_data' in revision_json:
-        data = PublicationData(**revision_json['publication_data'])
+        entity_data = PublicationData(**revision_json['publication_data'])
     elif 'creator_data' in revision_json:
-        data = CreatorData(**revision_json['creator_data'])
+        entity_data = CreatorData(**revision_json['creator_data'])
     elif 'edition_data' in revision_json:
-        data = EditionData(**revision_json['edition_data'])
+        entity_data = EditionData(**revision_json['edition_data'])
     elif 'publisher_data' in revision_json:
-        data = PublisherData(**revision_json['publisher_data'])
+        entity_data = PublisherData(**revision_json['publisher_data'])
     elif 'work_data' in revision_json:
-        data = WorkData(**revision_json['work_data'])
+        entity_data = WorkData(**revision_json['work_data'])
     else:
         raise JSONParseError('Unrecognized entity type!')
-
-    # Here, data will be valid, although not yet added to the database.
-    # Create the entity tree, specifying the data in a relationship.
-    entity_tree = EntityTree()
-    entity_tree.data = data
 
     # Create any specified aliases, annotations or disambiguations
     if 'annotation' in revision_json:
         annotation = Annotation(content=revision_json['annotation'])
-        entity_tree.annotation = annotation
+        entity_data.annotation = annotation
 
     if 'disambiguation' in revision_json:
         disambiguation = Disambiguation(
             comment=revision_json['disambiguation']
         )
-        entity_tree.disambiguation = disambiguation
+        entity_data.disambiguation = disambiguation
 
     if 'aliases' in revision_json:
         for alias_json in revision_json['aliases']:
@@ -72,15 +66,15 @@ def create_entity(revision_json):
                 primary=alias_json['primary'],
             )
 
-            if alias_json['default'] and (entity_tree.default_alias is None):
-                entity_tree.default_alias = alias
+            if alias_json['default'] and (entity_data.default_alias is None):
+                entity_data.default_alias = alias
 
-            entity_tree.aliases.append(alias)
+            entity_data.aliases.append(alias)
 
-    return (entity, entity_tree)
+    return (entity, entity_data)
 
 
-def update_aliases(entity_tree, alias_json):
+def update_aliases(entity_data, alias_json):
     # Aliases will be a list of:
     # [id, {name:'', sort_name:'', language_id:''}]
     # If id is null, add, if second object is null, delete,
@@ -89,7 +83,7 @@ def update_aliases(entity_tree, alias_json):
     ids = [x for x, _ in alias_json if x is not None]
 
     # This removes all entries where id is not None (updated + deleted)
-    aliases = [alias for alias in entity_tree.aliases
+    aliases = [alias for alias in entity_data.aliases
                if alias.alias_id not in ids]
 
     new_default = None
@@ -129,12 +123,12 @@ def update_aliases(entity_tree, alias_json):
             aliases.append(new_alias)
 
     # Now, unset the default alias if it was deleted
-    if entity_tree.default_alias not in aliases:
-        entity_tree.default_alias = None
+    if entity_data.default_alias not in aliases:
+        entity_data.default_alias = None
 
     # And set it to the new default is the default isn't already set
-    if entity_tree.default_alias is None:
-        entity_tree.default_alias = new_default
+    if entity_data.default_alias is None:
+        entity_data.default_alias = new_default
 
     return aliases
 
@@ -147,34 +141,33 @@ def update_entity(revision_json):
     except NoResultFound:
         return (None, None)
 
-    entity_tree = entity.master_revision.entity_tree
+    entity_data = entity.master_revision.entity_data
 
-    data = entity_tree.data
-    annotation = entity_tree.annotation
-    disambiguation = entity_tree.disambiguation
+    annotation = entity_data.annotation
+    disambiguation = entity_data.disambiguation
 
     # TODO: Refactor this in some nice OO way.
     data_key = None
     if 'publication_data' in revision_json:
-        data = PublicationData.copy(data)
+        entity_data = PublicationData.copy(entity_data)
         data_key = 'publication_data'
     elif 'creator_data' in revision_json:
-        data = CreatorData.copy(data)
+        entity_data = CreatorData.copy(entity_data)
         data_key = 'creator_data'
     elif 'edition_data' in revision_json:
-        data = EditionData.copy(data)
+        entity_data = EditionData.copy(entity_data)
         data_key = 'edition_data'
     elif 'publisher_data' in revision_json:
-        data = PublisherData.copy(data)
+        entity_data = PublisherData.copy(entity_data)
         data_key = 'publisher_data'
     elif 'work_data' in revision_json:
-        data = WorkData.copy(data)
+        entity_data = WorkData.copy(entity_data)
         data_key = 'work_data'
 
     if data_key is not None:
         for attr, val in revision_json[data_key].items():
             if attr != 'entity_data_id':
-                setattr(data, attr, val)
+                setattr(entity_data, attr, val)
 
     if 'annotation' in revision_json:
         annotation = Annotation(
@@ -188,27 +181,26 @@ def update_entity(revision_json):
         )
 
     if 'aliases' in revision_json:
-        aliases = update_aliases(entity_tree, revision_json['aliases'])
+        aliases = update_aliases(entity_data, revision_json['aliases'])
     else:
-        aliases = entity_tree.aliases
+        aliases = entity_data.aliases
 
     entity_changed = (
         (disambiguation is not None and
             disambiguation.disambiguation_id is None) or
         (annotation is not None and annotation.annotation_id is None) or
-        (data.entity_data_id is None) or (aliases != entity_tree.aliases)
+        (entity_data.entity_data_id is None) or (aliases != entity_data.aliases)
     )
 
     if entity_changed:
-        new_tree = EntityTree()
-        new_tree.aliases = aliases
-        new_tree.annotation = annotation
-        new_tree.disambiguation = disambiguation
-        new_tree.data = data
+        new_data = entity_data
+        new_data.aliases = aliases
+        new_data.annotation = annotation
+        new_data.disambiguation = disambiguation
 
-        return (entity, new_tree)
+        return (entity, new_data)
 
-    return (entity, entity_tree)
+    return (entity, entity_data)
 
 
 def merge_entity(revision_json):
@@ -289,13 +281,12 @@ def format_changes(base_revision_id, new_revision_id):
         db.session.query(EntityRevision).\
         filter_by(revision_id=new_revision_id).one()
 
-    new_tree = new_revision.entity_tree
-    new_data = new_tree.data
-    new_annotation = (new_tree.annotation.content
-                      if new_tree.annotation is not None else None)
-    new_disambiguation = (new_tree.disambiguation.comment
-                          if new_tree.disambiguation is not None else None)
-    new_aliases = new_tree.aliases
+    new_data = new_revision.entity_data
+    new_annotation = (new_data.annotation.content
+                      if new_data.annotation is not None else None)
+    new_disambiguation = (new_data.disambiguation.comment
+                          if new_data.disambiguation is not None else None)
+    new_aliases = new_data.aliases
 
     if base_revision_id is None:
         base_data = None
@@ -306,16 +297,15 @@ def format_changes(base_revision_id, new_revision_id):
         base_revision = db.session.query(EntityRevision).filter_by(
             revision_id=base_revision_id
         ).one()
-        base_tree = base_revision.entity_tree
+        base_data = base_revision.entity_data
 
-        base_data = base_tree.data
-        base_annotation = (base_tree.annotation.content
-                           if base_tree.annotation is not None else None)
+        base_annotation = (base_data.annotation.content
+                           if base_data.annotation is not None else None)
         base_disambiguation = (
-            base_tree.disambiguation.comment
-            if base_tree.disambiguation is not None else None
+            base_data.disambiguation.comment
+            if base_data.disambiguation is not None else None
         )
-        base_aliases = base_tree.aliases
+        base_aliases = base_data.aliases
 
     return {
         'data': [base_data, new_data],

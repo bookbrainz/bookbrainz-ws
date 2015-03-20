@@ -98,7 +98,7 @@ class RevisionResourceList(Resource):
     @oauth_provider.require_oauth()
     def post(self):
         rev_json = request.get_json()
-        subject, tree = revision_json.parse_changes(rev_json)
+        subject, data = revision_json.parse_changes(rev_json)
 
         # This will be valid here, due to authentication.
         user = request.oauth.user
@@ -108,11 +108,11 @@ class RevisionResourceList(Resource):
         if is_entity_revision:
             revision = EntityRevision(user_id=user.user_id)
             revision.entity = subject
-            revision.entity_tree = tree
+            revision.entity_data = data
         else:
             revision = RelationshipRevision(user_id=user.user_id)
             revision.relationship = subject
-            revision.relationship_tree = tree
+            revision.relationship_tree = data
 
         # Set entity master revision, and set parent of previous master revision
         # TODO: Properly close revisions
@@ -121,7 +121,7 @@ class RevisionResourceList(Resource):
         subject.master_revision = revision
 
         db.session.add(revision)
-        # Commit entity, tree and revision
+        # Commit entity, data and revision
         db.session.commit()
 
         if is_entity_revision:

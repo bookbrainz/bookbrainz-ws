@@ -58,7 +58,7 @@ class EntityAliasResource(Resource):
         if args.revision is None:
             try:
                 entity = db.session.query(Entity).options(
-                    joinedload('master_revision.entity_tree.aliases')
+                    joinedload('master_revision.entity_data.aliases')
                 ).filter_by(entity_gid=entity_gid).one()
             except NoResultFound:
                 abort(404)
@@ -67,7 +67,7 @@ class EntityAliasResource(Resource):
         else:
             try:
                 revision = db.session.query(EntityRevision).options(
-                    joinedload('entity_tree.aliases'),
+                    joinedload('entity_data.aliases'),
                     joinedload('entity')
                 ).filter_by(
                     revision_id=args.revision,
@@ -81,11 +81,11 @@ class EntityAliasResource(Resource):
         if revision is None:
             aliases = []
         else:
-            aliases = revision.entity_tree.aliases
+            aliases = revision.entity_data.aliases
 
         return marshal({
             'entity': entity,
-            'default_alias_id': revision.entity_tree.default_alias_id,
+            'default_alias_id': revision.entity_data.default_alias_id,
             'aliases': aliases
         }, structures.entity_alias)
 
@@ -104,7 +104,7 @@ class EntityDisambiguationResource(Resource):
         if args.revision is None:
             try:
                 entity = db.session.query(Entity).options(
-                    joinedload('master_revision.entity_tree.disambiguation')
+                    joinedload('master_revision.entity_data.disambiguation')
                 ).filter_by(entity_gid=entity_gid).one()
             except NoResultFound:
                 abort(404)
@@ -113,7 +113,7 @@ class EntityDisambiguationResource(Resource):
         else:
             try:
                 revision = db.session.query(EntityRevision).options(
-                    joinedload('entity_tree.disambiguation'),
+                    joinedload('entity_data.disambiguation'),
                     joinedload('entity')
                 ).filter_by(
                     revision_id=args.revision,
@@ -127,7 +127,7 @@ class EntityDisambiguationResource(Resource):
         if revision is None:
             disambiguation = None
         else:
-            disambiguation = revision.entity_tree.disambiguation
+            disambiguation = revision.entity_data.disambiguation
 
         return marshal({
             'entity': entity,
@@ -149,7 +149,7 @@ class EntityAnnotationResource(Resource):
         if args.revision is None:
             try:
                 entity = db.session.query(Entity).options(
-                    joinedload('master_revision.entity_tree.annotation')
+                    joinedload('master_revision.entity_data.annotation')
                 ).filter_by(entity_gid=entity_gid).one()
             except NoResultFound:
                 abort(404)
@@ -158,7 +158,7 @@ class EntityAnnotationResource(Resource):
         else:
             try:
                 revision = db.session.query(EntityRevision).options(
-                    joinedload('entity_tree.annotation'),
+                    joinedload('entity_data.annotation'),
                     joinedload('entity')
                 ).filter_by(
                     revision_id=args.revision,
@@ -172,7 +172,7 @@ class EntityAnnotationResource(Resource):
         if revision is None:
             annotation = None
         else:
-            annotation = revision.entity_tree.annotation
+            annotation = revision.entity_data.annotation
 
         return marshal({
             'entity': entity,
@@ -203,7 +203,7 @@ class EntityDataResource(Resource):
         if args.revision is None:
             try:
                 entity = db.session.query(Entity).options(
-                    joinedload('master_revision.entity_tree.data')
+                    joinedload('master_revision.entity_data')
                 ).filter_by(entity_gid=entity_gid).one()
             except NoResultFound:
                 abort(404)
@@ -212,7 +212,7 @@ class EntityDataResource(Resource):
         else:
             try:
                 revision = db.session.query(EntityRevision).options(
-                    joinedload('entity_tree.data'),
+                    joinedload('entity_data'),
                     joinedload('entity')
                 ).filter_by(
                     revision_id=args.revision,
@@ -227,9 +227,9 @@ class EntityDataResource(Resource):
             # No data, so 404
             abort(404)
         else:
-            data = revision.entity_tree.data
+            entity_data = revision.entity_data
 
-        data_fields = data_mapper[type(data)]
+        data_fields = data_mapper[type(entity_data)]
 
         entity_data_fields = {
             'entity': fields.Nested(structures.entity_stub),
