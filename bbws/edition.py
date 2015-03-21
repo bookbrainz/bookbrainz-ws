@@ -21,7 +21,7 @@
 resources.
 """
 
-from bbschema import Edition
+from bbschema import (Edition, EditionData)
 
 from . import structures
 from .entity import (EntityResource, EntityAliasResource,
@@ -36,6 +36,8 @@ class EditionResource(EntityResource):
 
 class EditionResourceList(EntityResourceList):
     entity_class = Edition
+    entity_data_class = EditionData
+    entity_stub_fields = structures.edition_stub
     entity_list_fields = structures.edition_list
 
 

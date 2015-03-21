@@ -21,7 +21,7 @@
 resources.
 """
 
-from bbschema import Publisher
+from bbschema import (Publisher, PublisherData)
 
 from . import structures
 from .entity import (EntityResource, EntityAliasResource,
@@ -36,6 +36,8 @@ class PublisherResource(EntityResource):
 
 class PublisherResourceList(EntityResourceList):
     entity_class = Publisher
+    entity_data_class = PublisherData
+    entity_stub_fields = structures.publisher_stub
     entity_list_fields = structures.publisher_list
 
 

@@ -21,7 +21,7 @@
 resources.
 """
 
-from bbschema import Publication
+from bbschema import (Publication, PublicationData)
 
 from . import structures
 from .entity import (EntityResource, EntityAliasResource,
@@ -36,6 +36,8 @@ class PublicationResource(EntityResource):
 
 class PublicationResourceList(EntityResourceList):
     entity_class = Publication
+    entity_data_class = PublicationData
+    entity_stub_fields = structures.publication_stub
     entity_list_fields = structures.publication_list
 
 

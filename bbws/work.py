@@ -21,7 +21,7 @@
 resources.
 """
 
-from bbschema import Work
+from bbschema import (Work, WorkData)
 
 from . import structures
 from .entity import (EntityResource, EntityAliasResource,
@@ -36,6 +36,8 @@ class WorkResource(EntityResource):
 
 class WorkResourceList(EntityResourceList):
     entity_class = Work
+    entity_data_class = WorkData
+    entity_stub_fields = structures.work_stub
     entity_list_fields = structures.work_list
 
 
