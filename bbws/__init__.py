@@ -89,6 +89,9 @@ def create_app(config_file):
 
     bbws.creator.create_views(api)
     bbws.publication.create_views(api)
+    bbws.edition.create_views(api)
+    bbws.publisher.create_views(api)
+    bbws.work.create_views(api)
     bbws.revision.create_views(api)
     bbws.user.create_views(api)
     bbws.entityspecific.create_views(api)
