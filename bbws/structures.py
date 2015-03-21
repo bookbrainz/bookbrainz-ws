@@ -66,6 +66,7 @@ entity_stub = {
 entity = entity_stub.copy()
 entity.update({
     'master_revision_id': fields.Integer,
+    'default_alias_id': fields.Integer,
     'last_updated': fields.DateTime(dt_format='iso8601'),
     'aliases_uri': fields.Url('entity_get_aliases', True),
     'disambiguation_uri': fields.Url('entity_get_disambiguation', True),
@@ -75,15 +76,18 @@ entity.update({
 
 
 entity_alias = {
-    'entity': fields.Nested(entity_stub),
-    'default_alias_id': fields.Integer(default=None),
-    'aliases': fields.List(fields.Nested({
-        'alias_id': fields.Integer,
-        'name': fields.String,
-        'sort_name': fields.String,
-        'language': fields.Nested(language_stub, allow_null=True),
-        'primary': fields.Boolean
-    }))
+    'alias_id': fields.Integer,
+    'name': fields.String,
+    'sort_name': fields.String,
+    'language': fields.Nested(language_stub, allow_null=True),
+    'primary': fields.Boolean
+}
+
+
+entity_alias_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(entity_alias))
 }
 
 

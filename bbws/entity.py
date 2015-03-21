@@ -119,10 +119,10 @@ class EntityAliasResource(Resource):
             aliases = revision.entity_data.aliases
 
         return marshal({
-            'entity': entity,
-            'default_alias_id': revision.entity_data.default_alias_id,
-            'aliases': aliases
-        }, structures.entity_alias)
+            'offset': 0,
+            'count': len(aliases),
+            'objects': aliases
+        }, structures.entity_alias_list)
 
 
 class EntityDisambiguationResource(Resource):
