@@ -40,7 +40,7 @@ class EditionResourceList(EntityResourceList):
 
 
 def create_views(api):
-    api.add_resource(EditionResource, '/edition/<string:entity_gid>',
+    api.add_resource(EditionResource, '/edition/<string:entity_gid>/',
                      endpoint='edition_get_single')
 
     api.add_resource(
@@ -59,4 +59,4 @@ def create_views(api):
         endpoint='edition_get_annotation'
     )
 
-    api.add_resource(EditionResourceList, '/edition')
+    api.add_resource(EditionResourceList, '/edition/')

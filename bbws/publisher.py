@@ -40,7 +40,7 @@ class PublisherResourceList(EntityResourceList):
 
 
 def create_views(api):
-    api.add_resource(PublisherResource, '/publisher/<string:entity_gid>',
+    api.add_resource(PublisherResource, '/publisher/<string:entity_gid>/',
                      endpoint='publisher_get_single')
 
     api.add_resource(
@@ -59,4 +59,4 @@ def create_views(api):
         endpoint='publisher_get_annotation'
     )
 
-    api.add_resource(PublisherResourceList, '/publisher')
+    api.add_resource(PublisherResourceList, '/publisher/')

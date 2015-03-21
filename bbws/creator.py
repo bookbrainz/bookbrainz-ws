@@ -40,7 +40,7 @@ class CreatorResourceList(EntityResourceList):
 
 
 def create_views(api):
-    api.add_resource(CreatorResource, '/creator/<string:entity_gid>',
+    api.add_resource(CreatorResource, '/creator/<string:entity_gid>/',
                      endpoint='creator_get_single')
 
     api.add_resource(
@@ -59,4 +59,4 @@ def create_views(api):
         endpoint='creator_get_annotation'
     )
 
-    api.add_resource(CreatorResourceList, '/creator')
+    api.add_resource(CreatorResourceList, '/creator/')

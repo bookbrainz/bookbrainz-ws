@@ -40,7 +40,7 @@ class WorkResourceList(EntityResourceList):
 
 
 def create_views(api):
-    api.add_resource(WorkResource, '/work/<string:entity_gid>',
+    api.add_resource(WorkResource, '/work/<string:entity_gid>/',
                      endpoint='work_get_single')
 
     api.add_resource(
@@ -59,4 +59,4 @@ def create_views(api):
         endpoint='work_get_annotation'
     )
 
-    api.add_resource(WorkResourceList, '/work')
+    api.add_resource(WorkResourceList, '/work/')
