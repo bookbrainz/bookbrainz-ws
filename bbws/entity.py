@@ -164,10 +164,7 @@ class EntityDisambiguationResource(Resource):
         else:
             disambiguation = revision.entity_data.disambiguation
 
-        return marshal({
-            'entity': entity,
-            'disambiguation': disambiguation
-        }, structures.entity_disambiguation)
+        return marshal(disambiguation, structures.entity_disambiguation)
 
 
 class EntityAnnotationResource(Resource):
@@ -209,10 +206,7 @@ class EntityAnnotationResource(Resource):
         else:
             annotation = revision.entity_data.annotation
 
-        return marshal({
-            'entity': entity,
-            'annotation': annotation
-        }, structures.entity_annotation)
+        return marshal(annotation, structures.entity_annotation)
 
 
 class EntityResourceList(Resource):

@@ -92,21 +92,15 @@ entity_alias_list = {
 
 
 entity_disambiguation = {
-    'entity': fields.Nested(entity_stub),
-    'disambiguation': fields.Nested({
-        'disambiguation_id': fields.Integer(),
-        'comment': fields.String()
-    }, allow_null=True)
+    'disambiguation_id': fields.Integer(),
+    'comment': fields.String()
 }
 
 
 entity_annotation = {
-    'entity': fields.Nested(entity_stub),
-    'annotation': fields.Nested({
-        'annotation_id': fields.Integer(),
-        'created_at': fields.DateTime(dt_format='iso8601'),
-        'content': fields.String()
-    }, allow_null=True)
+    'annotation_id': fields.Integer(),
+    'created_at': fields.DateTime(dt_format='iso8601'),
+    'content': fields.String()
 }
 
 
