@@ -22,13 +22,14 @@ resources.
 """
 
 import uuid
+from flask import request
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
-from bbschema import (Entity, EntityRevision)
+from bbschema import (Entity, EntityData, EntityRevision)
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db, structures
+from . import db, oauth_provider, structures
 
 
 class EntityResource(Resource):
@@ -216,6 +217,8 @@ class EntityResourceList(Resource):
     get_parser.add_argument('offset', type=int, default=0)
 
     entity_class = Entity
+    entity_data_class = EntityData
+    entity_stub_fields = structures.entity_stub
     entity_list_fields = structures.entity_list
 
     def get(self):
@@ -229,3 +232,26 @@ class EntityResourceList(Resource):
             'count': len(entities),
             'objects': entities
         }, self.entity_list_fields)
+
+    @oauth_provider.require_oauth()
+    def post(self):
+        json = request.get_json()
+
+        # This will be valid here, due to authentication.
+        user = request.oauth.user
+
+        entity = self.entity_class()
+        entity_data = self.entity_data_class.create(json)
+
+        revision = EntityRevision.create(user.user_id, entity, entity_data)
+
+        entity.master_revision = revision
+
+        db.session.add(revision)
+
+        # Commit entity, data and revision
+        db.session.commit()
+
+        return marshal(revision, {
+            'entity': fields.Nested(self.entity_stub_fields)
+        })
