@@ -57,24 +57,6 @@ edit_list = {
     'objects': fields.List(fields.Nested(edit))
 }
 
-entity_stub = {
-    'entity_gid': fields.String,
-    'uri': fields.Url('entity_get_single', True)
-}
-
-
-entity = entity_stub.copy()
-entity.update({
-    'master_revision_id': fields.Integer,
-    'default_alias_id': fields.Integer,
-    'last_updated': fields.DateTime(dt_format='iso8601'),
-    'aliases_uri': fields.Url('entity_get_aliases', True),
-    'disambiguation_uri': fields.Url('entity_get_disambiguation', True),
-    'annotation_uri': fields.Url('entity_get_annotation', True),
-    'relationships_uri': fields.Url('relationship_get_many', True)
-})
-
-
 entity_alias = {
     'alias_id': fields.Integer,
     'name': fields.String,
@@ -83,6 +65,35 @@ entity_alias = {
     'primary': fields.Boolean
 }
 
+revision_stub = {
+    'revision_id': fields.Integer,
+    'created_at': fields.DateTime(dt_format='iso8601'),
+    'note': fields.String,
+    'user': fields.Nested({
+        'user_id': fields.Integer,
+    }),
+    'uri': fields.Url('revision_get_single', True),
+}
+
+entity_stub = {
+    'entity_gid': fields.String,
+    'uri': fields.Url('entity_get_single', True)
+}
+
+
+entity = entity_stub.copy()
+entity.update({
+    'last_updated': fields.DateTime(dt_format='iso8601'),
+    'aliases_uri': fields.Url('entity_get_aliases', True),
+    'disambiguation_uri': fields.Url('entity_get_disambiguation', True),
+    'annotation_uri': fields.Url('entity_get_annotation', True),
+    'relationships_uri': fields.Url('relationship_get_many', True),
+    'revision': fields.Nested(revision_stub)
+})
+
+entity_data = {
+    'default_alias': fields.Nested(entity_alias, allow_null=True)
+}
 
 entity_alias_list = {
     'offset': fields.Integer,
@@ -161,15 +172,6 @@ relationship_list = {
     'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested(relationship))
-}
-
-revision_stub = {
-    'revision_id': fields.Integer,
-    'created_at': fields.DateTime(dt_format='iso8601'),
-    'user': fields.Nested({
-        'user_id': fields.Integer,
-    }),
-    'uri': fields.Url('revision_get_single', True),
 }
 
 entity_revision = revision_stub.copy()
@@ -261,7 +263,8 @@ creator_list = {
 }
 
 
-creator_data = {
+creator_data = entity_data.copy()
+creator_data.update({
     'begin_date': fields.String,
     'begin_date_precision': fields.String,
     'end_date': fields.String,
@@ -275,7 +278,7 @@ creator_data = {
         'id': fields.Integer,
         'name': fields.String
     }, allow_null=True),
-}
+})
 
 
 publication_stub = entity_stub.copy()
@@ -301,12 +304,13 @@ publication_list = {
 }
 
 
-publication_data = {
+publication_data = entity_data.copy()
+publication_data.update({
     'publication_type': fields.Nested({
         'publication_type_id': fields.Integer,
         'label': fields.String
     }, allow_null=True)
-}
+})
 
 
 publisher_stub = entity_stub.copy()
@@ -332,7 +336,8 @@ publisher_list = {
 }
 
 
-publisher_data = {
+publisher_data = entity_data.copy()
+publisher_data.update({
     'begin_date': fields.String,
     'begin_date_precision': fields.String,
     'end_date': fields.String,
@@ -342,7 +347,7 @@ publisher_data = {
         'publisher_type_id': fields.Integer,
         'label': fields.String
     }, allow_null=True)
-}
+})
 
 
 edition_stub = entity_stub.copy()
@@ -368,7 +373,8 @@ edition_list = {
 }
 
 
-edition_data = {
+edition_data = entity_data.copy()
+edition_data.update({
     'begin_date': fields.String,
     'begin_date_precision': fields.String,
     'end_date': fields.String,
@@ -382,7 +388,7 @@ edition_data = {
         'edition_type_id': fields.Integer,
         'label': fields.String
     }, allow_null=True)
-}
+})
 
 
 work_stub = entity_stub.copy()
@@ -408,7 +414,8 @@ work_list = {
 }
 
 
-work_data = {
+work_data = entity_data.copy()
+work_data.update({
     'languages': fields.List(fields.Nested({
         'id': fields.Integer,
         'name': fields.String,
@@ -417,7 +424,7 @@ work_data = {
         'work_type_id': fields.Integer,
         'label': fields.String
     }, allow_null=True)
-}
+})
 
 
 publication_type_list = {

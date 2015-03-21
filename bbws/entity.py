@@ -72,8 +72,9 @@ class EntityResource(Resource):
         if revision is None:
             # No data, so 404
             abort(404)
-        else:
-            entity_data = revision.entity_data
+
+        entity_data = revision.entity_data
+        entity.revision = revision
 
         entity_out = marshal(entity, self.entity_fields)
         data_out = marshal(entity_data, self.entity_data_fields)
