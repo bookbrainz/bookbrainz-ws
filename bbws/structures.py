@@ -275,7 +275,7 @@ creator_data.update({
         'label': fields.String
     }, allow_null=True),
     'gender': fields.Nested({
-        'id': fields.Integer,
+        'gender_id': fields.Integer,
         'name': fields.String
     }, allow_null=True),
 })
@@ -469,7 +469,7 @@ work_type_list = {
 
 gender_list = {
     'objects': fields.List(fields.Nested({
-        'id': fields.Integer,
+        'gender_id': fields.Integer,
         'name': fields.String,
     }))
 }
