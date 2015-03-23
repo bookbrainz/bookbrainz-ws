@@ -215,8 +215,8 @@ user.update({
     'user_type': fields.Nested(user_type)
 })
 
-user_secrets = user_stub.copy()
-user_secrets.update({
+account = user.copy()
+account.update({
     'email': fields.String,
     'birth_date': fields.DateTime(dt_format='iso8601'),
     'gender_id': fields.Integer
