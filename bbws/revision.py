@@ -109,14 +109,9 @@ class RevisionResourceList(Resource):
         rev_json = request.get_json()
 
         # First, determine which type of edit this is.
-        if 'entity_gid' in rev_json:
-            entity_gid = rev_json['entity_gid']
-            if not entity_gid:
-                # If entity_gid is empty, then this is a CREATE.
-                revision = EntityRevision.create(rev_json)
-            elif len(entity_gid) == 1:
-                # If there is 1 element in entity_gid, attempt an update.
-                revision = EntityRevision.update(rev_json)
+        if 'entity_gid' in rev_json and len(rev_json['entity_gid']) == 1:
+            # If there is 1 element in entity_gid, attempt an update.
+            revision = EntityRevision.update(rev_json)
 
             subject = revision.entity
         elif 'relationship_id' in rev_json:
@@ -139,8 +134,7 @@ class RevisionResourceList(Resource):
 
         # Set entity master revision, and set parent of previous master revision
         # TODO: Properly close revisions
-        if subject.master_revision is not None:
-            subject.master_revision.parent = revision
+        subject.master_revision.parent = revision
         subject.master_revision = revision
 
         db.session.add(revision)
