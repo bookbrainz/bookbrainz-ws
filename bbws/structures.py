@@ -137,8 +137,7 @@ relationship_type.update({
     'parent': fields.Nested(relationship_type_stub, allow_null=True),
     'child_order': fields.Integer,
     'description': fields.String,
-    'forward_template': fields.String,
-    'reverse_template': fields.String,
+    'template': fields.String,
     'deprecated': fields.Boolean,
 })
 
