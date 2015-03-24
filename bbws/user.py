@@ -76,15 +76,15 @@ class UserResourceList(Resource):
             'objects': users
         }, structures.user_list)
 
-    post_parser = reqparse.RequestParser()
-    post_parser.add_argument('name', type=unicode, required=True)
-    post_parser.add_argument('email', type=unicode, required=True)
-    post_parser.add_argument('user_type_id', type=unicode, required=True)
-
     def post(self):
-        args = self.post_parser.parse_args()
-        user = User(name=args.name, email=args.email,
-                    user_type_id=args.user_type_id)
+        json = request.get_json()
+
+        try:
+            user = User(name=json['name'], email=json['email'],
+                        user_type_id=json['user_type']['user_type_id'])
+        except KeyError:
+            abort(400)
+
         db.session.add(user)
         db.session.commit()
 
@@ -229,7 +229,7 @@ def create_views(api):
     api.add_resource(UserStatsResource, '/user/<int:user_id>/stats',
                      endpoint='editor_stats')
     api.add_resource(UserTypeResourceList, '/userType')
-    api.add_resource(UserResourceList, '/user', endpoint='user_get_many')
+    api.add_resource(UserResourceList, '/user/', endpoint='user_get_many')
 
     api.add_resource(AccountResource, '/account',
                      endpoint='account_get_current')
