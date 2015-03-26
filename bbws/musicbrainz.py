@@ -31,14 +31,22 @@ class GenderResourceList(Resource):
     def get(self):
         genders = db.session.query(Gender).all()
 
-        return marshal({'objects': genders}, structures.gender_list)
+        return marshal({
+            'offset': 0,
+            'objects': genders,
+            'count': len(genders),
+        }, structures.gender_list)
 
 
 class LanguageResourceList(Resource):
     def get(self):
         languages = db.session.query(Language).all()
 
-        return marshal({'objects': languages}, structures.language_list)
+        return marshal({
+            'offset': 0,
+            'objects': languages,
+            'count': len(languages),
+        }, structures.language_list)
 
 
 def create_views(api):

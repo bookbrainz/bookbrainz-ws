@@ -30,6 +30,7 @@ class PublicationTypeResourceList(Resource):
         types = db.session.query(PublicationType).all()
 
         return marshal({
+            'offset': 0,
             'count': len(types),
             'objects': types
         }, structures.publication_type_list)
@@ -40,6 +41,7 @@ class CreatorTypeResourceList(Resource):
         types = db.session.query(CreatorType).all()
 
         return marshal({
+            'offset': 0,
             'count': len(types),
             'objects': types
         }, structures.creator_type_list)
@@ -50,6 +52,7 @@ class PublisherTypeResourceList(Resource):
         types = db.session.query(PublisherType).all()
 
         return marshal({
+            'offset': 0,
             'count': len(types),
             'objects': types
         }, structures.publisher_type_list)
@@ -60,6 +63,7 @@ class EditionStatusResourceList(Resource):
         types = db.session.query(EditionStatus).all()
 
         return marshal({
+            'offset': 0,
             'count': len(types),
             'objects': types
         }, structures.edition_type_list)
@@ -70,6 +74,7 @@ class WorkTypeResourceList(Resource):
         types = db.session.query(WorkType).all()
 
         return marshal({
+            'offset': 0,
             'count': len(types),
             'objects': types
         }, structures.work_type_list)

@@ -30,15 +30,18 @@ language_stub = {
     'name': fields.String
 }
 
+language = language_stub.copy()
+language.update(
+    'iso_code_2t': fields.String,
+    'iso_code_2b': fields.String,
+    'iso_code_1': fields.String,
+    'iso_code_3': fields.String,
+)
+
 language_list = {
-    'objects': fields.List(fields.Nested({
-        'language_id': fields.Integer,
-        'iso_code_2t': fields.String,
-        'iso_code_2b': fields.String,
-        'iso_code_1': fields.String,
-        'name': fields.String,
-        'iso_code_3': fields.String,
-    }))
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(language)),
 }
 
 edit = {
@@ -196,6 +199,8 @@ user_type = {
 }
 
 user_type_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
     'objects': fields.Nested(user_type)
 }
 
@@ -427,6 +432,7 @@ work_data.update({
 
 
 publication_type_list = {
+    'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
         'publication_type_id': fields.Integer,
@@ -435,6 +441,7 @@ publication_type_list = {
 }
 
 creator_type_list = {
+    'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
         'creator_type_id': fields.Integer,
@@ -443,6 +450,7 @@ creator_type_list = {
 }
 
 publisher_type_list = {
+    'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
         'publisher_type_id': fields.Integer,
@@ -451,6 +459,7 @@ publisher_type_list = {
 }
 
 edition_type_list = {
+    'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
         'edition_type_id': fields.Integer,
@@ -459,6 +468,7 @@ edition_type_list = {
 }
 
 work_type_list = {
+    'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
         'work_type_id': fields.Integer,
@@ -467,6 +477,8 @@ work_type_list = {
 }
 
 gender_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
     'objects': fields.List(fields.Nested({
         'gender_id': fields.Integer,
         'name': fields.String,
