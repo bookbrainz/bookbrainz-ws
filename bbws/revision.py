@@ -19,13 +19,11 @@
 from flask import request
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
-from bbschema import (Entity, EntityRevision, CreatorData, PublicationData,
-                      EditionData, PublisherData, WorkData,
-                      RelationshipRevision, Revision)
+from bbschema import (CreatorData, EditionData, EntityRevision,
+                      PublicationData, PublisherData, Revision, WorkData)
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import db, oauth_provider, revision_json, structures
-
 
 data_mapper = {
     PublicationData: ('publication_data', structures.publication_data),
@@ -108,31 +106,20 @@ class RevisionResourceList(Resource):
     def post(self):
         rev_json = request.get_json()
 
-        # First, determine which type of edit this is.
-        if 'entity_gid' in rev_json and len(rev_json['entity_gid']) == 1:
-            # If there is 1 element in entity_gid, attempt an update.
-            revision = EntityRevision.update(rev_json)
-
-            subject = revision.entity
-        elif 'relationship_id' in rev_json:
-            relationship_id = rev_json['relationship_id']
-            if not relationship_id:
-                # If relationship_id is empty, then CREATE a new relationship.
-                subject, tree = revision_json.create_relationship(revision_json)
-        else:
-            abort(400)
-
         # This will be valid here, due to authentication.
         user = request.oauth.user
 
-        is_entity_revision = isinstance(subject, Entity)
+        # First, determine which type of edit this is.
+        if 'entity_gid' in rev_json and len(rev_json['entity_gid']) == 1:
+            # If there is 1 element in entity_gid, attempt an update.
+            revision = EntityRevision.update(user, rev_json, db.session)
 
-        if not is_entity_revision:
-            revision = RelationshipRevision(user_id=user.user_id)
-            revision.relationship = subject
-            revision.relationship_tree = data
+            subject = revision.entity
+        else:
+            abort(400)
 
-        # Set entity master revision, and set parent of previous master revision
+        # Set entity master revision, and set parent of previous master
+        # revision
         # TODO: Properly close revisions
         subject.master_revision.parent = revision
         subject.master_revision = revision
@@ -141,10 +128,7 @@ class RevisionResourceList(Resource):
         # Commit entity, data and revision
         db.session.commit()
 
-        if is_entity_revision:
-            return marshal(revision, structures.entity_revision)
-        else:
-            return marshal(revision, structures.relationship_revision)
+        return marshal(revision, structures.entity_revision)
 
 
 def create_views(api):

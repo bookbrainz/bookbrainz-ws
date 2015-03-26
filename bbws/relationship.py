@@ -20,14 +20,14 @@
 related resources.
 """
 
+from flask import request
+from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
-from flask.ext.restful import Resource, abort, marshal, reqparse
-
-from bbschema import (Relationship, RelationshipEntity, RelationshipRevision,
-                      RelationshipTree, RelationshipType)
+from bbschema import (Relationship, RelationshipData, RelationshipEntity,
+                      RelationshipRevision, RelationshipType)
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db, structures
+from . import db, oauth_provider, structures
 
 
 class RelationshipResource(Resource):
@@ -55,7 +55,7 @@ class RelationshipResourceList(Resource):
             # Get the relationships for the specified entity.
             qry = db.session.query(Relationship).\
                 join(RelationshipRevision, Relationship.master_revision).\
-                join(RelationshipTree).\
+                join(RelationshipData).\
                 join(RelationshipEntity).\
                 filter(RelationshipEntity.entity_gid == entity_gid).\
                 offset(args.offset).limit(args.limit)
@@ -72,6 +72,33 @@ class RelationshipResourceList(Resource):
             'count': len(relationships),
             'objects': relationships
         }, structures.relationship_list)
+
+    @oauth_provider.require_oauth()
+    def post(self):
+        json = request.get_json()
+
+        # This will be valid here, due to authentication.
+        user = request.oauth.user
+
+        # Create a new relationship
+        relationship = Relationship()
+        # And some data to go in it
+        relationship_data = RelationshipData.create(json)
+
+        # Then, make the revision, passing relationship and data
+        revision = RelationshipRevision.create(user.user_id, relationship,
+                                               relationship_data)
+
+        relationship.master_revision = revision
+
+        db.session.add(revision)
+
+        # Commit relationship, data and revision
+        db.session.commit()
+
+        return marshal(revision, {
+            'relationship': fields.Nested(structures.relationship_stub)
+        })
 
 
 class RelationshipTypeResource(Resource):

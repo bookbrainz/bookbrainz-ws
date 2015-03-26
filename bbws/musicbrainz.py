@@ -22,7 +22,7 @@ schema.
 
 
 from bbschema import Gender, Language
-from flask.ext.restful import Resource, marshal, reqparse
+from flask.ext.restful import Resource, marshal
 
 from . import db, structures
 

@@ -20,10 +20,11 @@
 import datetime
 import uuid
 
+from flask import request as global_request
+
 from bbschema import OAuthClient, User
-from flask import session, request as global_request
-from sqlalchemy.orm.exc import NoResultFound
 from flask_oauthlib.provider import OAuth2RequestValidator
+from sqlalchemy.orm.exc import NoResultFound
 
 from . import cache, db, oauth_provider
 
