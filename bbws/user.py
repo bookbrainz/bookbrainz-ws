@@ -96,7 +96,7 @@ class UserTypeResourceList(Resource):
         types = db.session.query(UserType).all()
         return marshal({
             'offset': 0,
-            'count': len(types)
+            'count': len(types),
             'objects': types
         }, structures.user_type_list)
 
