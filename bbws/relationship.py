@@ -86,8 +86,9 @@ class RelationshipResourceList(Resource):
         relationship_data = RelationshipData.create(json)
 
         # Then, make the revision, passing relationship and data
-        revision = RelationshipRevision.create(user.user_id, relationship,
-                                               relationship_data)
+        revision = RelationshipRevision(user_id=user.user_id)
+        revision.relationship = relationship
+        revision.relationship_data = relationship_data
 
         relationship.master_revision = revision
 

@@ -84,6 +84,45 @@ class EntityResource(Resource):
 
         return entity_out
 
+    @oauth_provider.require_oauth()
+    def put(self, entity_gid):
+        data = request.get_json()
+
+        # This will be valid here, due to authentication.
+        user = request.oauth.user
+
+        try:
+            uuid.UUID(entity_gid)
+        except ValueError:
+            abort(404)
+
+        try:
+            entity = db.session.query(self.entity_class).options(
+                joinedload('master_revision.entity_data')
+            ).filter_by(entity_gid=entity_gid).one()
+        except NoResultFound:
+            abort(404)
+
+        if entity.master_revision is None:
+            abort(403) # Forbidden to PUT on an entity with no data yet
+
+        entity_data = entity.master_revision.entity_data
+        entity_data.update(user, data, db.session)
+
+        revision = EntityRevision(user_id=user.user_id)
+        revision.entity = entity
+        revision.entity_data = entity_data
+
+        entity.master_revision.parent = revision
+        entity.master_revision = revision
+
+        # Commit entity, data and revision
+        db.session.commit()
+
+        return marshal(revision, {
+            'entity': fields.Nested(self.entity_data_fields)
+        })
+
 
 class EntityAliasResource(Resource):
 
@@ -241,15 +280,17 @@ class EntityResourceList(Resource):
 
     @oauth_provider.require_oauth()
     def post(self):
-        json = request.get_json()
+        data = request.get_json()
 
         # This will be valid here, due to authentication.
         user = request.oauth.user
 
         entity = self.entity_class()
-        entity_data = self.entity_data_class.create(json)
+        entity_data = self.entity_data_class.create(data, db.session)
 
-        revision = EntityRevision.create(user.user_id, entity, entity_data)
+        revision = EntityRevision(user_id=user.user_id)
+        revision.entity = entity
+        revision.entity_data = entity_data
 
         entity.master_revision = revision
 

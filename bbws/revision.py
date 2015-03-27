@@ -102,34 +102,6 @@ class RevisionResourceList(Resource):
             'objects': revisions
         }, structures.revision_list)
 
-    @oauth_provider.require_oauth()
-    def post(self):
-        rev_json = request.get_json()
-
-        # This will be valid here, due to authentication.
-        user = request.oauth.user
-
-        # First, determine which type of edit this is.
-        if 'entity_gid' in rev_json and len(rev_json['entity_gid']) == 1:
-            # If there is 1 element in entity_gid, attempt an update.
-            revision = EntityRevision.update(user, rev_json, db.session)
-
-            subject = revision.entity
-        else:
-            abort(400)
-
-        # Set entity master revision, and set parent of previous master
-        # revision
-        # TODO: Properly close revisions
-        subject.master_revision.parent = revision
-        subject.master_revision = revision
-
-        db.session.add(revision)
-        # Commit entity, data and revision
-        db.session.commit()
-
-        return marshal(revision, structures.entity_revision)
-
 
 def create_views(api):
     api.add_resource(RevisionResource, '/revision/<int:revision_id>',
