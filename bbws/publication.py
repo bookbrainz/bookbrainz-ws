@@ -21,12 +21,13 @@
 resources.
 """
 
-from bbschema import (Publication, PublicationData)
+from bbschema import Publication, PublicationData
 
 from . import structures
-from .entity import (EntityResource, EntityAliasResource,
-                     EntityDisambiguationResource, EntityAnnotationResource,
+from .entity import (EntityAliasResource, EntityAnnotationResource,
+                     EntityDisambiguationResource, EntityResource,
                      EntityResourceList)
+
 
 class PublicationResource(EntityResource):
     entity_class = Publication

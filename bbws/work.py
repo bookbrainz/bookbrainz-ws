@@ -21,12 +21,13 @@
 resources.
 """
 
-from bbschema import (Work, WorkData)
+from bbschema import Work, WorkData
 
 from . import structures
-from .entity import (EntityResource, EntityAliasResource,
-                     EntityDisambiguationResource, EntityAnnotationResource,
+from .entity import (EntityAliasResource, EntityAnnotationResource,
+                     EntityDisambiguationResource, EntityResource,
                      EntityResourceList)
+
 
 class WorkResource(EntityResource):
     entity_class = Work

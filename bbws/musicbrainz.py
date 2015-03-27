@@ -21,8 +21,9 @@ schema.
 """
 
 
-from bbschema import Gender, Language
 from flask.ext.restful import Resource, marshal
+
+from bbschema import Gender, Language
 
 from . import db, structures
 

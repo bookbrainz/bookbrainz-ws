@@ -22,10 +22,11 @@ resources.
 """
 
 import uuid
+
 from flask import request
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
-from bbschema import (Entity, EntityData, EntityRevision)
+from bbschema import Entity, EntityData, EntityRevision
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 

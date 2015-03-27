@@ -16,14 +16,13 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from flask import request
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
 from bbschema import (CreatorData, EditionData, EntityRevision,
                       PublicationData, PublisherData, Revision, WorkData)
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db, oauth_provider, revision_json, structures
+from . import db, revision_json, structures
 
 data_mapper = {
     PublicationData: ('publication_data', structures.publication_data),

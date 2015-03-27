@@ -21,12 +21,13 @@
 resources.
 """
 
-from bbschema import (Creator, CreatorData)
+from bbschema import Creator, CreatorData
 
 from . import structures
-from .entity import (EntityResource, EntityAliasResource,
-                     EntityDisambiguationResource, EntityAnnotationResource,
+from .entity import (EntityAliasResource, EntityAnnotationResource,
+                     EntityDisambiguationResource, EntityResource,
                      EntityResourceList)
+
 
 class CreatorResource(EntityResource):
     entity_class = Creator
