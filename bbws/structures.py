@@ -31,12 +31,12 @@ language_stub = {
 }
 
 language = language_stub.copy()
-language.update(
+language.update({
     'iso_code_2t': fields.String,
     'iso_code_2b': fields.String,
     'iso_code_1': fields.String,
     'iso_code_3': fields.String,
-)
+})
 
 language_list = {
     'offset': fields.Integer,
