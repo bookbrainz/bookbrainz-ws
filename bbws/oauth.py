@@ -174,7 +174,6 @@ class MyRequestValidator(OAuth2RequestValidator):
         expires = (datetime.datetime.utcnow() +
                    datetime.timedelta(seconds=expires_in))
 
-        print token[u'scope']
         tok = BearerToken(
             access_token=token[u'access_token'],
             refresh_token=token[u'refresh_token'],
@@ -184,6 +183,10 @@ class MyRequestValidator(OAuth2RequestValidator):
             user_id=request.user.user_id,
         )
         tok.save()
+
+        request.user.active_at = datetime.datetime.utcnow()
+        db.session.commit()
+
         return tok
 
 
