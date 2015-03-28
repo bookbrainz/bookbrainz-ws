@@ -38,6 +38,7 @@ class PublisherResource(EntityResource):
 class PublisherResourceList(EntityResourceList):
     entity_class = Publisher
     entity_data_class = PublisherData
+    entity_data_fields = structures.publisher_data
     entity_stub_fields = structures.publisher_stub
     entity_list_fields = structures.publisher_list
 

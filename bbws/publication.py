@@ -38,6 +38,7 @@ class PublicationResource(EntityResource):
 class PublicationResourceList(EntityResourceList):
     entity_class = Publication
     entity_data_class = PublicationData
+    entity_data_fields = structures.publication_data
     entity_stub_fields = structures.publication_stub
     entity_list_fields = structures.publication_list
 

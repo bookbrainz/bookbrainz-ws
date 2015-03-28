@@ -125,6 +125,14 @@ entity_annotation = {
 }
 
 
+entity_expanded = entity_stub.copy()
+entity_expanded.update({
+    'last_updated': fields.DateTime(dt_format='iso8601'),
+    'disambiguation': fields.Nested(entity_disambiguation, allow_null=True),
+    'annotation': fields.Nested(entity_annotation, allow_null=True)
+})
+
+
 entity_list = {
     'offset': fields.Integer,
     'count': fields.Integer,

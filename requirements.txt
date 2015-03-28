@@ -1,4 +1,5 @@
 bcrypt
+elasticsearch
 flask
 flask-redis
 flask-restful

@@ -23,6 +23,7 @@ resources.
 
 import uuid
 
+from elasticsearch import Elasticsearch
 from flask import request
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
@@ -31,6 +32,17 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import db, oauth_provider, structures
+
+
+es = Elasticsearch()
+
+def index_entity(entity):
+    es.index(
+        index='bookbrainz',
+        doc_type=entity['_type'].lower(),
+        id=entity['entity_gid'],
+        body=entity
+    )
 
 
 class EntityResource(Resource):
@@ -312,6 +324,12 @@ class EntityResourceList(Resource):
 
         # Commit entity, data and revision
         db.session.commit()
+
+        entity_out = marshal(revision.entity, structures.entity_expanded)
+        data_out = marshal(revision.entity_data, self.entity_data_fields)
+
+        entity_out.update(data_out)
+        index_entity(entity_out)
 
         return marshal(revision, {
             'entity': fields.Nested(self.entity_stub_fields)
