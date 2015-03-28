@@ -28,21 +28,30 @@ class TestUserViews(TestCase):
         db.session.add(new_user)
         db.session.commit()
 
-        created_at = new_user.created_at.replace(microsecond=0)
-        active_at = new_user.active_at.replace(microsecond=0)
+        # TODO fix when flask restful releases next version
+        import pytz
+        from calendar import timegm
+        created_at = datetime.datetime.isoformat(
+            datetime.datetime.fromtimestamp(
+                timegm(new_user.created_at.utctimetuple()), tz=pytz.UTC
+            )
+        )
+        active_at = datetime.datetime.isoformat(
+            datetime.datetime.fromtimestamp(
+                timegm(new_user.active_at.utctimetuple()), tz=pytz.UTC
+            )
+        )
 
-        response = self.client.get('/ws/user/{}'.format(new_user.user_id))
+        response = self.client.get('/ws/user/{}/'.format(new_user.user_id))
         self.assertEquals(response.json.get(u'name'), new_user.name)
         self.assertEquals(response.json.get(u'reputation'),
                           new_user.reputation)
         self.assertEquals(response.json.get(u'bio'), new_user.bio)
-        self.assertEquals(response.json.get(u'created_at'),
-                          datetime.datetime.isoformat(created_at))
-        self.assertEquals(response.json.get(u'active_at'),
-                          datetime.datetime.isoformat(active_at))
-        self.assertTrue(response.json.get(u'stats_uri', '').endswith(
-            url_for('editor_stats', user_id=new_user.user_id))
-        )
+        self.assertEquals(response.json.get(u'created_at'), created_at)
+        self.assertEquals(response.json.get(u'active_at'), active_at)
+        self.assertEquals(response.json.get(u'total_revisions'), 0)
+        self.assertEquals(response.json.get(u'revisions_applied'), 0)
+        self.assertEquals(response.json.get(u'revisions_reverted'), 0)
         self.assertEquals(response.json.get(u'user_type', {}), {
             'user_type_id': 1,
             'label': 'Editor'

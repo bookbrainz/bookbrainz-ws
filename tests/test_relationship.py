@@ -28,7 +28,7 @@ class TestRelationshipViews(TestCase):
         self.assertEquals(len(response.json.get('texts', [])), 1)
 
     def test_relationship_get_many(self):
-        response = self.client.get('/ws/relationship')
+        response = self.client.get('/ws/relationship/')
         self.assertEquals(response.json.get('count'), 3)
         self.assertEquals(response.json.get('offset'), 0)
         self.assertEquals(len(response.json.get('objects', [])), 3)
