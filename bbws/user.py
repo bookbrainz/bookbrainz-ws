@@ -38,6 +38,29 @@ class UserResource(Resource):
 
         return marshal(user, structures.user)
 
+    def put(self, user_id):
+        try:
+            user = db.session.query(User).filter_by(user_id=user_id).one()
+        except NoResultFound:
+            abort(404)
+
+        json = request.get_json()
+
+        if json['name'] != user.name:
+            name_taken = db.session.query(User).\
+                filter_by(name=json['name']).first()
+
+            if name_taken is not None:
+                abort(403, description='Name already in use.')
+
+            user.name = json['name']
+
+        user.bio = json['bio']
+
+        db.session.commit()
+
+        return marshal(user, structures.user)
+
 
 class AccountResource(Resource):
     """ Provides the user's own secrets for authenticated users. """
