@@ -36,6 +36,7 @@ language.update({
     'iso_code_2b': fields.String,
     'iso_code_1': fields.String,
     'iso_code_3': fields.String,
+    'frequency': fields.Integer
 })
 
 language_list = {

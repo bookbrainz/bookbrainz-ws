@@ -41,7 +41,9 @@ class GenderResourceList(Resource):
 
 class LanguageResourceList(Resource):
     def get(self):
-        languages = db.session.query(Language).all()
+        languages = db.session.query(Language).filter(
+            Language.frequency != 0
+        ).all()
 
         return marshal({
             'offset': 0,
