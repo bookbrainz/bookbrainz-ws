@@ -22,7 +22,7 @@ from bbschema import (CreatorData, EditionData, EntityRevision,
                       PublicationData, PublisherData, Revision, WorkData)
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db, revision_json, structures
+from . import db, structures
 
 data_mapper = {
     PublicationData: ('publication_data', structures.publication_data),

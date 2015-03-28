@@ -3,7 +3,7 @@
 from bbschema import (Alias, Creator, CreatorData, CreatorType, Disambiguation,
                       Entity, EntityRevision, Publication, PublicationData,
                       PublicationType, Relationship, RelationshipEntity,
-                      RelationshipRevision, RelationshipText, RelationshipTree,
+                      RelationshipRevision, RelationshipText, RelationshipData,
                       RelationshipType, User, UserType)
 
 
@@ -77,28 +77,19 @@ def load_data(db):
     relationship_type1 = RelationshipType(
         label=u'First Relationship',
         description=u'A relationship which is first.',
-        forward_template=u'<%= subjects[0] %> is '
-        u'authored by <%= subjects[1] %>',
-        reverse_template=u'<%= subjects[1] %> is the '
-        u'author of <%= subjects[0] %>',
+        template=u'<%= subjects[0] %> is authored by <%= subjects[1] %>',
     )
 
     relationship_type2 = RelationshipType(
         label=u'Second Relationship',
         description=u'A relationship which is second.',
-        forward_template=u'<%= subjects[0] %> is translated'
-        u' by <%= subjects[1] %>',
-        reverse_template=u'<%= subjects[1] %> is the '
-        u'translator of <%= subjects[0] %>',
+        template=u'<%= subjects[0] %> is translated by <%= subjects[1] %>'
     )
 
     relationship_type3 = RelationshipType(
         label=u'Third Relationship',
         description=u'A relationship which is third.',
-        forward_template=u'<%= subjects[0] %> has '
-        u'profession <%= subjects[1] %>',
-        reverse_template=u'<%= subjects[1] %> is the '
-        u'profession of <%= subjects[0] %>',
+        template=u'<%= subjects[0] %> has profession <%= subjects[1] %>'
     )
     db.session.add_all((relationship_type1, relationship_type2,
                         relationship_type3))
@@ -110,47 +101,47 @@ def load_data(db):
     db.session.add_all((relationship1, relationship2, relationship3))
     db.session.commit()
 
-    relationship_tree1 = RelationshipTree(
+    relationship_data1 = RelationshipData(
         relationship_type_id=relationship_type1.relationship_type_id
     )
-    relationship_tree1.entities = [
+    relationship_data1.entities = [
         RelationshipEntity(entity_gid=entity1.entity_gid, position=1),
         RelationshipEntity(entity_gid=entity2.entity_gid, position=2)
     ]
-    relationship_tree2 = RelationshipTree(
+    relationship_data2 = RelationshipData(
         relationship_type_id=relationship_type2.relationship_type_id
     )
-    relationship_tree2.entities = [
+    relationship_data2.entities = [
         RelationshipEntity(entity_gid=entity1.entity_gid, position=1),
         RelationshipEntity(entity_gid=entity3.entity_gid, position=2)
     ]
-    relationship_tree3 = RelationshipTree(
+    relationship_data3 = RelationshipData(
         relationship_type_id=relationship_type3.relationship_type_id
     )
-    relationship_tree3.entities = [
+    relationship_data3.entities = [
         RelationshipEntity(entity_gid=entity3.entity_gid, position=1),
     ]
-    relationship_tree3.texts = [
+    relationship_data3.texts = [
         RelationshipText(text=u'translator', position=2),
     ]
 
-    db.session.add_all([relationship_tree1, relationship_tree2,
-                        relationship_tree3])
+    db.session.add_all([relationship_data1, relationship_data2,
+                        relationship_data3])
     db.session.commit()
 
     revision4 = RelationshipRevision(
         user_id=editor.user_id, relationship_id=relationship1.relationship_id,
-        relationship_tree_id=relationship_tree1.relationship_tree_id
+        relationship_data_id=relationship_data1.relationship_data_id
     )
 
     revision5 = RelationshipRevision(
         user_id=editor.user_id, relationship_id=relationship2.relationship_id,
-        relationship_tree_id=relationship_tree2.relationship_tree_id
+        relationship_data_id=relationship_data2.relationship_data_id
     )
 
     revision6 = RelationshipRevision(
         user_id=editor.user_id, relationship_id=relationship3.relationship_id,
-        relationship_tree_id=relationship_tree3.relationship_tree_id
+        relationship_data_id=relationship_data3.relationship_data_id
     )
 
     entity1.master_revision = revision1

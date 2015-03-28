@@ -79,8 +79,7 @@ revision_stub = {
 }
 
 entity_stub = {
-    'entity_gid': fields.String,
-    'uri': fields.Url('entity_get_single', True)
+    'entity_gid': fields.String
 }
 
 
@@ -157,16 +156,16 @@ relationship.update({
     'last_updated': fields.DateTime(dt_format='iso8601'),
     'relationship_type': fields.Nested(
         relationship_type,
-        attribute='master_revision.relationship_tree.relationship_type',
+        attribute='master_revision.relationship_data.relationship_type',
     ),
     'entities': fields.List(fields.Nested({
         'entity': fields.Nested(entity_stub),
         'position': fields.Integer
-    }), attribute='master_revision.relationship_tree.entities'),
+    }), attribute='master_revision.relationship_data.entities'),
     'texts': fields.List(fields.Nested({
         'text': fields.String,
         'position': fields.Integer
-    }), attribute='master_revision.relationship_tree.texts')
+    }), attribute='master_revision.relationship_data.texts')
 })
 
 
