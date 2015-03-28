@@ -20,7 +20,6 @@ from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
 from bbschema import (CreatorData, EditionData, EntityRevision,
                       PublicationData, PublisherData, Revision, WorkData)
-from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import db, structures
