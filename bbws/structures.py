@@ -40,7 +40,12 @@ class EntityUrl(fields.Url):
         super(EntityUrl, self).__init__(None, absolute, scheme)
 
     def output(self, key, obj):
-        self.endpoint = TYPE_MAP.get(type(obj))
+        if hasattr(obj, 'entity'):
+            entity = obj.entity
+        else:
+            entity = obj
+
+        self.endpoint = TYPE_MAP.get(type(entity))
         return super(EntityUrl, self).output(key, obj)
 
 language_stub = {
@@ -100,11 +105,6 @@ revision_stub = {
 entity_stub = {
     'entity_gid': fields.String
 }
-
-entity_ref = entity_stub.copy()
-entity_ref.update({
-    'entity_uri': EntityUrl(True)
-})
 
 entity = entity_stub.copy()
 entity.update({
@@ -200,7 +200,7 @@ relationship_list = {
 
 entity_revision = revision_stub.copy()
 entity_revision.update({
-    'entity': fields.Nested(entity_ref)
+    'entity_uri': EntityUrl(True)
 })
 
 relationship_revision = revision_stub.copy()

@@ -99,9 +99,7 @@ class RevisionResourceList(Resource):
         list_fields = structures.revision_list
 
         if args.type == 'entity':
-            query = query.options(
-                joinedload(EntityRevision.entity)
-            ).filter_by(_type=1)
+            query = query.filter_by(_type=1)
             list_fields = structures.entity_revision_list
 
         revisions = query.offset(args.offset).limit(args.limit).all()
