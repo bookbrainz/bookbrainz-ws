@@ -68,22 +68,6 @@ language_list = {
     'objects': fields.List(fields.Nested(language)),
 }
 
-edit = {
-    'edit_id': fields.Integer,
-    'status': fields.Integer,
-    'uri': fields.Url('edit_get_single', True),
-    'user': fields.Nested({
-        'user_id': fields.Integer,
-    }),
-    'revisions_uri': fields.Url('revision_get_many', True)
-}
-
-edit_list = {
-    'offset': fields.Integer,
-    'count': fields.Integer,
-    'objects': fields.List(fields.Nested(edit))
-}
-
 entity_alias = {
     'alias_id': fields.Integer,
     'name': fields.String,
