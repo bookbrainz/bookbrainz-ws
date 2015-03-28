@@ -20,14 +20,34 @@
 should be kept to a minimum.
 """
 
-from flask import jsonify
+from elasticsearch import Elasticsearch
+from flask import jsonify, request
 from flask.ext.restful import abort, marshal
 
-from bbschema import Entity
+from bbschema import Entity, Creator, Publication, Edition, Publisher, Work
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import cache, db, structures
 
+
+es = Elasticsearch()
+
+TYPE_MAP = {
+    Creator: structures.creator_data,
+    Publication: structures.publication_data,
+    Edition: structures.edition_data,
+    Publisher: structures.publisher_data,
+    Work: structures.work_data
+}
+
+def index_entity(entity):
+    es.index(
+        index='bookbrainz',
+        doc_type=entity['_type'].lower(),
+        id=entity['entity_gid'],
+        body=entity
+    )
 
 def init(app):
     # Book of the Week
@@ -44,3 +64,35 @@ def init(app):
             abort(404)
 
         return jsonify(marshal(entity, structures.entity))
+
+    @app.route('/ws/search/', endpoint='search_query', methods=['GET'])
+    def search():
+        query = request.args.get('q', '')
+
+        query_obj = {
+            'query': {
+                'match': {
+                    'default_alias.name.search': {
+                        'query': query,
+                        'minimum_should_match': '80%'
+                    }
+                }
+            }
+        }
+
+        return jsonify(es.search(index='bookbrainz', body=query_obj))
+
+    @app.route('/ws/search/reindex', endpoint='search_reindex', methods=['GET'])
+    def search():
+        entities = db.session.query(Entity).options(
+            joinedload('master_revision.entity_data')
+        ).all()
+
+        for entity in entities:
+            entity_out = marshal(entity, structures.entity_expanded)
+            data_out = marshal(entity.master_revision.entity_data, TYPE_MAP[type(entity)])
+
+            entity_out.update(data_out)
+            index_entity(entity_out)
+
+        return jsonify({ 'success': True })
