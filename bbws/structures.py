@@ -244,26 +244,21 @@ user.update({
     'bio': fields.String,
     'created_at': fields.DateTime(dt_format='iso8601'),
     'active_at': fields.DateTime(dt_format='iso8601'),
-    'stats_uri': fields.Url('editor_stats', True),
-    'user_type': fields.Nested(user_type)
+    'user_type': fields.Nested(user_type),
+    'total_revisions': fields.Integer,
+    'revisions_applied': fields.Integer,
+    'revisions_reverted': fields.Integer,
 })
 
 account = user.copy()
 account.update({
     'email': fields.String,
     'birth_date': fields.DateTime(dt_format='iso8601'),
-    'gender_id': fields.Integer
+    'gender': fields.Nested({
+        'gender_id': fields.Integer,
+        'name': fields.String
+    }, allow_null=True),
 })
-
-editor_stats = {
-    'user': fields.Nested(user_stub),
-    'total_edits': fields.Integer,
-    'total_revisions': fields.Integer,
-    'edits_accepted': fields.Integer,
-    'edits_rejected': fields.Integer,
-    'edits_failed': fields.Integer,
-}
-
 
 user_list = {
     'offset': fields.Integer,

@@ -91,6 +91,8 @@ class EntityResource(Resource):
 
         # This will be valid here, due to authentication.
         user = request.oauth.user
+        user.total_revisions += 1
+        user.revisions_applied += 1
 
         try:
             uuid.UUID(entity_gid)
@@ -285,6 +287,8 @@ class EntityResourceList(Resource):
 
         # This will be valid here, due to authentication.
         user = request.oauth.user
+        user.total_revisions += 1
+        user.revisions_applied += 1
 
         entity = self.entity_class()
         entity_data = self.entity_data_class.create(data, db.session)

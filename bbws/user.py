@@ -22,7 +22,7 @@ import bcrypt
 from flask import request
 from flask.ext.restful import Resource, abort, marshal, reqparse
 
-from bbschema import EditorStats, Message, MessageReceipt, User, UserType
+from bbschema import Message, MessageReceipt, User, UserType
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import db, oauth_provider, structures
@@ -37,19 +37,6 @@ class UserResource(Resource):
             abort(404)
 
         return marshal(user, structures.user)
-
-
-class UserStatsResource(Resource):
-    """ A Resource providing statistics about a User of the webservice. """
-
-    def get(self, user_id):
-        try:
-            stats = db.session.query(EditorStats).\
-                filter_by(user_id=user_id).one()
-        except NoResultFound:
-            abort(404)
-
-        return marshal(stats, structures.editor_stats)
 
 
 class AccountResource(Resource):
@@ -235,8 +222,6 @@ def create_views(api):
 
     api.add_resource(UserResource, '/user/<int:user_id>/',
                      endpoint='user_get_single')
-    api.add_resource(UserStatsResource, '/user/<int:user_id>/stats',
-                     endpoint='editor_stats')
     api.add_resource(UserTypeResourceList, '/userType/')
     api.add_resource(UserResourceList, '/user/', endpoint='user_get_many')
 

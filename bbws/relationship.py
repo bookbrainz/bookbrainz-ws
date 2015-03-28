@@ -79,6 +79,8 @@ class RelationshipResourceList(Resource):
 
         # This will be valid here, due to authentication.
         user = request.oauth.user
+        user.total_revisions += 1
+        user.revisions_applied += 1
 
         # Create a new relationship
         relationship = Relationship()
