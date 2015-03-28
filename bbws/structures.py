@@ -103,7 +103,8 @@ revision_stub = {
 }
 
 entity_stub = {
-    'entity_gid': fields.String
+    'entity_gid': fields.String,
+	'_type': fields.String
 }
 
 entity = entity_stub.copy()
