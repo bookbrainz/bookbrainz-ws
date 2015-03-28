@@ -1,3 +1,4 @@
+bcrypt
 flask
 flask-redis
 flask-restful

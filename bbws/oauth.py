@@ -17,6 +17,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
+import bcrypt
 import datetime
 import uuid
 
@@ -143,7 +144,19 @@ class MyRequestValidator(OAuth2RequestValidator):
         ).first()
 
     def _usergetter(self, username, password, *args, **kwargs):
-        return db.session.query(User).filter_by(name=username).first()
+        user = db.session.query(User).filter_by(name=username).first()
+
+        if user.password == '':
+            return None
+
+        password = password.encode('utf-8')
+        cur_hash = user.password.encode('utf-8')
+
+        # Ensure password matches the hash in the database
+        if (cur_hash == bcrypt.hashpw(password, cur_hash)):
+            return user
+
+        return None
 
     def _tokengetter(self, access_token=None, refresh_token=None):
         if access_token:
@@ -180,11 +193,4 @@ def init(app):
     @app.route('/ws/oauth/token', methods=['POST'])
     @oauth_provider.token_handler
     def access_token(*args, **kwargs):
-        try:
-            user = db.session.query(User).filter_by(
-                name=global_request.form['username']
-            ).one()
-        except NoResultFound:
-            return None
-        else:
-            return {'user_id': user.user_id}
+        return None

@@ -17,6 +17,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
+import bcrypt
+
 from flask import request
 from flask.ext.restful import Resource, abort, marshal, reqparse
 
@@ -80,8 +82,13 @@ class UserResourceList(Resource):
         json = request.get_json()
 
         try:
+            # Use bcrypt to generate a salted password hash
+            password = json['password'].encode('utf-8')
+            password = bcrypt.hashpw(password, bcrypt.gensalt())
+
             user = User(name=json['name'], email=json['email'],
-                        user_type_id=json['user_type']['user_type_id'])
+                        user_type_id=json['user_type']['user_type_id'],
+                        password=password)
         except KeyError:
             abort(400)
 
