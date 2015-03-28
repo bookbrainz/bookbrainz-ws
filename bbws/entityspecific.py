@@ -66,7 +66,7 @@ class EditionStatusResourceList(Resource):
             'offset': 0,
             'count': len(types),
             'objects': types
-        }, structures.edition_type_list)
+        }, structures.edition_status_id)
 
 
 class WorkTypeResourceList(Resource):

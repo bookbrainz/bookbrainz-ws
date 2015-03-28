@@ -474,11 +474,11 @@ publisher_type_list = {
     }))
 }
 
-edition_type_list = {
+edition_status_id = {
     'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
-        'edition_type_id': fields.Integer,
+        'edition_status_id': fields.Integer,
         'label': fields.String
     }))
 }
