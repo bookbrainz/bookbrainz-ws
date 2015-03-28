@@ -101,6 +101,10 @@ entity_stub = {
     'entity_gid': fields.String
 }
 
+entity_ref = entity_stub.copy()
+entity_ref.update({
+    'entity_uri': EntityUrl(True)
+})
 
 entity = entity_stub.copy()
 entity.update({
@@ -196,7 +200,7 @@ relationship_list = {
 
 entity_revision = revision_stub.copy()
 entity_revision.update({
-    'entity': fields.Nested(entity_stub),
+    'entity': fields.Nested(entity_ref)
 })
 
 relationship_revision = revision_stub.copy()
@@ -209,6 +213,12 @@ revision_list = {
     'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested(revision_stub))
+}
+
+entity_revision_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(entity_revision))
 }
 
 user_type = {

@@ -20,6 +20,7 @@ from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
 from bbschema import (CreatorData, EditionData, EntityRevision,
                       PublicationData, PublisherData, Revision, WorkData)
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import db, structures
@@ -87,6 +88,7 @@ class RevisionResource(Resource):
 
 class RevisionResourceList(Resource):
     get_parser = reqparse.RequestParser()
+    get_parser.add_argument('type', type=str)
     get_parser.add_argument('limit', type=int, default=20)
     get_parser.add_argument('offset', type=int, default=0)
 
@@ -94,16 +96,25 @@ class RevisionResourceList(Resource):
         args = self.get_parser.parse_args()
         query = db.session.query(Revision)
 
+        list_fields = structures.revision_list
+
+        if args.type == 'entity':
+            query = query.options(
+                joinedload(EntityRevision.entity)
+            ).filter_by(_type=1)
+            list_fields = structures.entity_revision_list
+
         revisions = query.offset(args.offset).limit(args.limit).all()
+
         return marshal({
             'offset': args.offset,
             'count': len(revisions),
             'objects': revisions
-        }, structures.revision_list)
+        }, list_fields)
 
 
 def create_views(api):
-    api.add_resource(RevisionResource, '/revision/<int:revision_id>',
+    api.add_resource(RevisionResource, '/revision/<int:revision_id>/',
                      endpoint='revision_get_single')
-    api.add_resource(RevisionResourceList, '/revisions',
+    api.add_resource(RevisionResourceList, '/revision/',
                      endpoint='revision_get_many')
