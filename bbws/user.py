@@ -244,6 +244,6 @@ def create_views(api):
                      endpoint='account_get_current')
 
     api.add_resource(UserMessageResource, '/message/<int:message_id>')
-    api.add_resource(UserMessageInboxResource, '/message/inbox')
-    api.add_resource(UserMessageArchiveResource, '/message/archive')
-    api.add_resource(UserMessageSentResource, '/message/sent')
+    api.add_resource(UserMessageInboxResource, '/message/inbox/')
+    api.add_resource(UserMessageArchiveResource, '/message/archive/')
+    api.add_resource(UserMessageSentResource, '/message/sent/')

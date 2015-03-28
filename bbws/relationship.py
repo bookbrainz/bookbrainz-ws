@@ -144,10 +144,10 @@ def create_views(api):
         endpoint='relationship_get_single'
     )
     api.add_resource(
-        RelationshipResourceList, '/relationship',
+        RelationshipResourceList, '/relationship/',
         '/entity/<string:entity_gid>/relationships',
         endpoint='relationship_get_many'
     )
     api.add_resource(RelationshipTypeResource,
                      '/relationshipType/<int:relationship_type_id>')
-    api.add_resource(RelationshipTypeResourceList, '/relationshipType')
+    api.add_resource(RelationshipTypeResourceList, '/relationshipType/')
