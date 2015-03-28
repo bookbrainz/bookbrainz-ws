@@ -12,7 +12,7 @@ def load_data(db):
     db.session.add(editor_type)
     db.session.commit()
 
-    editor = User(name=u'Bob', email=u'bob@bobville.org',
+    editor = User(name=u'Bob', password=b'', email=u'bob@bobville.org',
                   user_type_id=editor_type.user_type_id)
     db.session.add(editor)
 

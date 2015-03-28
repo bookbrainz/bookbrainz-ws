@@ -24,7 +24,7 @@ class TestUserViews(TestCase):
 
     def test_user_get_single(self):
         # Create a User
-        new_user = User(name=u'test_user1', email=u'test_user1@users.org', user_type_id=1)
+        new_user = User(name=u'test_user1', password=b'', email=u'test_user1@users.org', user_type_id=1)
         db.session.add(new_user)
         db.session.commit()
 
