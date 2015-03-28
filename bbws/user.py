@@ -56,7 +56,7 @@ class AccountResource(Resource):
     """ Provides the user's own secrets for authenticated users. """
 
     @oauth_provider.require_oauth()
-    def post(self):
+    def get(self):
         return marshal(request.oauth.user, structures.account)
 
 
@@ -240,7 +240,7 @@ def create_views(api):
     api.add_resource(UserTypeResourceList, '/userType')
     api.add_resource(UserResourceList, '/user/', endpoint='user_get_many')
 
-    api.add_resource(AccountResource, '/account',
+    api.add_resource(AccountResource, '/account/',
                      endpoint='account_get_current')
 
     api.add_resource(UserMessageResource, '/message/<int:message_id>')
