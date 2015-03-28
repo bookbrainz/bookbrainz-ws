@@ -25,6 +25,24 @@ be declared in the correct order.
 
 from flask.ext.restful import fields
 
+from bbschema import Creator, Publication, Edition, Publisher, Work
+
+TYPE_MAP = {
+    Creator: 'creator_get_single',
+    Publication: 'publication_get_single',
+    Edition: 'edition_get_single',
+    Publisher: 'publisher_get_single',
+    Work: 'work_get_single'
+}
+
+class EntityUrl(fields.Url):
+    def __init__(self, absolute=False, scheme=None):
+        super(EntityUrl, self).__init__(None, absolute, scheme)
+
+    def output(self, key, obj):
+        self.endpoint = TYPE_MAP.get(type(obj))
+        return super(EntityUrl, self).output(key, obj)
+
 language_stub = {
     'language_id': fields.Integer,
     'name': fields.String
