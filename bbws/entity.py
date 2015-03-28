@@ -26,7 +26,7 @@ import uuid
 from flask import request
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
-from bbschema import Entity, EntityData, EntityRevision
+from bbschema import Entity, EntityData, EntityRevision, RevisionNote
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -292,6 +292,15 @@ class EntityResourceList(Resource):
         revision = EntityRevision(user_id=user.user_id)
         revision.entity = entity
         revision.entity_data = entity_data
+
+        note_content = data.get('revision', {}).get('note', '')
+
+        if note_content != '':
+            note = RevisionNote(user_id=user.user_id,
+                                revision_id=revision.revision_id,
+                                content=data['revision']['note'])
+
+            revision.notes.append(note)
 
         entity.master_revision = revision
 
