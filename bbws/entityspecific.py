@@ -81,8 +81,8 @@ class WorkTypeResourceList(Resource):
 
 
 def create_views(api):
-    api.add_resource(PublicationTypeResourceList, '/publicationType')
-    api.add_resource(CreatorTypeResourceList, '/creatorType')
-    api.add_resource(PublisherTypeResourceList, '/publisherType')
-    api.add_resource(EditionStatusResourceList, '/editionStatus')
-    api.add_resource(WorkTypeResourceList, '/workType')
+    api.add_resource(PublicationTypeResourceList, '/publicationType/')
+    api.add_resource(CreatorTypeResourceList, '/creatorType/')
+    api.add_resource(PublisherTypeResourceList, '/publisherType/')
+    api.add_resource(EditionStatusResourceList, '/editionStatus/')
+    api.add_resource(WorkTypeResourceList, '/workType/')

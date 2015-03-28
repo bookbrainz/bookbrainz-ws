@@ -53,5 +53,5 @@ class LanguageResourceList(Resource):
 
 
 def create_views(api):
-    api.add_resource(GenderResourceList, '/gender')
-    api.add_resource(LanguageResourceList, '/language')
+    api.add_resource(GenderResourceList, '/gender/')
+    api.add_resource(LanguageResourceList, '/language/')
