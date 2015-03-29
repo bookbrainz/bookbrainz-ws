@@ -147,7 +147,7 @@ def create_views(api):
     )
     api.add_resource(
         RelationshipResourceList, '/relationship/',
-        '/entity/<string:entity_gid>/relationships',
+        '/entity/<string:entity_gid>/relationships/',
         endpoint='relationship_get_many'
     )
     api.add_resource(RelationshipTypeResource,

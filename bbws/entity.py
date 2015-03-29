@@ -51,7 +51,7 @@ class EntityResource(Resource):
 
     entity_class = Entity
     entity_fields = structures.entity
-    entity_data_fields = None
+    entity_data_fields = structures.entity_data
 
     def get(self, entity_gid):
         try:
@@ -334,3 +334,24 @@ class EntityResourceList(Resource):
         return marshal(revision, {
             'entity': fields.Nested(self.entity_stub_fields)
         })
+
+
+def create_views(api):
+    api.add_resource(EntityResource, '/entity/<string:entity_gid>/',
+                     endpoint='entity_get_single')
+
+    api.add_resource(
+        EntityAliasResource, '/entity/<string:entity_gid>/aliases',
+        endpoint='entity_get_aliases'
+    )
+
+    api.add_resource(
+        EntityDisambiguationResource,
+        '/entity/<string:entity_gid>/disambiguation',
+        endpoint='entity_get_disambiguation'
+    )
+
+    api.add_resource(
+        EntityAnnotationResource, '/entity/<string:entity_gid>/annotation',
+        endpoint='entity_get_annotation'
+    )
