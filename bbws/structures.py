@@ -45,7 +45,8 @@ class EntityUrl(fields.Url):
         else:
             entity = obj
 
-        self.endpoint = TYPE_MAP.get(type(entity))
+        # This will raise an exception if the entity type is invalid
+        self.endpoint = TYPE_MAP[type(entity)]
         return super(EntityUrl, self).output(key, obj)
 
 language_stub = {

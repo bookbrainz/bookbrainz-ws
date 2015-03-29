@@ -101,7 +101,8 @@ class RevisionResourceList(Resource):
             query = query.filter_by(_type=1)
             list_fields = structures.entity_revision_list
 
-        revisions = query.offset(args.offset).limit(args.limit).all()
+        revisions = query.order_by(Revision.created_at.desc()).\
+            offset(args.offset).limit(args.limit).all()
 
         return marshal({
             'offset': args.offset,
