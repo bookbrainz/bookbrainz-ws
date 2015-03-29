@@ -116,7 +116,7 @@ class BearerToken(object):
         cache.hmset(self.access_token, data)
         cache.hmset(self.refresh_token, data)
 
-        dt = datetime.datetime.now() - self.expires
+        dt = datetime.datetime.utcnow() - self.expires
         cache.expire(self.access_token, dt.seconds)
         cache.expire(self.refresh_token, dt.seconds)
 
