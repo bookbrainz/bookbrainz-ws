@@ -24,7 +24,7 @@ from elasticsearch import Elasticsearch
 from flask import jsonify, request
 from flask.ext.restful import abort, marshal
 
-from bbschema import Entity, Creator, Publication, Edition, Publisher, Work
+from bbschema import Entity, Creator, Publication, Edition, Publisher, Work, Alias
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -65,25 +65,31 @@ def init(app):
 
         return jsonify(marshal(entity, structures.entity))
 
-    @app.route('/ws/search/', endpoint='search_query', methods=['GET'])
+    @app.route('/ws/search', endpoint='search_query', methods=['GET'])
     def search():
-        query = request.args.get('q', '')
+        query = '%' + request.args.get('q', '') + '%'
 
-        query_obj = {
-            'query': {
-                'match': {
-                    'default_alias.name.search': {
-                        'query': query,
-                        'minimum_should_match': '80%'
-                    }
-                }
-            }
-        }
+        matching_aliases = db.session.query(Alias)\
+            .filter(Alias.name.ilike(query)).all()
 
-        return jsonify(es.search(index='bookbrainz', body=query_obj))
+        data = set()
+        for a in matching_aliases:
+            data.update(a.data)
+
+        revisions = set()
+        for d in data:
+            revisions.update(d.revisions)
+
+        entities = set(r.entity for r in revisions)
+
+        return jsonify(marshal({
+            'offset': 0,
+            'count': len(entities),
+            'objects': entities
+        }, structures.entity_list))
 
     @app.route('/ws/search/reindex', endpoint='search_reindex', methods=['GET'])
-    def search():
+    def reindex_search():
         entities = db.session.query(Entity).options(
             joinedload('master_revision.entity_data')
         ).all()

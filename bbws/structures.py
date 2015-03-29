@@ -88,6 +88,7 @@ revision_stub = {
 
 entity_stub = {
     'entity_gid': fields.String,
+    'uri': EntityUrl(True),
 	'_type': fields.String
 }
 
