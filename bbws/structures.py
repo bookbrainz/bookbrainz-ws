@@ -84,7 +84,7 @@ revision_stub = {
     'user': fields.Nested({
         'user_id': fields.Integer,
     }),
-    'uri': fields.Url('revision_get_single', True),
+    'uri': fields.Url('revision_get_single'),
 }
 
 entity_stub = {
@@ -96,10 +96,10 @@ entity_stub = {
 entity = entity_stub.copy()
 entity.update({
     'last_updated': fields.DateTime(dt_format='iso8601'),
-    'aliases_uri': fields.Url('entity_get_aliases', True),
-    'disambiguation_uri': fields.Url('entity_get_disambiguation', True),
-    'annotation_uri': fields.Url('entity_get_annotation', True),
-    'relationships_uri': fields.Url('relationship_get_many', True),
+    'aliases_uri': fields.Url('entity_get_aliases'),
+    'disambiguation_uri': fields.Url('entity_get_disambiguation'),
+    'annotation_uri': fields.Url('entity_get_annotation'),
+    'relationships_uri': fields.Url('relationship_get_many'),
     'revision': fields.Nested(revision_stub)
 })
 
@@ -144,7 +144,7 @@ entity_list = {
 
 relationship_stub = {
     'relationship_id': fields.Integer,
-    'uri': fields.Url('relationship_get_single', True)
+    'uri': fields.Url('relationship_get_single')
 }
 
 relationship_type_stub = {
@@ -264,17 +264,17 @@ user_list = {
 # These fields definitions are specific to BookBrainz
 creator_stub = entity_stub.copy()
 creator_stub.update({
-    'uri': fields.Url('creator_get_single', True)
+    'uri': fields.Url('creator_get_single')
 })
 
 
 creator = entity.copy()
 creator.update(creator_stub)
 creator.update({
-    'aliases_uri': fields.Url('creator_get_aliases', True),
-    'disambiguation_uri': fields.Url('creator_get_disambiguation', True),
-    'annotation_uri': fields.Url('creator_get_annotation', True),
-    'relationships_uri': fields.Url('relationship_get_many', True)
+    'aliases_uri': fields.Url('creator_get_aliases'),
+    'disambiguation_uri': fields.Url('creator_get_disambiguation'),
+    'annotation_uri': fields.Url('creator_get_annotation'),
+    'relationships_uri': fields.Url('relationship_get_many')
 })
 
 
@@ -305,17 +305,17 @@ creator_data.update({
 
 publication_stub = entity_stub.copy()
 publication_stub.update({
-    'uri': fields.Url('publication_get_single', True)
+    'uri': fields.Url('publication_get_single')
 })
 
 
 publication = entity.copy()
 publication.update(publication_stub)
 publication.update({
-    'aliases_uri': fields.Url('publication_get_aliases', True),
-    'disambiguation_uri': fields.Url('publication_get_disambiguation', True),
-    'annotation_uri': fields.Url('publication_get_annotation', True),
-    'relationships_uri': fields.Url('relationship_get_many', True)
+    'aliases_uri': fields.Url('publication_get_aliases'),
+    'disambiguation_uri': fields.Url('publication_get_disambiguation'),
+    'annotation_uri': fields.Url('publication_get_annotation'),
+    'relationships_uri': fields.Url('relationship_get_many')
 })
 
 
@@ -337,17 +337,17 @@ publication_data.update({
 
 publisher_stub = entity_stub.copy()
 publisher_stub.update({
-    'uri': fields.Url('publisher_get_single', True)
+    'uri': fields.Url('publisher_get_single')
 })
 
 
 publisher = entity.copy()
 publisher.update(publisher_stub)
 publisher.update({
-    'aliases_uri': fields.Url('publisher_get_aliases', True),
-    'disambiguation_uri': fields.Url('publisher_get_disambiguation', True),
-    'annotation_uri': fields.Url('publisher_get_annotation', True),
-    'relationships_uri': fields.Url('relationship_get_many', True)
+    'aliases_uri': fields.Url('publisher_get_aliases'),
+    'disambiguation_uri': fields.Url('publisher_get_disambiguation'),
+    'annotation_uri': fields.Url('publisher_get_annotation'),
+    'relationships_uri': fields.Url('relationship_get_many')
 })
 
 
@@ -374,17 +374,17 @@ publisher_data.update({
 
 edition_stub = entity_stub.copy()
 edition_stub.update({
-    'uri': fields.Url('edition_get_single', True)
+    'uri': fields.Url('edition_get_single')
 })
 
 
 edition = entity.copy()
 edition.update(edition_stub)
 edition.update({
-    'aliases_uri': fields.Url('edition_get_aliases', True),
-    'disambiguation_uri': fields.Url('edition_get_disambiguation', True),
-    'annotation_uri': fields.Url('edition_get_annotation', True),
-    'relationships_uri': fields.Url('relationship_get_many', True)
+    'aliases_uri': fields.Url('edition_get_aliases'),
+    'disambiguation_uri': fields.Url('edition_get_disambiguation'),
+    'annotation_uri': fields.Url('edition_get_annotation'),
+    'relationships_uri': fields.Url('relationship_get_many')
 })
 
 
@@ -415,17 +415,17 @@ edition_data.update({
 
 work_stub = entity_stub.copy()
 work_stub.update({
-    'uri': fields.Url('work_get_single', True)
+    'uri': fields.Url('work_get_single')
 })
 
 
 work = entity.copy()
 work.update(work_stub)
 work.update({
-    'aliases_uri': fields.Url('work_get_aliases', True),
-    'disambiguation_uri': fields.Url('work_get_disambiguation', True),
-    'annotation_uri': fields.Url('work_get_annotation', True),
-    'relationships_uri': fields.Url('relationship_get_many', True)
+    'aliases_uri': fields.Url('work_get_aliases'),
+    'disambiguation_uri': fields.Url('work_get_disambiguation'),
+    'annotation_uri': fields.Url('work_get_annotation'),
+    'relationships_uri': fields.Url('relationship_get_many')
 })
 
 
