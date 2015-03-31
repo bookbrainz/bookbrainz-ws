@@ -193,7 +193,7 @@ class MyRequestValidator(OAuth2RequestValidator):
 def init(app):
     oauth_provider._validator = MyRequestValidator()
 
-    @app.route('/ws/oauth/token', methods=['POST'])
+    @app.route('/oauth/token', methods=['POST'])
     @oauth_provider.token_handler
     def access_token(*args, **kwargs):
         return None
