@@ -51,7 +51,7 @@ def index_entity(entity):
 
 def init(app):
     # Book of the Week
-    @app.route('/ws/botw', methods=['GET'])
+    @app.route('/botw', methods=['GET'])
     def botw():
         stored_gid = cache.get('botw')
         if stored_gid is None:
@@ -65,7 +65,7 @@ def init(app):
 
         return jsonify(marshal(entity, structures.entity))
 
-    @app.route('/ws/search', endpoint='search_query', methods=['GET'])
+    @app.route('/search', endpoint='search_query', methods=['GET'])
     def search():
         query = '%' + request.args.get('q', '') + '%'
 
@@ -88,7 +88,7 @@ def init(app):
             'objects': entities
         }, structures.entity_list))
 
-    @app.route('/ws/search/reindex', endpoint='search_reindex', methods=['GET'])
+    @app.route('/search/reindex', endpoint='search_reindex', methods=['GET'])
     def reindex_search():
         entities = db.session.query(Entity).options(
             joinedload('master_revision.entity_data')
