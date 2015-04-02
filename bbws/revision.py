@@ -57,7 +57,7 @@ class RevisionResource(Resource):
             'user': fields.Nested({
                 'user_id': fields.Integer,
             }),
-            'uri': fields.Url('revision_get_single'),
+            'uri': fields.Url('revision_get_single', True),
             'changes': fields.Nested({
                 data_fields[0]: fields.List(fields.Nested(data_fields[1],
                                                           allow_null=True)),
