@@ -18,17 +18,17 @@ class TestRelationshipViews(TestCase):
         load_data(db)
 
     def test_relationship_get_single(self):
-        response = self.client.get('/ws/relationship/3')
+        response = self.client.get('/relationship/3')
         self.assertEquals(response.json.get('relationship_id'), 3)
         self.assertEquals(response.json.get('uri'),
-                          'http://localhost/ws/relationship/3')
+                          'http://localhost/relationship/3')
         self.assertEquals(response.json.get('master_revision_id'), 6)
         self.assertTrue('last_updated' in response.json)
         self.assertEquals(len(response.json.get('entities', [])), 1)
         self.assertEquals(len(response.json.get('texts', [])), 1)
 
     def test_relationship_get_many(self):
-        response = self.client.get('/ws/relationship/')
+        response = self.client.get('/relationship/')
         self.assertEquals(response.json.get('count'), 3)
         self.assertEquals(response.json.get('offset'), 0)
         self.assertEquals(len(response.json.get('objects', [])), 3)
