@@ -25,8 +25,8 @@ from bbschema import Edition, EditionData
 
 from . import structures
 from .entity import (EntityAliasResource, EntityAnnotationResource,
-                     EntityDisambiguationResource, EntityResource,
-                     EntityResourceList)
+                     EntityDisambiguationResource, EntityIdentifierResource,
+                     EntityResource, EntityResourceList)
 
 
 class EditionResource(EntityResource):
@@ -61,6 +61,11 @@ def create_views(api):
     api.add_resource(
         EntityAnnotationResource, '/edition/<string:entity_gid>/annotation',
         endpoint='edition_get_annotation'
+    )
+
+    api.add_resource(
+        EntityIdentifierResource, '/edition/<string:entity_gid>/identifiers',
+        endpoint='edition_get_identifiers'
     )
 
     api.add_resource(EditionResourceList, '/edition/')

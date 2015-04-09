@@ -271,6 +271,47 @@ class EntityAnnotationResource(Resource):
             return marshal(annotation, structures.entity_annotation)
 
 
+class EntityIdentifierResource(Resource):
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('revision', type=int, default=None)
+
+    def get(self, entity_gid):
+        args = self.get_parser.parse_args()
+        if args.revision is None:
+            try:
+                entity = db.session.query(Entity).options(
+                    joinedload('master_revision.entity_data.identifiers')
+                ).filter_by(entity_gid=entity_gid).one()
+            except NoResultFound:
+                abort(404)
+            else:
+                revision = entity.master_revision
+        else:
+            try:
+                revision = db.session.query(EntityRevision).options(
+                    joinedload('entity_data.identifiers'),
+                    joinedload('entity')
+                ).filter_by(
+                    revision_id=args.revision,
+                    entity_gid=entity_gid
+                ).one()
+            except NoResultFound:
+                abort(404)
+            else:
+                entity = revision.entity
+
+        if revision is None:
+            identifiers = []
+        else:
+            identifiers = revision.entity_data.identifiers
+
+        return marshal({
+            'offset': 0,
+            'count': len(identifiers),
+            'objects': identifiers
+        }, structures.identifier_list)
+
+
 class EntityResourceList(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('limit', type=int, default=20)

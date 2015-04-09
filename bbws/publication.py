@@ -21,9 +21,15 @@
 resources.
 """
 
-from bbschema import Publication, PublicationData
+import uuid
 
-from . import structures
+from flask.ext.restful import Resource, marshal
+
+from bbschema import Publication, PublicationData, Edition, EditionData
+from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.exc import NoResultFound
+
+from . import db, structures
 from .entity import (EntityAliasResource, EntityAnnotationResource,
                      EntityDisambiguationResource, EntityResource,
                      EntityResourceList)
@@ -33,6 +39,27 @@ class PublicationResource(EntityResource):
     entity_class = Publication
     entity_fields = structures.publication
     entity_data_fields = structures.publication_data
+
+
+class PublicationEditionsResource(Resource):
+    def get(self, entity_gid):
+        try:
+            uuid.UUID(entity_gid)
+        except ValueError:
+            abort(404)
+
+        try:
+            editions = db.session.query(Edition).options(
+                joinedload('master_revision.entity_data')
+            ).filter(EditionData.publication_gid == entity_gid).all()
+        except NoResultFound:
+            abort(404)
+
+        return marshal({
+            'offset': 0,
+            'count': len(editions),
+            'objects': editions
+        }, structures.edition_list)
 
 
 class PublicationResourceList(EntityResourceList):
@@ -61,6 +88,11 @@ def create_views(api):
     api.add_resource(
         EntityAnnotationResource, '/publication/<string:entity_gid>/annotation',
         endpoint='publication_get_annotation'
+    )
+
+    api.add_resource(
+        PublicationEditionsResource, '/publication/<string:entity_gid>/editions',
+        endpoint='publication_get_editions'
     )
 
     api.add_resource(PublicationResourceList, '/publication/')

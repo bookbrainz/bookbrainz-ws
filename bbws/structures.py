@@ -49,6 +49,22 @@ class EntityUrl(fields.Url):
         self.endpoint = TYPE_MAP[type(entity)]
         return super(EntityUrl, self).output(key, obj)
 
+class CreatorUrl(fields.Url):
+    def __init__(self, absolute=False, scheme=None):
+        super(CreatorUrl, self).__init__('creator_get_single', absolute, scheme)
+
+    def output(self, key, obj):
+        obj.entity_gid = obj.creator_gid
+        return super(CreatorUrl, self).output(key, obj)
+
+class PublicationUrl(fields.Url):
+    def __init__(self, absolute=False, scheme=None):
+        super(PublicationUrl, self).__init__('publication_get_single', absolute, scheme)
+
+    def output(self, key, obj):
+        obj.entity_gid = obj.publication_gid
+        return super(PublicationUrl, self).output(key, obj)
+
 language_stub = {
     'language_id': fields.Integer,
     'name': fields.String
@@ -86,6 +102,41 @@ revision_stub = {
     }),
     'uri': fields.Url('revision_get_single', True),
 }
+
+identifier_type_stub = {
+    'identifier_type_id': fields.Integer,
+    'label': fields.String
+}
+
+identifier_type = identifier_type_stub.copy()
+identifier_type.update({
+    'parent': fields.Nested(identifier_type_stub, allow_null=True),
+    'child_order': fields.Integer,
+    'description': fields.String,
+    'entity_type': fields.String
+})
+
+
+identifier_type_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(identifier_type))
+}
+
+
+identifier = {
+    'identifier_id': fields.Integer,
+    'identifier_type': fields.Nested(identifier_type_stub),
+    'value': fields.String
+}
+
+
+identifier_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(identifier))
+}
+
 
 entity_stub = {
     'entity_gid': fields.String,
@@ -315,7 +366,8 @@ publication.update({
     'aliases_uri': fields.Url('publication_get_aliases', True),
     'disambiguation_uri': fields.Url('publication_get_disambiguation', True),
     'annotation_uri': fields.Url('publication_get_annotation', True),
-    'relationships_uri': fields.Url('relationship_get_many', True)
+    'relationships_uri': fields.Url('relationship_get_many', True),
+    'editions_uri': fields.Url('publication_get_editions', True)
 })
 
 
@@ -384,6 +436,7 @@ edition.update({
     'aliases_uri': fields.Url('edition_get_aliases', True),
     'disambiguation_uri': fields.Url('edition_get_disambiguation', True),
     'annotation_uri': fields.Url('edition_get_annotation', True),
+    'identifiers_uri': fields.Url('edition_get_identifiers', True),
     'relationships_uri': fields.Url('relationship_get_many', True)
 })
 
@@ -395,8 +448,25 @@ edition_list = {
 }
 
 
+creator_credit_name = {
+    'position': fields.Integer,
+    'name': fields.String,
+    'creator_uri': CreatorUrl(True),
+    'join_phrase': fields.String
+}
+
+
+creator_credit = {
+    'creator_credit_id': fields.Integer,
+    'begin_phrase': fields.String,
+    'names': fields.List(fields.Nested(creator_credit_name))
+}
+
+
 edition_data = entity_data.copy()
 edition_data.update({
+    'publication_uri': PublicationUrl(True),
+    'creator_credit': fields.Nested(creator_credit),
     'begin_date': fields.String,
     'begin_date_precision': fields.String,
     'end_date': fields.String,
