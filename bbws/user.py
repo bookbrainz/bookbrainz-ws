@@ -46,15 +46,6 @@ class UserResource(Resource):
 
         json = request.get_json()
 
-        if json['name'] != user.name:
-            name_taken = db.session.query(User).\
-                filter_by(name=json['name']).first()
-
-            if name_taken is not None:
-                abort(403, description='Name already in use.')
-
-            user.name = json['name']
-
         user.bio = json['bio']
 
         db.session.commit()
