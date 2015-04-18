@@ -49,16 +49,16 @@ class PublicationEditionsResource(Resource):
             abort(404)
 
         try:
-            editions = db.session.query(Edition).options(
+            publication = db.session.query(Publication).options(
                 joinedload('master_revision.entity_data')
-            ).filter(EditionData.publication_gid == entity_gid).all()
+            ).filter_by(entity_gid=entity_gid).one()
         except NoResultFound:
             abort(404)
 
         return marshal({
             'offset': 0,
-            'count': len(editions),
-            'objects': editions
+            'count': len(publication.editions),
+            'objects': publication.editions
         }, structures.edition_list)
 
 
