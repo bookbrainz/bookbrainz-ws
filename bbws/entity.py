@@ -374,7 +374,12 @@ class EntityResourceList(Resource):
         data_out = marshal(revision.entity_data, self.entity_data_fields)
 
         entity_out.update(data_out)
-        index_entity(entity_out)
+
+        # Don't 500 if we fail to index; commit still succeeded
+        try:
+            index_entity(entity_out)
+        except:
+            pass
 
         return marshal(revision, {
             'entity': fields.Nested(self.entity_stub_fields)
