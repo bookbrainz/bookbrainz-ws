@@ -364,7 +364,11 @@ class EntityResourceList(Resource):
         db.session.add(revision)
 
         # Commit entity, data and revision
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            # There was an issue with the data we received, so 400
+            abort(400)
 
         entity_out = marshal(revision.entity, structures.entity_expanded)
         data_out = marshal(revision.entity_data, self.entity_data_fields)
