@@ -33,6 +33,7 @@ class CreatorResource(EntityResource):
     entity_class = Creator
     entity_fields = structures.creator
     entity_data_fields = structures.creator_data
+    entity_stub_fields = structures.creator_stub
 
 
 class CreatorResourceList(EntityResourceList):

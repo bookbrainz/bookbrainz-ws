@@ -52,6 +52,7 @@ class EntityResource(Resource):
     entity_class = Entity
     entity_fields = structures.entity
     entity_data_fields = structures.entity_data
+    entity_stub_fields = structures.entity_stub
 
     def get(self, entity_gid):
         try:
@@ -122,20 +123,31 @@ class EntityResource(Resource):
             abort(403) # Forbidden to PUT on an entity with no data yet
 
         entity_data = entity.master_revision.entity_data
-        entity_data.update(user, data, db.session)
+        entity_data = entity_data.update(data, db.session)
 
         revision = EntityRevision(user_id=user.user_id)
         revision.entity = entity
         revision.entity_data = entity_data
 
+        note_content = data.get('revision', {}).get('note', '')
+
+        if note_content != '':
+            note = RevisionNote(user_id=user.user_id,
+                                revision_id=revision.revision_id,
+                                content=data['revision']['note'])
+
+            revision.notes.append(note)
+
         entity.master_revision.parent = revision
         entity.master_revision = revision
+
+        db.session.add(revision)
 
         # Commit entity, data and revision
         db.session.commit()
 
         return marshal(revision, {
-            'entity': fields.Nested(self.entity_data_fields)
+            'entity': fields.Nested(self.entity_stub_fields)
         })
 
 

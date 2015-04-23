@@ -33,6 +33,7 @@ class EditionResource(EntityResource):
     entity_class = Edition
     entity_fields = structures.edition
     entity_data_fields = structures.edition_data
+    entity_stub_fields = structures.edition_stub
 
 
 class EditionResourceList(EntityResourceList):

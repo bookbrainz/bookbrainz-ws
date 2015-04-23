@@ -33,6 +33,7 @@ class WorkResource(EntityResource):
     entity_class = Work
     entity_fields = structures.work
     entity_data_fields = structures.work_data
+    entity_stub_fields = structures.work_stub
 
 
 class WorkResourceList(EntityResourceList):

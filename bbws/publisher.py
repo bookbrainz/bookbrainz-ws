@@ -33,6 +33,7 @@ class PublisherResource(EntityResource):
     entity_class = Publisher
     entity_fields = structures.publisher
     entity_data_fields = structures.publisher_data
+    entity_stub_fields = structures.publisher_stub
 
 
 class PublisherResourceList(EntityResourceList):

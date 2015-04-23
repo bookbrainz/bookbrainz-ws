@@ -39,6 +39,7 @@ class PublicationResource(EntityResource):
     entity_class = Publication
     entity_fields = structures.publication
     entity_data_fields = structures.publication_data
+    entity_stub_fields = structures.publication_stub
 
 
 class PublicationEditionsResource(Resource):
