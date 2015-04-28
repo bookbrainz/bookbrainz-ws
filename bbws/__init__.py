@@ -77,11 +77,6 @@ def create_app(config_file):
 
     # Initialize webservice routes
     import bbws.entity
-    import bbws.creator
-    import bbws.publication
-    import bbws.edition
-    import bbws.publisher
-    import bbws.work
     import bbws.revision
     import bbws.user
     import bbws.entityspecific
@@ -89,11 +84,6 @@ def create_app(config_file):
     import bbws.musicbrainz
 
     bbws.entity.create_views(api)
-    bbws.creator.create_views(api)
-    bbws.publication.create_views(api)
-    bbws.edition.create_views(api)
-    bbws.publisher.create_views(api)
-    bbws.work.create_views(api)
     bbws.revision.create_views(api)
     bbws.user.create_views(api)
     bbws.entityspecific.create_views(api)

@@ -473,11 +473,11 @@ edition_data.update({
     'end_date_precision': fields.String,
     'ended': fields.Boolean,
     'language': fields.Nested({
-        'id': fields.Integer,
+        'language_id': fields.Integer,
         'name': fields.String,
     }, allow_null=True),
     'edition_status': fields.Nested({
-        'edition_type_id': fields.Integer,
+        'edition_status_id': fields.Integer,
         'label': fields.String
     }, allow_null=True)
 })
@@ -509,7 +509,7 @@ work_list = {
 work_data = entity_data.copy()
 work_data.update({
     'languages': fields.List(fields.Nested({
-        'id': fields.Integer,
+        'language_id': fields.Integer,
         'name': fields.String,
     })),
     'work_type': fields.Nested({

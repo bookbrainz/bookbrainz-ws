@@ -23,16 +23,16 @@ resources.
 
 import uuid
 
+from bbschema import (Creator, CreatorData, Edition, EditionData, Entity,
+                      EntityData, EntityRevision, Publication, PublicationData,
+                      Publisher, PublisherData, RevisionNote, Work, WorkData)
 from elasticsearch import Elasticsearch
 from flask import request
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
-
-from bbschema import Entity, EntityData, EntityRevision, RevisionNote
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import db, oauth_provider, structures
-
 
 es = Elasticsearch()
 
@@ -49,10 +49,10 @@ class EntityResource(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('revision', type=int, default=None)
 
-    entity_class = Entity
-    entity_fields = structures.entity
-    entity_data_fields = structures.entity_data
-    entity_stub_fields = structures.entity_stub
+    entity_class = None
+    entity_fields = None
+    entity_data_fields = None
+    entity_stub_fields = None
 
     def get(self, entity_gid):
         try:
@@ -329,10 +329,10 @@ class EntityResourceList(Resource):
     get_parser.add_argument('limit', type=int, default=20)
     get_parser.add_argument('offset', type=int, default=0)
 
-    entity_class = Entity
-    entity_data_class = EntityData
-    entity_stub_fields = structures.entity_stub
-    entity_list_fields = structures.entity_list
+    entity_class = None
+    entity_data_class = None
+    entity_stub_fields = None
+    entity_list_fields = None
 
     def get(self):
         args = self.get_parser.parse_args()
@@ -398,22 +398,67 @@ class EntityResourceList(Resource):
         })
 
 
-def create_views(api):
-    api.add_resource(EntityResource, '/entity/<string:entity_gid>/',
-                     endpoint='entity_get_single')
+def make_entity_endpoints(api, entity_class, data_class, make_list=True):
+
+    entity_name = entity_class.__name__.lower()
+    entity_struct = getattr(structures, entity_name)
+    stub_struct = getattr(structures, entity_name + '_stub')
+    data_struct = getattr(structures, entity_name + '_data')
+    list_struct = getattr(structures, entity_name + '_list')
+
+    resource_class = type(
+        entity_class.__name__ + 'Resource', (EntityResource,),
+        {
+            'entity_class': entity_class,
+            'entity_fields': entity_struct,
+            'entity_data_fields': data_struct,
+            'entity_stub_fields': stub_struct
+        }
+    )
 
     api.add_resource(
-        EntityAliasResource, '/entity/<string:entity_gid>/aliases',
-        endpoint='entity_get_aliases'
+        resource_class, '/{}/<string:entity_gid>/'.format(entity_name),
+        endpoint='{}_get_single'.format(entity_name)
+    )
+
+    api.add_resource(
+        EntityAliasResource,
+        '/{}/<string:entity_gid>/aliases'.format(entity_name),
+        endpoint='{}_get_aliases'.format(entity_name)
     )
 
     api.add_resource(
         EntityDisambiguationResource,
-        '/entity/<string:entity_gid>/disambiguation',
-        endpoint='entity_get_disambiguation'
+        '/{}/<string:entity_gid>/disambiguation'.format(entity_name),
+        endpoint='{}_get_disambiguation'.format(entity_name)
     )
 
     api.add_resource(
-        EntityAnnotationResource, '/entity/<string:entity_gid>/annotation',
-        endpoint='entity_get_annotation'
+        EntityAnnotationResource,
+        '/{}/<string:entity_gid>/annotation'.format(entity_name),
+        endpoint='{}_get_annotation'.format(entity_name)
     )
+
+    if make_list:
+        list_class = type(
+            entity_class.__name__ + 'List', (EntityResourceList,),
+            {
+                'entity_class': entity_class,
+                'entity_data_class': data_class,
+                'entity_fields': entity_struct,
+                'entity_data_fields': data_struct,
+                'entity_stub_fields': stub_struct,
+                'entity_list_fields': list_struct
+            }
+        )
+
+        api.add_resource(list_class, '/{}/'.format(entity_name))
+
+
+def create_views(api):
+    make_entity_endpoints(api, Entity, EntityData, make_list=False)
+    make_entity_endpoints(api, Edition, EditionData)
+    make_entity_endpoints(api, Work, WorkData)
+    make_entity_endpoints(api, Publication, PublicationData)
+    make_entity_endpoints(api, Publisher, PublisherData)
+    make_entity_endpoints(api, Creator, CreatorData)
