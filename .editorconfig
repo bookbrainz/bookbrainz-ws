@@ -1,0 +1,18 @@
+root = true
+
+# Unix-style newlines with a newline ending every file
+# Somewhat redundant as git already handles this
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+# Tab indentation for .json
+[*.json]
+charset = utf-8
+indent_style = tab
+
+# Tabs in Python are commonly considered heresy and the YAML spec explicitly forbids tabs
+[*.{py,yml}]
+charset = utf-8
+indent_style = space
+indent_size = 4
