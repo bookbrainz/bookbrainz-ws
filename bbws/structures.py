@@ -467,11 +467,8 @@ edition_data = entity_data.copy()
 edition_data.update({
     'publication_uri': PublicationUrl(True),
     'creator_credit': fields.Nested(creator_credit),
-    'begin_date': fields.String,
-    'begin_date_precision': fields.String,
-    'end_date': fields.String,
-    'end_date_precision': fields.String,
-    'ended': fields.Boolean,
+    'release_date': fields.String,
+    'release_date_precision': fields.String,
     'language': fields.Nested({
         'language_id': fields.Integer,
         'name': fields.String,
