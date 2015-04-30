@@ -58,6 +58,17 @@ class PublisherTypeResourceList(Resource):
         }, structures.publisher_type_list)
 
 
+class EditionFormatResourceList(Resource):
+    def get(self):
+        types = db.session.query(EditionFormat).all()
+
+        return marshal({
+            'offset': 0,
+            'count': len(types),
+            'objects': types
+        }, structures.edition_format_list)
+
+
 class EditionStatusResourceList(Resource):
     def get(self):
         types = db.session.query(EditionStatus).all()

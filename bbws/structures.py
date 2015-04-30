@@ -473,6 +473,10 @@ edition_data.update({
         'language_id': fields.Integer,
         'name': fields.String,
     }, allow_null=True),
+    'edition_format': fields.Nested({
+        'edition_format_id': fields.Integer,
+        'label': fields.String
+    }, allow_null=True),
     'edition_status': fields.Nested({
         'edition_status_id': fields.Integer,
         'label': fields.String
@@ -539,6 +543,15 @@ publisher_type_list = {
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
         'publisher_type_id': fields.Integer,
+        'label': fields.String
+    }))
+}
+
+edition_format_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested({
+        'edition_format_id': fields.Integer,
         'label': fields.String
     }))
 }
