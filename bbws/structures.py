@@ -35,6 +35,7 @@ TYPE_MAP = {
     Work: 'work_get_single'
 }
 
+
 class EntityUrl(fields.Url):
     def __init__(self, absolute=False, scheme=None):
         super(EntityUrl, self).__init__(None, absolute, scheme)
@@ -49,17 +50,21 @@ class EntityUrl(fields.Url):
         self.endpoint = TYPE_MAP[type(entity)]
         return super(EntityUrl, self).output(key, obj)
 
+
 class CreatorUrl(fields.Url):
     def __init__(self, absolute=False, scheme=None):
-        super(CreatorUrl, self).__init__('creator_get_single', absolute, scheme)
+        super(CreatorUrl, self).__init__('creator_get_single',
+                                         absolute, scheme)
 
     def output(self, key, obj):
         obj.entity_gid = obj.creator_gid
         return super(CreatorUrl, self).output(key, obj)
 
+
 class PublicationUrl(fields.Url):
     def __init__(self, absolute=False, scheme=None):
-        super(PublicationUrl, self).__init__('publication_get_single', absolute, scheme)
+        super(PublicationUrl, self).__init__('publication_get_single',
+                                             absolute, scheme)
 
     def output(self, key, obj):
         obj.entity_gid = obj.publication_gid
@@ -141,7 +146,7 @@ identifier_list = {
 entity_stub = {
     'entity_gid': fields.String,
     'uri': EntityUrl(True),
-	'_type': fields.String
+    '_type': fields.String
 }
 
 entity = entity_stub.copy()

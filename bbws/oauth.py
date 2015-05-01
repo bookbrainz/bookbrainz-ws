@@ -21,11 +21,8 @@ import bcrypt
 import datetime
 import uuid
 
-from flask import request as global_request
-
 from bbschema import OAuthClient, User
 from flask_oauthlib.provider import OAuth2RequestValidator
-from sqlalchemy.orm.exc import NoResultFound
 
 from . import cache, db, oauth_provider
 
@@ -153,7 +150,7 @@ class MyRequestValidator(OAuth2RequestValidator):
         cur_hash = user.password.encode('utf-8')
 
         # Ensure password matches the hash in the database
-        if (cur_hash == bcrypt.hashpw(password, cur_hash)):
+        if cur_hash == bcrypt.hashpw(password, cur_hash):
             return user
 
         return None

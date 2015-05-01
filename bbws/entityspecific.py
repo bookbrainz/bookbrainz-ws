@@ -19,8 +19,8 @@
 
 from flask.ext.restful import Resource, marshal
 
-from bbschema import (CreatorType, EditionStatus, PublicationType,
-                      PublisherType, WorkType)
+from bbschema import (CreatorType, EditionStatus, EditionFormat,
+                      PublicationType, PublisherType, WorkType)
 
 from . import db, structures
 

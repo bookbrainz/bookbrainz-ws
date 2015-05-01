@@ -36,6 +36,7 @@ from . import db, oauth_provider, structures
 
 es = Elasticsearch()
 
+
 def index_entity(entity):
     es.index(
         index='bookbrainz',
@@ -120,7 +121,7 @@ class EntityResource(Resource):
             abort(404)
 
         if entity.master_revision is None:
-            abort(403) # Forbidden to PUT on an entity with no data yet
+            abort(403)  # Forbidden to PUT on an entity with no data yet
 
         entity_data = entity.master_revision.entity_data
         entity_data = entity_data.update(data, db.session)
@@ -336,7 +337,8 @@ class EntityResourceList(Resource):
 
     def get(self):
         args = self.get_parser.parse_args()
-        q = db.session.query(self.entity_class).order_by(Entity.last_updated.desc())
+        q = db.session.query(self.entity_class).\
+            order_by(Entity.last_updated.desc())
         q = q.offset(args.offset).limit(args.limit)
         entities = q.all()
 

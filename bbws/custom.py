@@ -23,13 +23,13 @@ should be kept to a minimum.
 from elasticsearch import Elasticsearch
 from flask import jsonify, request
 from flask.ext.restful import abort, marshal
-
-from bbschema import Entity, Creator, Publication, Edition, Publisher, Work, Alias
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import cache, db, structures
+from bbschema import (Alias, Creator, Edition, Entity, Publication, Publisher,
+                      Work)
 
+from . import cache, db, structures
 
 es = Elasticsearch()
 
@@ -41,6 +41,7 @@ TYPE_MAP = {
     Work: structures.work_data
 }
 
+
 def index_entity(entity):
     es.index(
         index='bookbrainz',
@@ -48,6 +49,7 @@ def index_entity(entity):
         id=entity['entity_gid'],
         body=entity
     )
+
 
 def init(app):
     # Book of the Week
@@ -96,9 +98,10 @@ def init(app):
 
         for entity in entities:
             entity_out = marshal(entity, structures.entity_expanded)
-            data_out = marshal(entity.master_revision.entity_data, TYPE_MAP[type(entity)])
+            data_out = marshal(entity.master_revision.entity_data,
+                               TYPE_MAP[type(entity)])
 
             entity_out.update(data_out)
             index_entity(entity_out)
 
-        return jsonify({ 'success': True })
+        return jsonify({'success': True})
