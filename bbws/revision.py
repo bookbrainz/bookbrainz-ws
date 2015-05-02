@@ -91,9 +91,15 @@ class RevisionResourceList(Resource):
     get_parser.add_argument('limit', type=int, default=20)
     get_parser.add_argument('offset', type=int, default=0)
 
-    def get(self):
+    def get(self, entity_gid=None, user_id=None):
         args = self.get_parser.parse_args()
         query = db.session.query(Revision)
+
+        if entity_gid is not None:
+            query = db.session.query(EntityRevision)
+            query = query.filter_by(entity_gid=entity_gid)
+        elif user_id is not None:
+            query = query.filter_by(user_id=user_id)
 
         list_fields = structures.revision_list
 
@@ -114,5 +120,7 @@ class RevisionResourceList(Resource):
 def create_views(api):
     api.add_resource(RevisionResource, '/revision/<int:revision_id>/',
                      endpoint='revision_get_single')
-    api.add_resource(RevisionResourceList, '/revision/',
-                     endpoint='revision_get_many')
+    api.add_resource(
+        RevisionResourceList, '/revision/', '/user/<int:user_id>/revisions',
+        endpoint='revision_get_many'
+    )

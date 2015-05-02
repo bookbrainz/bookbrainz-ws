@@ -31,6 +31,7 @@ from flask import request
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
+from bbws.revision import RevisionResourceList
 
 from . import db, oauth_provider, structures
 
@@ -445,6 +446,11 @@ def make_entity_endpoints(api, entity_class, data_class, make_list=True):
         EntityIdentifierResource,
         '/{}/<string:entity_gid>/identifiers'.format(entity_name),
         endpoint='{}_get_identifiers'.format(entity_name))
+
+    api.add_resource(
+        RevisionResourceList,
+        '/{}/<string:entity_gid>/revisions'.format(entity_name),
+        endpoint='{}_get_revisions'.format(entity_name))
 
     if make_list:
         list_class = type(
