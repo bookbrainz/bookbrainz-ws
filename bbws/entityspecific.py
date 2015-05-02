@@ -91,6 +91,27 @@ class WorkTypeResourceList(Resource):
         }, structures.work_type_list)
 
 
+class PublicationEditionsResource(Resource):
+    def get(self, entity_gid):
+        try:
+            uuid.UUID(entity_gid)
+        except ValueError:
+            abort(404)
+
+        try:
+            publication = db.session.query(Publication).options(
+                joinedload('master_revision.entity_data')
+            ).filter_by(entity_gid=entity_gid).one()
+        except NoResultFound:
+            abort(404)
+
+        return marshal({
+            'offset': 0,
+            'count': len(publication.editions),
+            'objects': publication.editions
+        }, structures.edition_list)
+
+
 def create_views(api):
     api.add_resource(PublicationTypeResourceList, '/publicationType/')
     api.add_resource(CreatorTypeResourceList, '/creatorType/')
@@ -98,3 +119,7 @@ def create_views(api):
     api.add_resource(EditionFormatResourceList, '/editionFormat/')
     api.add_resource(EditionStatusResourceList, '/editionStatus/')
     api.add_resource(WorkTypeResourceList, '/workType/')
+    api.add_resource(
+        PublicationEditionsResource, '/publication/<string:entity_gid>/editions',
+        endpoint='publication_get_editions'
+    )

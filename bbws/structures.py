@@ -67,8 +67,23 @@ class PublicationUrl(fields.Url):
                                              absolute, scheme)
 
     def output(self, key, obj):
+        if obj.publication_gid is None:
+            return None
+
         obj.entity_gid = obj.publication_gid
         return super(PublicationUrl, self).output(key, obj)
+
+class PublisherUrl(fields.Url):
+    def __init__(self, absolute=False, scheme=None):
+        super(PublisherUrl, self).__init__('publisher_get_single',
+                                           absolute, scheme)
+
+    def output(self, key, obj):
+        if obj.publisher_gid is None:
+            return None
+
+        obj.entity_gid = obj.publisher_gid
+        return super(PublisherUrl, self).output(key, obj)
 
 language_stub = {
     'language_id': fields.Integer,
@@ -328,6 +343,7 @@ creator = entity.copy()
 creator.update(creator_stub)
 creator.update({
     'aliases_uri': fields.Url('creator_get_aliases', True),
+    'identifiers_uri': fields.Url('creator_get_identifiers', True),
     'disambiguation_uri': fields.Url('creator_get_disambiguation', True),
     'annotation_uri': fields.Url('creator_get_annotation', True),
     'relationships_uri': fields.Url('relationship_get_many', True)
@@ -369,6 +385,7 @@ publication = entity.copy()
 publication.update(publication_stub)
 publication.update({
     'aliases_uri': fields.Url('publication_get_aliases', True),
+    'identifiers_uri': fields.Url('publication_get_identifiers', True),
     'disambiguation_uri': fields.Url('publication_get_disambiguation', True),
     'annotation_uri': fields.Url('publication_get_annotation', True),
     'relationships_uri': fields.Url('relationship_get_many', True),
@@ -402,6 +419,7 @@ publisher = entity.copy()
 publisher.update(publisher_stub)
 publisher.update({
     'aliases_uri': fields.Url('publisher_get_aliases', True),
+    'identifiers_uri': fields.Url('publisher_get_identifiers', True),
     'disambiguation_uri': fields.Url('publisher_get_disambiguation', True),
     'annotation_uri': fields.Url('publisher_get_annotation', True),
     'relationships_uri': fields.Url('relationship_get_many', True)
@@ -439,6 +457,7 @@ edition = entity.copy()
 edition.update(edition_stub)
 edition.update({
     'aliases_uri': fields.Url('edition_get_aliases', True),
+    'identifiers_uri': fields.Url('edition_get_identifiers', True),
     'disambiguation_uri': fields.Url('edition_get_disambiguation', True),
     'annotation_uri': fields.Url('edition_get_annotation', True),
     'identifiers_uri': fields.Url('edition_get_identifiers', True),
@@ -499,6 +518,7 @@ work = entity.copy()
 work.update(work_stub)
 work.update({
     'aliases_uri': fields.Url('work_get_aliases', True),
+    'identifiers_uri': fields.Url('work_get_identifiers', True),
     'disambiguation_uri': fields.Url('work_get_disambiguation', True),
     'annotation_uri': fields.Url('work_get_annotation', True),
     'relationships_uri': fields.Url('relationship_get_many', True)

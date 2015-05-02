@@ -441,6 +441,11 @@ def make_entity_endpoints(api, entity_class, data_class, make_list=True):
         endpoint='{}_get_annotation'.format(entity_name)
     )
 
+    api.add_resource(
+        EntityIdentifierResource,
+        '/{}/<string:entity_gid>/identifiers'.format(entity_name),
+        endpoint='{}_get_identifiers'.format(entity_name))
+
     if make_list:
         list_class = type(
             entity_class.__name__ + 'List', (EntityResourceList,),
