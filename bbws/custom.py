@@ -71,8 +71,16 @@ def init(app):
     def search():
         query = request.args.get('q', '')
         mode = request.args.get('mode', 'search')
+        collection = request.args.get('collection')
 
         search_field = 'default_alias.name'
+
+        if collection not in ['creator',
+                              'publication',
+                              'edition',
+                              'publisher',
+                              'work']:
+            collection = None
 
         if mode == 'search':
             search_field += '.search'
@@ -90,7 +98,13 @@ def init(app):
             }
         }
 
-        return jsonify(es.search(index='bookbrainz', body=query_obj))
+        search = es.search(
+            index='bookbrainz',
+            doc_type=collection,
+            body=query_obj
+        )
+
+        return jsonify(search['hits'])
 
     @app.route('/search/reindex', endpoint='search_reindex', methods=['GET'])
     def reindex_search():
