@@ -4,7 +4,7 @@
       "filter": {
         "trigrams_filter": {
           "type": "ngram",
-          "min_gram": 3,
+          "min_gram": 1,
           "max_gram": 3
         },
         "edge_filter": {
