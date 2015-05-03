@@ -70,11 +70,19 @@ def init(app):
     @app.route('/search/', endpoint='search_query', methods=['GET'])
     def search():
         query = request.args.get('q', '')
+        mode = request.args.get('mode', 'search')
+
+        search_field = 'default_alias.name'
+
+        if mode == 'search':
+            search_field += '.search'
+        elif mode == 'auto':
+            search_field += '.autocomplete'
 
         query_obj = {
             'query': {
                 'match': {
-                    'default_alias.name.search': {
+                    search_field: {
                         'query': query,
                         'minimum_should_match': '80%'
                     }
