@@ -67,28 +67,22 @@ def init(app):
 
         return jsonify(marshal(entity, structures.entity))
 
-    @app.route('/search', endpoint='search_query', methods=['GET'])
+    @app.route('/search/', endpoint='search_query', methods=['GET'])
     def search():
-        query = '%' + request.args.get('q', '') + '%'
+        query = request.args.get('q', '')
 
-        matching_aliases = db.session.query(Alias)\
-            .filter(Alias.name.ilike(query)).all()
+        query_obj = {
+            'query': {
+                'match': {
+                    'default_alias.name.search': {
+                        'query': query,
+                        'minimum_should_match': '80%'
+                    }
+                }
+            }
+        }
 
-        data = set()
-        for a in matching_aliases:
-            data.update(a.data)
-
-        revisions = set()
-        for d in data:
-            revisions.update(d.revisions)
-
-        entities = set(r.entity for r in revisions)
-
-        return jsonify(marshal({
-            'offset': 0,
-            'count': len(entities),
-            'objects': entities
-        }, structures.entity_list))
+        return jsonify(es.search(index='bookbrainz', body=query_obj))
 
     @app.route('/search/reindex', endpoint='search_reindex', methods=['GET'])
     def reindex_search():
