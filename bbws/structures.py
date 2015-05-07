@@ -132,6 +132,8 @@ identifier_type = identifier_type_stub.copy()
 identifier_type.update({
     'parent': fields.Nested(identifier_type_stub, allow_null=True),
     'child_order': fields.Integer,
+    'detection_regex': fields.String,
+    'validation_regex': fields.String,
     'description': fields.String,
     'entity_type': fields.String
 })

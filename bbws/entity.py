@@ -26,7 +26,7 @@ import traceback
 
 from bbschema import (Creator, CreatorData, Edition, EditionData, Entity,
                       EntityData, EntityRevision, Publication, PublicationData,
-                      Publisher, PublisherData, RevisionNote, Work, WorkData)
+                      Publisher, PublisherData, RevisionNote, Work, WorkData, IdentifierType)
 from elasticsearch import Elasticsearch
 from flask import request
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
@@ -328,6 +328,17 @@ class EntityIdentifierResource(Resource):
         }, structures.identifier_list)
 
 
+class EntityIdentifierTypeResourceList(Resource):
+    def get(self):
+        types = db.session.query(IdentifierType).all()
+
+        return marshal({
+            'offset': 0,
+            'count': len(types),
+            'objects': types
+        }, structures.identifier_type_list)
+
+
 class EntityResourceList(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('limit', type=int, default=20)
@@ -478,3 +489,8 @@ def create_views(api):
     make_entity_endpoints(api, Publication, PublicationData)
     make_entity_endpoints(api, Publisher, PublisherData)
     make_entity_endpoints(api, Creator, CreatorData)
+
+    api.add_resource(
+        EntityIdentifierTypeResourceList,
+        '/identifierType/'
+    )
