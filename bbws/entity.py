@@ -22,6 +22,7 @@ resources.
 """
 
 import uuid
+import traceback
 
 from bbschema import (Creator, CreatorData, Edition, EditionData, Entity,
                       EntityData, EntityRevision, Publication, PublicationData,
@@ -30,6 +31,7 @@ from elasticsearch import Elasticsearch
 from flask import request
 from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from bbws.revision import RevisionResourceList
 
@@ -383,6 +385,7 @@ class EntityResourceList(Resource):
             db.session.commit()
         except IntegrityError:
             # There was an issue with the data we received, so 400
+            print traceback.format_exc()
             abort(400)
 
         entity_out = marshal(revision.entity, structures.entity_expanded)
