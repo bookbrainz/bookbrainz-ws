@@ -492,6 +492,7 @@ creator_credit = {
 edition_data = entity_data.copy()
 edition_data.update({
     'publication_uri': PublicationUrl(True),
+    'publisher_uri': PublisherUrl(True),
     'creator_credit': fields.Nested(creator_credit),
     'release_date': fields.String,
     'release_date_precision': fields.String,

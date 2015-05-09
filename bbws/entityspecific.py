@@ -17,10 +17,13 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-from flask.ext.restful import Resource, marshal
+import uuid
 
-from bbschema import (CreatorType, EditionStatus, EditionFormat,
+from bbschema import (CreatorType, EditionFormat, EditionStatus, Publication,
                       PublicationType, PublisherType, WorkType)
+from flask.ext.restful import Resource, marshal
+from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.exc import NoResultFound
 
 from . import db, structures
 
