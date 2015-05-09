@@ -361,9 +361,9 @@ creator_list = {
 
 creator_data = entity_data.copy()
 creator_data.update({
-    'begin_date': fields.String,
+    'begin_date': fields.String(attribute='begin'),
     'begin_date_precision': fields.String,
-    'end_date': fields.String,
+    'end_date': fields.String(attribute='end'),
     'end_date_precision': fields.String,
     'ended': fields.Boolean,
     'creator_type': fields.Nested({
@@ -437,9 +437,9 @@ publisher_list = {
 
 publisher_data = entity_data.copy()
 publisher_data.update({
-    'begin_date': fields.String,
+    'begin_date': fields.String(attribute='begin'),
     'begin_date_precision': fields.String,
-    'end_date': fields.String,
+    'end_date': fields.String(attribute='end'),
     'end_date_precision': fields.String,
     'ended': fields.Boolean,
     'publisher_type': fields.Nested({
@@ -494,7 +494,7 @@ edition_data.update({
     'publication_uri': PublicationUrl(True),
     'publisher_uri': PublisherUrl(True),
     'creator_credit': fields.Nested(creator_credit),
-    'release_date': fields.String,
+    'release_date': fields.String(attribute='release'),
     'release_date_precision': fields.String,
     'language': fields.Nested({
         'language_id': fields.Integer,
