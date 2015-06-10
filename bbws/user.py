@@ -27,30 +27,30 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from . import db, oauth_provider, structures
 
+from bbdata.model import Model, NotFoundError
+
+UserModel = Model('models/User.json')
 
 class UserResource(Resource):
     """ A Resource representing a User of the webservice. """
     def get(self, user_id):
         try:
-            user = db.session.query(User).filter_by(user_id=user_id).one()
-        except NoResultFound:
+            user = UserModel.get(user_id, db.session, exclude=['email', 'password'])
+        except NotFoundError:
             abort(404)
 
-        return marshal(user, structures.user)
+        return user
 
     def put(self, user_id):
+        # Filter the incoming response
+        data = {k: v for k,v in request.get_json().items() if k == 'bio'}
+
         try:
-            user = db.session.query(User).filter_by(user_id=user_id).one()
-        except NoResultFound:
+            UserModel.update(user_id, data, db.session)
+        except NotFoundError:
             abort(404)
 
-        json = request.get_json()
-
-        user.bio = json['bio']
-
-        db.session.commit()
-
-        return marshal(user, structures.user)
+        return UserModel.get(user_id, db.session, exclude=['email', 'password'])
 
 
 class AccountResource(Resource):
@@ -58,7 +58,7 @@ class AccountResource(Resource):
 
     @oauth_provider.require_oauth()
     def get(self):
-        return marshal(request.oauth.user, structures.account)
+        return UserModel.format(request.oauth.user, exclude=['password'])
 
 
 class UserResourceList(Resource):
