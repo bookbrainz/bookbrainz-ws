@@ -29,6 +29,8 @@ from . import db, oauth_provider, structures
 
 from bbdata.model import Model, NotFoundError
 
+UserTypeModel = Model('models/UserType.json')
+Model('models/Gender.json')
 UserModel = Model('models/User.json')
 
 class UserResource(Resource):
@@ -67,46 +69,39 @@ class UserResourceList(Resource):
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('limit', type=int, default=20)
     get_parser.add_argument('offset', type=int, default=0)
+    get_parser.add_argument('populate', action="append", type=str)
+    get_parser.add_argument('stub', type=int, default=1)
 
     def get(self):
         args = self.get_parser.parse_args()
-        query = db.session.query(User).offset(args.offset).limit(args.limit)
-        users = query.all()
-
-        return marshal({
-            'offset': args.offset,
-            'count': len(users),
-            'objects': users
-        }, structures.user_list)
+        print(args.populate)
+        return UserModel.list(
+            db.session, args.offset, args.limit, exclude=['email', 'password'],
+            populate=args.populate, stub=(args.stub == 1)
+        )
 
     def post(self):
-        json = request.get_json()
+        data = request.get_json()
 
-        try:
-            # Use bcrypt to generate a salted password hash
-            password = json['password'].encode('utf-8')
-            password = bcrypt.hashpw(password, bcrypt.gensalt())
+        # Use bcrypt to generate a salted password hash
+        password = data['password'].encode('utf-8')
+        data['password'] = bcrypt.hashpw(password, bcrypt.gensalt())
 
-            user = User(name=json['name'], email=json['email'],
-                        user_type_id=json['user_type']['user_type_id'],
-                        password=password)
-        except KeyError:
-            abort(400)
+        user_id = UserModel.new(data)
 
-        db.session.add(user)
-        db.session.commit()
-
-        return marshal(user, structures.user)
+        return UserModel.get(user_id, db.session, exclude=['email', 'password'])
 
 
 class UserTypeResourceList(Resource):
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('limit', type=int, default=20)
+    get_parser.add_argument('offset', type=int, default=0)
+    get_parser.add_argument('populate', action="append", type=str)
+    get_parser.add_argument('stub', type=int, default=1)
+
     def get(self):
-        types = db.session.query(UserType).all()
-        return marshal({
-            'offset': 0,
-            'count': len(types),
-            'objects': types
-        }, structures.user_type_list)
+        args = self.get_parser.parse_args()
+        return UserTypeModel.list(db.session, args.offset, args.limit)
 
 
 class UserMessageResource(Resource):
