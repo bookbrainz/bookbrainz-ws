@@ -32,6 +32,9 @@ from bbdata.model import Model, NotFoundError
 UserTypeModel = Model('models/UserType.json')
 Model('models/Gender.json')
 UserModel = Model('models/User.json')
+MessageModel = Model('models/Message.json')
+MessageReceiptModel = Model('models/MessageReceipt.json')
+
 
 class UserResource(Resource):
     """ A Resource representing a User of the webservice. """
@@ -141,14 +144,9 @@ class UserMessageInboxResource(Resource):
         args = self.get_parser.parse_args()
         messages = db.session.query(Message).join(MessageReceipt).\
             filter(MessageReceipt.recipient_id == request.oauth.user.user_id).\
-            filter(MessageReceipt.archived == False).\
-            offset(args.offset).limit(args.limit).all()
+            filter(MessageReceipt.archived == False)
 
-        return marshal({
-            'offset': args.offset,
-            'count': len(messages),
-            'objects': messages
-        }, structures.message_list)
+        return Message.list(db.session, args.offset, args.limit, query=messages)
 
 
 class UserMessageArchiveResource(Resource):

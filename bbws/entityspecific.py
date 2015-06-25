@@ -19,79 +19,91 @@
 
 import uuid
 
-from bbschema import (CreatorType, EditionFormat, EditionStatus, Publication,
-                      PublicationType, PublisherType, WorkType)
-from flask.ext.restful import Resource, marshal
+from bbschema import (Publication)
+from flask.ext.restful import Resource, marshal, reqparse
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import db, structures
 
+from bbdata.model import Model, NotFoundError
+
+PublicationType = Model('models/PublicationType.json')
+PublisherType = Model('models/PublisherType.json')
+CreatorType = Model('models/CreatorType.json')
+EditionFormat = Model('models/EditionFormat.json')
+EditionStatus = Model('models/EditionStatus.json')
+WorkType = Model('models/WorkType.json')
 
 class PublicationTypeResourceList(Resource):
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('limit', type=int, default=20)
+    get_parser.add_argument('offset', type=int, default=0)
+    get_parser.add_argument('stub', type=int, default=1)
+
     def get(self):
-        types = db.session.query(PublicationType).all()
-
-        return marshal({
-            'offset': 0,
-            'count': len(types),
-            'objects': types
-        }, structures.publication_type_list)
-
+        args = self.get_parser.parse_args()
+        return PublicationType.list(db.session, args.offset,
+                                    args.limit, stub=(args.stub == 1))
 
 class CreatorTypeResourceList(Resource):
-    def get(self):
-        types = db.session.query(CreatorType).all()
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('limit', type=int, default=20)
+    get_parser.add_argument('offset', type=int, default=0)
+    get_parser.add_argument('stub', type=int, default=1)
 
-        return marshal({
-            'offset': 0,
-            'count': len(types),
-            'objects': types
-        }, structures.creator_type_list)
+    def get(self):
+        args = self.get_parser.parse_args()
+        return CreatorType.list(db.session, args.offset,
+                                args.limit, stub=(args.stub == 1))
 
 
 class PublisherTypeResourceList(Resource):
-    def get(self):
-        types = db.session.query(PublisherType).all()
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('limit', type=int, default=20)
+    get_parser.add_argument('offset', type=int, default=0)
+    get_parser.add_argument('stub', type=int, default=1)
 
-        return marshal({
-            'offset': 0,
-            'count': len(types),
-            'objects': types
-        }, structures.publisher_type_list)
+    def get(self):
+        args = self.get_parser.parse_args()
+        return PublisherType.list(db.session, args.offset,
+                                  args.limit, stub=(args.stub == 1))
 
 
 class EditionFormatResourceList(Resource):
-    def get(self):
-        types = db.session.query(EditionFormat).all()
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('limit', type=int, default=20)
+    get_parser.add_argument('offset', type=int, default=0)
+    get_parser.add_argument('stub', type=int, default=1)
 
-        return marshal({
-            'offset': 0,
-            'count': len(types),
-            'objects': types
-        }, structures.edition_format_list)
+    def get(self):
+        args = self.get_parser.parse_args()
+        return EditionFormat.list(db.session, args.offset,
+                                  args.limit, stub=(args.stub == 1))
 
 
 class EditionStatusResourceList(Resource):
-    def get(self):
-        types = db.session.query(EditionStatus).all()
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('limit', type=int, default=20)
+    get_parser.add_argument('offset', type=int, default=0)
+    get_parser.add_argument('stub', type=int, default=1)
 
-        return marshal({
-            'offset': 0,
-            'count': len(types),
-            'objects': types
-        }, structures.edition_status_id)
+    def get(self):
+        args = self.get_parser.parse_args()
+        return EditionStatus.list(db.session, args.offset,
+                                  args.limit, stub=(args.stub == 1))
 
 
 class WorkTypeResourceList(Resource):
-    def get(self):
-        types = db.session.query(WorkType).all()
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('limit', type=int, default=20)
+    get_parser.add_argument('offset', type=int, default=0)
+    get_parser.add_argument('stub', type=int, default=1)
 
-        return marshal({
-            'offset': 0,
-            'count': len(types),
-            'objects': types
-        }, structures.work_type_list)
+    def get(self):
+        args = self.get_parser.parse_args()
+        return WorkType.list(db.session, args.offset,
+                             args.limit, stub=(args.stub == 1))
 
 
 class PublicationEditionsResource(Resource):

@@ -21,36 +21,38 @@ schema.
 """
 
 
-from flask.ext.restful import Resource, marshal
-
-from bbschema import Gender, Language
+from flask.ext.restful import Resource, marshal, reqparse
 
 from . import db, structures
 
+from bbdata.model import Model, NotFoundError
+
+Gender = Model('models/Gender.json')
+Language = Model('models/Language.json')
 
 class GenderResourceList(Resource):
-    def get(self):
-        genders = db.session.query(Gender).all()
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('limit', type=int, default=20)
+    get_parser.add_argument('offset', type=int, default=0)
+    get_parser.add_argument('stub', type=int, default=1)
 
-        return marshal({
-            'offset': 0,
-            'objects': genders,
-            'count': len(genders),
-        }, structures.gender_list)
+    def get(self):
+        args = self.get_parser.parse_args()
+        return Gender.list(db.session, args.offset,
+                           args.limit, stub=(args.stub == 1))
 
 
 class LanguageResourceList(Resource):
+    get_parser = reqparse.RequestParser()
+    get_parser.add_argument('limit', type=int, default=20)
+    get_parser.add_argument('offset', type=int, default=0)
+    get_parser.add_argument('stub', type=int, default=1)
+
     def get(self):
-        languages = db.session.query(Language).filter(
-            Language.frequency != 0
-        ).all()
-
-        return marshal({
-            'offset': 0,
-            'objects': languages,
-            'count': len(languages),
-        }, structures.language_list)
-
+        args = self.get_parser.parse_args()
+        all_languages = Language.list(db.session, args.offset,
+                                      args.limit, stub=(args.stub == 1))
+        return all_languages
 
 def create_views(api):
     api.add_resource(GenderResourceList, '/gender/')
