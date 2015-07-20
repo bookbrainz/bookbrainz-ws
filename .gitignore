@@ -53,5 +53,10 @@ docs/_build/
 # PyBuilder
 target/
 
+# IntelliJ project files
+.idea
+out
+gen
+
 # Project-specific
 config/deploy.py
