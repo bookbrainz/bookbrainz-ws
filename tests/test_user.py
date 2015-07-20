@@ -30,16 +30,8 @@ class TestUserViews(TestCase):
         # TODO fix when flask restful releases next version
         import pytz
         from calendar import timegm
-        created_at = datetime.datetime.isoformat(
-            datetime.datetime.fromtimestamp(
-                timegm(user.created_at.utctimetuple()), tz=pytz.UTC
-            )
-        )
-        active_at = datetime.datetime.isoformat(
-            datetime.datetime.fromtimestamp(
-                timegm(user.active_at.utctimetuple()), tz=pytz.UTC
-            )
-        )
+        created_at = user.created_at.isoformat()
+        active_at = user.active_at.isoformat()
 
         response = self.client.get('/user/{}/'.format(user.user_id))
         self.assert200(response)
