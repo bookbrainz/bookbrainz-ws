@@ -9,7 +9,7 @@ cache:
 
 install:
   - pip install coveralls coverage
-  - pip install -r requirements.txt --use-mirrors
+  - pip install -r requirements.txt
   - pip install https://github.com/BookBrainz/bookbrainz-schema/archive/master.zip
 
 addons:
