@@ -20,6 +20,7 @@
 should be kept to a minimum.
 """
 
+import uuid
 from elasticsearch import Elasticsearch
 from flask import jsonify, request
 from flask.ext.restful import abort, marshal
@@ -73,7 +74,13 @@ def init(app):
         mode = request.args.get('mode', 'search')
         collection = request.args.get('collection')
 
-        search_field = 'default_alias.name'
+        is_uuid = False
+        try:
+            uuid.UUID(query)
+        except ValueError:
+            pass
+        else:
+            is_uuid = True
 
         if collection not in ['creator',
                               'publication',
@@ -82,21 +89,33 @@ def init(app):
                               'work']:
             collection = None
 
-        if mode == 'search':
-            search_field += '.search'
-        elif mode == 'auto':
-            search_field += '.autocomplete'
-
-        query_obj = {
-            'query': {
-                'match': {
-                    search_field: {
-                        'query': query,
-                        'minimum_should_match': '80%'
+        if is_uuid:
+            # Query by UUID, directly against stored IDs
+            query_obj = {
+                'query': {
+                    'ids': {
+                        "values": [query]
                     }
                 }
             }
-        }
+        else:
+            search_field = 'default_alias.name'
+
+            if mode == 'search':
+                search_field += '.search'
+            elif mode == 'auto':
+                search_field += '.autocomplete'
+
+            query_obj = {
+                'query': {
+                    'match': {
+                        search_field: {
+                            'query': query,
+                            'minimum_should_match': '80%'
+                        }
+                    }
+                }
+            }
 
         search = es.search(
             index='bookbrainz',
