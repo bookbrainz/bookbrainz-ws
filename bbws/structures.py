@@ -86,7 +86,7 @@ class PublisherUrl(fields.Url):
         return super(PublisherUrl, self).output(key, obj)
 
 language_stub = {
-    'language_id': fields.Integer,
+    'language_id': fields.Integer(attribute='id'),
     'name': fields.String
 }
 
@@ -497,7 +497,7 @@ edition_data.update({
     'release_date': fields.String(attribute='release'),
     'release_date_precision': fields.String,
     'language': fields.Nested({
-        'language_id': fields.Integer,
+        'language_id': fields.Integer(attribute='id'),
         'name': fields.String,
     }, allow_null=True),
     'edition_format': fields.Nested({
@@ -538,7 +538,7 @@ work_list = {
 work_data = entity_data.copy()
 work_data.update({
     'languages': fields.List(fields.Nested({
-        'language_id': fields.Integer,
+        'language_id': fields.Integer(attribute='id'),
         'name': fields.String,
     })),
     'work_type': fields.Nested({
