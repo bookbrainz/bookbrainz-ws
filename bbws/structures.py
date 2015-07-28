@@ -207,6 +207,14 @@ entity_expanded.update({
     'annotation': fields.Nested(entity_annotation, allow_null=True)
 })
 
+entity_diff = {
+    'annotation': fields.List(fields.Nested(entity_annotation, allow_null=True)),
+    'disambiguation': fields.List(fields.Nested(entity_disambiguation, allow_null=True)),
+    'default_alias': fields.List(fields.Nested(entity_alias, allow_null=True)),
+    'aliases': fields.List(fields.List(fields.Nested(entity_alias))),
+    'identifiers': fields.List(fields.List(fields.Nested(identifier)))
+}
+
 
 entity_list = {
     'offset': fields.Integer,
@@ -515,6 +523,13 @@ edition_data.update({
     }, allow_null=True)
 })
 
+edition_diff = entity_diff.copy()
+edition_diff.update({
+    'publication_uri': fields.List(PublicationUrl(True)),
+    'publisher_uri': fields.List(PublisherUrl(True)),
+    'release_date': fields.List(fields.String),
+    'pages': fields.List(fields.Integer(default=None))
+})
 
 work_stub = entity_stub.copy()
 work_stub.update({
