@@ -496,6 +496,11 @@ edition_data.update({
     'creator_credit': fields.Nested(creator_credit),
     'release_date': fields.String(attribute='release'),
     'release_date_precision': fields.String,
+    'pages': fields.Integer(default=None),
+    'height': fields.Integer(default=None),
+    'width': fields.Integer(default=None),
+    'depth': fields.Integer(default=None),
+    'weight': fields.Integer(default=None),
     'language': fields.Nested({
         'language_id': fields.Integer(attribute='id'),
         'name': fields.String,
