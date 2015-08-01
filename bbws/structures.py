@@ -120,6 +120,8 @@ revision_stub = {
     'user': fields.Nested({
         'user_id': fields.Integer,
     }),
+    'parent_id': fields.Integer(default=None),
+    'entity_data_id': fields.Integer(default=None),
     'uri': fields.Url('revision_get_single', True),
 }
 

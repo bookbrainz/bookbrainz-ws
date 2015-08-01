@@ -154,6 +154,56 @@ class EntityResource(Resource):
             'entity': fields.Nested(self.entity_stub_fields)
         })
 
+    @oauth_provider.require_oauth()
+    def delete(self, entity_gid):
+        data = request.get_json()
+
+        # This will be valid here, due to authentication.
+        user = request.oauth.user
+        user.total_revisions += 1
+        user.revisions_applied += 1
+
+        try:
+            uuid.UUID(entity_gid)
+        except ValueError:
+            abort(404)
+
+        try:
+            entity = db.session.query(self.entity_class).options(
+                joinedload('master_revision')
+            ).filter_by(entity_gid=entity_gid).one()
+        except NoResultFound:
+            abort(404)
+
+        if entity.master_revision is None:
+            abort(403)  # Forbidden to DELETE an entity with no data yet
+
+        # To delete an entity, create a new revision with entity_data set to
+        # None
+        revision = EntityRevision(user_id=user.user_id)
+        revision.entity = entity
+        revision.entity_data = None
+
+        note_content = data.get('revision', {}).get('note', '')
+
+        if note_content != '':
+            note = RevisionNote(user_id=user.user_id,
+                                revision_id=revision.revision_id,
+                                content=data['revision']['note'])
+
+            revision.notes.append(note)
+
+        entity.master_revision.parent = revision
+        entity.master_revision = revision
+
+        db.session.add(revision)
+
+        # Commit entity, data and revision
+        db.session.commit()
+
+        return marshal(revision, {
+            'entity': fields.Nested(self.entity_stub_fields)
+        })
 
 class EntityAliasResource(Resource):
 
@@ -185,7 +235,7 @@ class EntityAliasResource(Resource):
             else:
                 entity = revision.entity
 
-        if revision is None:
+        if revision is None or revision.entity_data is None:
             aliases = []
         else:
             aliases = revision.entity_data.aliases
@@ -231,7 +281,7 @@ class EntityDisambiguationResource(Resource):
             else:
                 entity = revision.entity
 
-        if revision is None:
+        if revision is None or revision.entity_data is None:
             disambiguation = None
         else:
             disambiguation = revision.entity_data.disambiguation
@@ -276,7 +326,7 @@ class EntityAnnotationResource(Resource):
             else:
                 entity = revision.entity
 
-        if revision is None:
+        if revision is None or revision.entity_data is None:
             annotation = None
         else:
             annotation = revision.entity_data.annotation
@@ -316,7 +366,7 @@ class EntityIdentifierResource(Resource):
             else:
                 entity = revision.entity
 
-        if revision is None:
+        if revision is None or revision.entity_data is None:
             identifiers = []
         else:
             identifiers = revision.entity_data.identifiers
