@@ -25,13 +25,80 @@ from sqlalchemy.orm.exc import NoResultFound
 from . import db, structures
 
 data_mapper = {
-    PublicationData: structures.entity_diff,
-    CreatorData: structures.entity_diff,
+    PublicationData: structures.publication_diff,
+    CreatorData: structures.creator_diff,
     EditionData: structures.edition_diff,
-    PublisherData: structures.entity_diff,
-    WorkData: structures.entity_diff,
+    PublisherData: structures.publisher_diff,
+    WorkData: structures.work_diff,
 }
 
+
+def format_entity_revision(revision, base):
+    entity_revision_fields = {
+        'revision_id': fields.Integer,
+        'created_at': fields.DateTime(dt_format='iso8601'),
+        'entity': fields.Nested(structures.entity_stub),
+        'user': fields.Nested({
+            'user_id': fields.Integer,
+        }),
+        'uri': fields.Url('revision_get_single', True)
+    }
+
+    if base is None:
+        right = revision.children
+    else:
+        try:
+            right = [db.session.query(Revision).\
+                filter_by(revision_id=base).one()]
+        except NoResultFound:
+            return marshal(revision, entity_revision_fields)
+
+    if revision.entity_data is None:
+        return marshal(revision, entity_revision_fields)
+
+    changes = [revision.entity_data.diff(r.entity_data) for r in right]
+    if not changes:
+        changes = [revision.entity_data.diff(None)]
+    data_fields = data_mapper[type(revision.entity_data)]
+
+    entity_revision_fields['changes'] = \
+            fields.List(fields.Nested(data_fields, allow_null=True))
+    revision.changes = changes
+
+    return marshal(revision, entity_revision_fields)
+
+def format_relationship_revision(revision, base):
+    relationship_revision_fields = {
+        'revision_id': fields.Integer,
+        'created_at': fields.DateTime(dt_format='iso8601'),
+        'relationship': fields.Nested(structures.relationship_stub),
+        'user': fields.Nested({
+            'user_id': fields.Integer,
+        }),
+        'uri': fields.Url('revision_get_single', True)
+    }
+
+    if base is None:
+        right = revision.children
+    else:
+        try:
+            right = [db.session.query(Revision).\
+                filter_by(revision_id=base).one()]
+        except NoResultFound:
+            return marshal(revision, relationship_revision_fields)
+
+    if revision.relationship_data is None:
+        return marshal(revision, relationship_revision_fields)
+
+    changes = [revision.relationship_data.diff(r.relationship_data) for r in right]
+    if not changes:
+        changes = [revision.relationship_data.diff(None)]
+
+    relationship_revision_fields['changes'] = \
+            fields.List(fields.Nested(structures.relationship_diff, allow_null=True))
+    revision.changes = changes
+
+    return marshal(revision, relationship_revision_fields)
 
 class RevisionResource(Resource):
     get_parser = reqparse.RequestParser()
@@ -46,50 +113,10 @@ class RevisionResource(Resource):
         except NoResultFound:
             abort(404)
 
-        changes = None
         if isinstance(revision, EntityRevision):
-            if args.base is None:
-                right = revision.children
-            else:
-                try:
-                    right = [db.session.query(Revision).\
-                        filter_by(revision_id=args.base).one()]
-                except NoResultFound:
-                    abort(404)
-
-            if revision.entity_data is not None:
-                changes = []
-                for r in right:
-                    changes.append(revision.entity_data.diff(r.entity_data))
-
-        if changes is not None:
-            data_fields = data_mapper[type(revision.entity_data)]
-
-        print changes
-
-        entity_revision_fields = {
-            'revision_id': fields.Integer,
-            'created_at': fields.DateTime(dt_format='iso8601'),
-            'entity': fields.Nested(structures.entity_stub),
-            'user': fields.Nested({
-                'user_id': fields.Integer,
-            }),
-            'uri': fields.Url('revision_get_single', True),
-            'changes': fields.List(fields.Nested(data_fields, allow_null=True))
-        }
-
-        revision.changes = changes
-
-        if isinstance(revision, EntityRevision):
-            print revision.changes
-            print entity_revision_fields
-            return marshal(revision, entity_revision_fields)
+            return format_entity_revision(revision, args.base)
         else:
-            return {
-                'revision_id': revision.revision_id,
-                'user_id': revision.user_id,
-                'created_at': str(revision.created_at)
-            }
+            return format_relationship_revision(revision, args.base)
 
 
 class RevisionResourceList(Resource):
