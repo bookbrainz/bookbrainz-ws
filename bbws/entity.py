@@ -150,6 +150,12 @@ class EntityResource(Resource):
         # Commit entity, data and revision
         db.session.commit()
 
+        # Don't 500 if we fail to index; commit still succeeded
+        try:
+            index_entity(entity_out)
+        except:
+            pass
+
         return marshal(revision, {
             'entity': fields.Nested(self.entity_stub_fields)
         })
