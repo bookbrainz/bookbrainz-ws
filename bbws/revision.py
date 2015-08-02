@@ -34,15 +34,7 @@ data_mapper = {
 
 
 def format_entity_revision(revision, base):
-    entity_revision_fields = {
-        'revision_id': fields.Integer,
-        'created_at': fields.DateTime(dt_format='iso8601'),
-        'entity': fields.Nested(structures.entity_stub),
-        'user': fields.Nested({
-            'user_id': fields.Integer,
-        }),
-        'uri': fields.Url('revision_get_single', True)
-    }
+    entity_revision_fields = structures.entity_revision.copy()
 
     if base is None:
         right = revision.children
@@ -68,15 +60,7 @@ def format_entity_revision(revision, base):
     return marshal(revision, entity_revision_fields)
 
 def format_relationship_revision(revision, base):
-    relationship_revision_fields = {
-        'revision_id': fields.Integer,
-        'created_at': fields.DateTime(dt_format='iso8601'),
-        'relationship': fields.Nested(structures.relationship_stub),
-        'user': fields.Nested({
-            'user_id': fields.Integer,
-        }),
-        'uri': fields.Url('revision_get_single', True)
-    }
+    relationship_revision_fields = structures.relationship_revision.copy()
 
     if base is None:
         right = revision.children

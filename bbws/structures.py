@@ -121,8 +121,7 @@ revision_stub = {
         'user_id': fields.Integer,
     }),
     'parent_id': fields.Integer(default=None),
-    'entity_data_id': fields.Integer(default=None),
-    'uri': fields.Url('revision_get_single', True),
+    'uri': fields.Url('revision_get_single', True)
 }
 
 identifier_type_stub = {
@@ -291,12 +290,14 @@ relationship_list = {
 
 entity_revision = revision_stub.copy()
 entity_revision.update({
+    'entity_data_id': fields.Integer(default=None),
     'entity_uri': EntityUrl(True)
 })
 
 relationship_revision = revision_stub.copy()
 relationship_revision.update({
-    'relationship': fields.Nested(relationship_stub),
+    'relationship_data_id': fields.Integer(default=None),
+    'relationship_uri': fields.Url('relationship_get_single', True)
 })
 
 
