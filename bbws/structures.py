@@ -468,7 +468,8 @@ publisher.update({
     'identifiers_uri': fields.Url('publisher_get_identifiers', True),
     'disambiguation_uri': fields.Url('publisher_get_disambiguation', True),
     'annotation_uri': fields.Url('publisher_get_annotation', True),
-    'relationships_uri': fields.Url('relationship_get_many', True)
+    'relationships_uri': fields.Url('relationship_get_many', True),
+    'editions_uri': fields.Url('publisher_get_editions', True)
 })
 
 

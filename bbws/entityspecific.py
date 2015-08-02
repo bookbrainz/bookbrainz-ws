@@ -20,7 +20,7 @@
 import uuid
 
 from bbschema import (CreatorType, EditionFormat, EditionStatus, Publication,
-                      PublicationType, PublisherType, WorkType)
+                      PublicationType, Publisher, PublisherType, WorkType)
 from flask.ext.restful import Resource, marshal
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
@@ -114,6 +114,25 @@ class PublicationEditionsResource(Resource):
             'objects': publication.editions
         }, structures.edition_list)
 
+class PublisherEditionsResource(Resource):
+    def get(self, entity_gid):
+        try:
+            uuid.UUID(entity_gid)
+        except ValueError:
+            abort(404)
+
+        try:
+            publisher = db.session.query(Publisher).options(
+                joinedload('master_revision.entity_data')
+            ).filter_by(entity_gid=entity_gid).one()
+        except NoResultFound:
+            abort(404)
+
+        return marshal({
+            'offset': 0,
+            'count': len(publisher.editions),
+            'objects': publisher.editions
+        }, structures.edition_list)
 
 def create_views(api):
     api.add_resource(PublicationTypeResourceList, '/publicationType/')
@@ -125,4 +144,8 @@ def create_views(api):
     api.add_resource(
         PublicationEditionsResource, '/publication/<string:entity_gid>/editions',
         endpoint='publication_get_editions'
+    )
+    api.add_resource(
+        PublisherEditionsResource, '/publisher/<string:entity_gid>/editions',
+        endpoint='publisher_get_editions'
     )
