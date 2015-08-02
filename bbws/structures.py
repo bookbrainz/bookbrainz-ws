@@ -124,6 +124,32 @@ revision_stub = {
     'uri': fields.Url('revision_get_single', True)
 }
 
+entity_revision = revision_stub.copy()
+entity_revision.update({
+    'entity_data_id': fields.Integer(default=None),
+    'entity_uri': EntityUrl(True)
+})
+
+relationship_revision = revision_stub.copy()
+relationship_revision.update({
+    'relationship_data_id': fields.Integer(default=None),
+    'relationship_uri': fields.Url('relationship_get_single', True)
+})
+
+
+revision_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(revision_stub))
+}
+
+entity_revision_list = {
+    'offset': fields.Integer,
+    'count': fields.Integer,
+    'objects': fields.List(fields.Nested(entity_revision))
+}
+
+
 identifier_type_stub = {
     'identifier_type_id': fields.Integer,
     'label': fields.String
@@ -174,7 +200,7 @@ entity.update({
     'disambiguation_uri': fields.Url('entity_get_disambiguation', True),
     'annotation_uri': fields.Url('entity_get_annotation', True),
     'relationships_uri': fields.Url('relationship_get_many', True),
-    'revision': fields.Nested(revision_stub)
+    'revision': fields.Nested(entity_revision)
 })
 
 entity_data = {
@@ -286,31 +312,6 @@ relationship_list = {
     'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested(relationship))
-}
-
-entity_revision = revision_stub.copy()
-entity_revision.update({
-    'entity_data_id': fields.Integer(default=None),
-    'entity_uri': EntityUrl(True)
-})
-
-relationship_revision = revision_stub.copy()
-relationship_revision.update({
-    'relationship_data_id': fields.Integer(default=None),
-    'relationship_uri': fields.Url('relationship_get_single', True)
-})
-
-
-revision_list = {
-    'offset': fields.Integer,
-    'count': fields.Integer,
-    'objects': fields.List(fields.Nested(revision_stub))
-}
-
-entity_revision_list = {
-    'offset': fields.Integer,
-    'count': fields.Integer,
-    'objects': fields.List(fields.Nested(entity_revision))
 }
 
 user_type = {
