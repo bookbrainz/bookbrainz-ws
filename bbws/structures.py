@@ -347,7 +347,7 @@ account.update({
     'email': fields.String,
     'birth_date': fields.DateTime(dt_format='iso8601'),
     'gender': fields.Nested({
-        'gender_id': fields.Integer,
+        'gender_id': fields.Integer(attribute='id'),
         'name': fields.String
     }, allow_null=True),
 })
@@ -396,7 +396,7 @@ creator_data.update({
         'label': fields.String
     }, allow_null=True),
     'gender': fields.Nested({
-        'gender_id': fields.Integer,
+        'gender_id': fields.Integer(attribute='id'),
         'name': fields.String
     }, allow_null=True),
 })
@@ -411,7 +411,7 @@ creator_diff.update({
         'label': fields.String
     }, allow_null=True)),
     'gender': fields.List(fields.Nested({
-        'gender_id': fields.Integer,
+        'gender_id': fields.Integer(attribute='id'),
         'name': fields.String
     }, allow_null=True))
 })
@@ -702,7 +702,7 @@ gender_list = {
     'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
-        'gender_id': fields.Integer,
+        'gender_id': fields.Integer(attribute='id'),
         'name': fields.String,
     }))
 }
