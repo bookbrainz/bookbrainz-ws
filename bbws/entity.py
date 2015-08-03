@@ -96,9 +96,9 @@ class EntityResource(Resource):
         entity.revision = revision
 
         entity_out = marshal(entity, self.entity_fields)
-        data_out = marshal(entity_data, self.entity_data_fields)
-
-        entity_out.update(data_out)
+        if entity_data is not None:
+            data_out = marshal(entity_data, self.entity_data_fields)
+            entity_out.update(data_out)
 
         return entity_out
 
