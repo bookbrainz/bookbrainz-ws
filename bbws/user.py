@@ -18,14 +18,13 @@
 
 
 import bcrypt
-
-from flask import request
-from flask.ext.restful import Resource, abort, marshal, reqparse
-
 from bbschema import Message, MessageReceipt, User, UserType
+from flask import request
+from flask_restful import Resource, abort, marshal, reqparse
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db, oauth_provider, structures
+from . import structures
+from .services import db, oauth_provider
 
 
 class UserResource(Resource):
@@ -36,7 +35,7 @@ class UserResource(Resource):
         except NoResultFound:
             abort(404)
 
-        return marshal(user, structures.user)
+        return marshal(user, structures.USER)
 
     def put(self, user_id):
         try:
@@ -50,7 +49,7 @@ class UserResource(Resource):
 
         db.session.commit()
 
-        return marshal(user, structures.user)
+        return marshal(user, structures.USER)
 
 
 class AccountResource(Resource):
@@ -58,7 +57,7 @@ class AccountResource(Resource):
 
     @oauth_provider.require_oauth()
     def get(self):
-        return marshal(request.oauth.user, structures.account)
+        return marshal(request.oauth.user, structures.ACCOUNT)
 
 
 class UserResourceList(Resource):
@@ -77,7 +76,7 @@ class UserResourceList(Resource):
             'offset': args.offset,
             'count': len(users),
             'objects': users
-        }, structures.user_list)
+        }, structures.USER_LIST)
 
     def post(self):
         json = request.get_json()
@@ -96,7 +95,7 @@ class UserResourceList(Resource):
         db.session.add(user)
         db.session.commit()
 
-        return marshal(user, structures.user)
+        return marshal(user, structures.USER)
 
 
 class UserTypeResourceList(Resource):
@@ -106,7 +105,7 @@ class UserTypeResourceList(Resource):
             'offset': 0,
             'count': len(types),
             'objects': types
-        }, structures.user_type_list)
+        }, structures.USER_TYPE_LIST)
 
 
 class UserMessageResource(Resource):
@@ -123,14 +122,14 @@ class UserMessageResource(Resource):
         for receipt in message.receipts:
             if receipt.recipient_id == request.oauth.user.user_id:
                 message.receipt = receipt
-                data = marshal(message, structures.message)
+                data = marshal(message, structures.MESSAGE)
                 # For now, archive the message once GET has run once
                 message.receipt.archived = True
                 db.session.commit()
                 return data
 
         if message.sender_id == request.oauth.user.user_id:
-            return marshal(message, structures.message)
+            return marshal(message, structures.MESSAGE)
 
         abort(401)  # Unauthorized
 
@@ -153,7 +152,7 @@ class UserMessageInboxResource(Resource):
             'offset': args.offset,
             'count': len(messages),
             'objects': messages
-        }, structures.message_list)
+        }, structures.MESSAGE_LIST)
 
 
 class UserMessageArchiveResource(Resource):
@@ -174,7 +173,7 @@ class UserMessageArchiveResource(Resource):
             'offset': args.offset,
             'count': len(messages),
             'objects': messages
-        }, structures.message_list)
+        }, structures.MESSAGE_LIST)
 
 
 class UserMessageSentResource(Resource):
@@ -194,7 +193,7 @@ class UserMessageSentResource(Resource):
             'offset': args.offset,
             'count': len(messages),
             'objects': messages
-        }, structures.message_list)
+        }, structures.MESSAGE_LIST)
 
     post_parser = reqparse.RequestParser()
     post_parser.add_argument('recipient_ids', type=int, action='append',
@@ -228,7 +227,7 @@ class UserMessageSentResource(Resource):
         db.session.add(new_message)
         db.session.commit()
 
-        return marshal(new_message, structures.message)
+        return marshal(new_message, structures.MESSAGE)
 
 
 def create_views(api):

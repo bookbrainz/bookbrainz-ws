@@ -1,6 +1,6 @@
 from bbws import create_app, db
 from bbschema import Relationship, create_all
-from flask.ext.testing import TestCase
+from flask_testing import TestCase
 
 import datetime
 

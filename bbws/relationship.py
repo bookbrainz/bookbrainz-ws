@@ -16,18 +16,20 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+
 """ This module contains the definitions for relationship and relationship-
 related resources.
 """
 
-from flask import request
-from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
 from bbschema import (Relationship, RelationshipData, RelationshipEntity,
                       RelationshipRevision, RelationshipType)
+from flask import request
+from flask_restful import Resource, abort, fields, marshal, reqparse
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db, oauth_provider, structures
+from . import structures
+from .services import db, oauth_provider
 
 
 class RelationshipResource(Resource):
@@ -39,7 +41,7 @@ class RelationshipResource(Resource):
         except NoResultFound:
             abort(404)
 
-        return marshal(relationship, structures.relationship)
+        return marshal(relationship, structures.RELATIONSHIP)
 
 
 class RelationshipResourceList(Resource):
@@ -71,7 +73,7 @@ class RelationshipResourceList(Resource):
             'offset': args.offset,
             'count': len(relationships),
             'objects': relationships
-        }, structures.relationship_list)
+        }, structures.RELATIONSHIP_LIST)
 
     @oauth_provider.require_oauth()
     def post(self):
@@ -100,7 +102,7 @@ class RelationshipResourceList(Resource):
         db.session.commit()
 
         return marshal(revision, {
-            'relationship': fields.Nested(structures.relationship_stub)
+            'relationship': fields.Nested(structures.RELATIONSHIP_STUB)
         })
 
 
@@ -114,7 +116,7 @@ class RelationshipTypeResource(Resource):
         except NoResultFound:
             abort(404)
 
-        return marshal(relationship_type, structures.relationship_type)
+        return marshal(relationship_type, structures.RELATIONSHIP_TYPE)
 
 
 class RelationshipTypeResourceList(Resource):
@@ -137,7 +139,7 @@ class RelationshipTypeResourceList(Resource):
             'offset': args.offset,
             'count': len(types),
             'objects': types
-        }, structures.relationship_type_list)
+        }, structures.RELATIONSHIP_TYPE_LIST)
 
 
 def create_views(api):

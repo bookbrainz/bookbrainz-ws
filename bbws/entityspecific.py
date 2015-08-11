@@ -17,15 +17,15 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-import uuid
-
 from bbschema import (CreatorType, EditionFormat, EditionStatus, Publication,
                       PublicationType, Publisher, PublisherType, WorkType)
-from flask.ext.restful import Resource, marshal
+from flask_restful import Resource, abort, marshal
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db, structures
+from . import structures
+from .services import db
+from .util import is_uuid
 
 
 class PublicationTypeResourceList(Resource):
@@ -36,7 +36,7 @@ class PublicationTypeResourceList(Resource):
             'offset': 0,
             'count': len(types),
             'objects': types
-        }, structures.publication_type_list)
+        }, structures.PUBLICATION_TYPE_LIST)
 
 
 class CreatorTypeResourceList(Resource):
@@ -47,7 +47,7 @@ class CreatorTypeResourceList(Resource):
             'offset': 0,
             'count': len(types),
             'objects': types
-        }, structures.creator_type_list)
+        }, structures.CREATOR_TYPE_LIST)
 
 
 class PublisherTypeResourceList(Resource):
@@ -58,7 +58,7 @@ class PublisherTypeResourceList(Resource):
             'offset': 0,
             'count': len(types),
             'objects': types
-        }, structures.publisher_type_list)
+        }, structures.PUBLISHER_TYPE_LIST)
 
 
 class EditionFormatResourceList(Resource):
@@ -69,7 +69,7 @@ class EditionFormatResourceList(Resource):
             'offset': 0,
             'count': len(types),
             'objects': types
-        }, structures.edition_format_list)
+        }, structures.EDITION_FORMAT_LIST)
 
 
 class EditionStatusResourceList(Resource):
@@ -80,7 +80,7 @@ class EditionStatusResourceList(Resource):
             'offset': 0,
             'count': len(types),
             'objects': types
-        }, structures.edition_status_id)
+        }, structures.EDITION_STATUS_ID)
 
 
 class WorkTypeResourceList(Resource):
@@ -91,14 +91,12 @@ class WorkTypeResourceList(Resource):
             'offset': 0,
             'count': len(types),
             'objects': types
-        }, structures.work_type_list)
+        }, structures.WORK_TYPE_LIST)
 
 
 class PublicationEditionsResource(Resource):
     def get(self, entity_gid):
-        try:
-            uuid.UUID(entity_gid)
-        except ValueError:
+        if not is_uuid(entity_gid):
             abort(404)
 
         try:
@@ -112,13 +110,12 @@ class PublicationEditionsResource(Resource):
             'offset': 0,
             'count': len(publication.editions),
             'objects': publication.editions
-        }, structures.edition_list)
+        }, structures.EDITION_LIST)
+
 
 class PublisherEditionsResource(Resource):
     def get(self, entity_gid):
-        try:
-            uuid.UUID(entity_gid)
-        except ValueError:
+        if not is_uuid(entity_gid):
             abort(404)
 
         try:
@@ -132,7 +129,8 @@ class PublisherEditionsResource(Resource):
             'offset': 0,
             'count': len(publisher.editions),
             'objects': publisher.editions
-        }, structures.edition_list)
+        }, structures.EDITION_LIST)
+
 
 def create_views(api):
     api.add_resource(PublicationTypeResourceList, '/publicationType/')
@@ -142,7 +140,8 @@ def create_views(api):
     api.add_resource(EditionStatusResourceList, '/editionStatus/')
     api.add_resource(WorkTypeResourceList, '/workType/')
     api.add_resource(
-        PublicationEditionsResource, '/publication/<string:entity_gid>/editions',
+        PublicationEditionsResource,
+        '/publication/<string:entity_gid>/editions',
         endpoint='publication_get_editions'
     )
     api.add_resource(

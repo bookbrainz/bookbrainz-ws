@@ -16,32 +16,34 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from flask.ext.restful import Resource, abort, fields, marshal, reqparse
 
 from bbschema import (CreatorData, EditionData, EntityRevision,
                       PublicationData, PublisherData, Revision, WorkData)
+from flask_restful import Resource, abort, fields, marshal, reqparse
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import db, structures
+from . import structures
+from .services import db
 
-data_mapper = {
-    PublicationData: structures.publication_diff,
-    CreatorData: structures.creator_diff,
-    EditionData: structures.edition_diff,
-    PublisherData: structures.publisher_diff,
-    WorkData: structures.work_diff,
+
+DATA_MAPPER = {
+    PublicationData: structures.PUBLICATION_DIFF,
+    CreatorData: structures.CREATOR_DIFF,
+    EditionData: structures.EDITION_DIFF,
+    PublisherData: structures.PUBLISHER_DIFF,
+    WorkData: structures.WORK_DIFF,
 }
 
 
 def format_entity_revision(revision, base):
-    entity_revision_fields = structures.entity_revision.copy()
+    entity_revision_fields = structures.ENTITY_REVISION.copy()
 
     if base is None:
         right = revision.children
     else:
         try:
-            right = [db.session.query(Revision).\
-                filter_by(revision_id=base).one()]
+            right = [db.session.query(Revision).
+                     filter_by(revision_id=base).one()]
         except NoResultFound:
             return marshal(revision, entity_revision_fields)
 
@@ -51,38 +53,42 @@ def format_entity_revision(revision, base):
     changes = [revision.entity_data.diff(r.entity_data) for r in right]
     if not changes:
         changes = [revision.entity_data.diff(None)]
-    data_fields = data_mapper[type(revision.entity_data)]
+    data_fields = DATA_MAPPER[type(revision.entity_data)]
 
     entity_revision_fields['changes'] = \
-            fields.List(fields.Nested(data_fields, allow_null=True))
+        fields.List(fields.Nested(data_fields, allow_null=True))
     revision.changes = changes
 
     return marshal(revision, entity_revision_fields)
 
+
 def format_relationship_revision(revision, base):
-    relationship_revision_fields = structures.relationship_revision.copy()
+    relationship_revision_fields = structures.RELATIONSHIP_REVISION.copy()
 
     if base is None:
         right = revision.children
     else:
         try:
-            right = [db.session.query(Revision).\
-                filter_by(revision_id=base).one()]
+            right = [db.session.query(Revision).
+                     filter_by(revision_id=base).one()]
         except NoResultFound:
             return marshal(revision, relationship_revision_fields)
 
     if revision.relationship_data is None:
         return marshal(revision, relationship_revision_fields)
 
-    changes = [revision.relationship_data.diff(r.relationship_data) for r in right]
+    changes = [revision.relationship_data.diff(r.relationship_data)
+               for r in right]
     if not changes:
         changes = [revision.relationship_data.diff(None)]
 
-    relationship_revision_fields['changes'] = \
-            fields.List(fields.Nested(structures.relationship_diff, allow_null=True))
+    relationship_revision_fields['changes'] = fields.List(
+        fields.Nested(structures.RELATIONSHIP_DIFF, allow_null=True)
+    )
     revision.changes = changes
 
     return marshal(revision, relationship_revision_fields)
+
 
 class RevisionResource(Resource):
     get_parser = reqparse.RequestParser()
@@ -119,11 +125,11 @@ class RevisionResourceList(Resource):
         elif user_id is not None:
             query = query.filter_by(user_id=user_id)
 
-        list_fields = structures.revision_list
+        list_fields = structures.REVISION_LIST
 
         if args.type == 'entity':
             query = query.filter_by(_type=1)
-            list_fields = structures.entity_revision_list
+            list_fields = structures.ENTITY_REVISION_LIST
 
         revisions = query.order_by(Revision.created_at.desc()).\
             offset(args.offset).limit(args.limit).all()

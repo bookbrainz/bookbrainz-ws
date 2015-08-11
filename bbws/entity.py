@@ -21,35 +21,34 @@
 resources.
 """
 
-import uuid
+
 import traceback
 
 from bbschema import (Creator, CreatorData, Edition, EditionData, Entity,
-                      EntityData, EntityRevision, Publication, PublicationData,
-                      Publisher, PublisherData, RevisionNote, Work, WorkData, IdentifierType)
-from elasticsearch import Elasticsearch
+                      EntityData, EntityRevision, IdentifierType, Publication,
+                      PublicationData, Publisher, PublisherData, RevisionNote,
+                      Work, WorkData)
+from elasticsearch import Elasticsearch, ElasticsearchException
 from flask import request
-from flask.ext.restful import Resource, abort, fields, marshal, reqparse
-from sqlalchemy.orm import joinedload
+from flask_restful import Resource, abort, fields, marshal, reqparse
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
+
 from bbws.revision import RevisionResourceList
 
-from . import db, oauth_provider, structures
-
-es = Elasticsearch()
-
-
-def index_entity(entity):
-    es.index(
-        index='bookbrainz',
-        doc_type=entity['_type'].lower(),
-        id=entity['entity_gid'],
-        body=entity
-    )
+from . import structures
+from .services import db, oauth_provider
+from .util import index_entity, is_uuid
 
 
 class EntityResource(Resource):
+    """ This class defines the generic methods for accessing Entity Resources.
+    Derived classes should override the `entity_class`, `entity_fields`,
+    `entity_data_fields` and `entity_stub_fields` class variables in order to
+    allow the derived class to provide the expected endpoints.
+    """
+
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('revision', type=int, default=None)
 
@@ -59,9 +58,7 @@ class EntityResource(Resource):
     entity_stub_fields = None
 
     def get(self, entity_gid):
-        try:
-            uuid.UUID(entity_gid)
-        except ValueError:
+        if not is_uuid(entity_gid):
             abort(404)
 
         args = self.get_parser.parse_args()
@@ -111,9 +108,7 @@ class EntityResource(Resource):
         user.total_revisions += 1
         user.revisions_applied += 1
 
-        try:
-            uuid.UUID(entity_gid)
-        except ValueError:
+        if not is_uuid(entity_gid):
             abort(404)
 
         try:
@@ -150,10 +145,16 @@ class EntityResource(Resource):
         # Commit entity, data and revision
         db.session.commit()
 
+        entity_out = marshal(revision.entity, self.entity_fields)
+        data_out = marshal(revision.entity_data, self.entity_data_fields)
+
+        entity_out.update(data_out)
+
         # Don't 500 if we fail to index; commit still succeeded
         try:
-            index_entity(entity_out)
-        except:
+            es_conn = Elasticsearch()
+            index_entity(es_conn, entity_out)
+        except ElasticsearchException:
             pass
 
         return marshal(revision, {
@@ -169,9 +170,7 @@ class EntityResource(Resource):
         user.total_revisions += 1
         user.revisions_applied += 1
 
-        try:
-            uuid.UUID(entity_gid)
-        except ValueError:
+        if not is_uuid(entity_gid):
             abort(404)
 
         try:
@@ -211,12 +210,16 @@ class EntityResource(Resource):
             'entity': fields.Nested(self.entity_stub_fields)
         })
 
+
 class EntityAliasResource(Resource):
 
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('revision', type=int, default=None)
 
     def get(self, entity_gid):
+        if not is_uuid(entity_gid):
+            abort(404)
+
         args = self.get_parser.parse_args()
         if args.revision is None:
             try:
@@ -250,7 +253,7 @@ class EntityAliasResource(Resource):
             'offset': 0,
             'count': len(aliases),
             'objects': aliases
-        }, structures.entity_alias_list)
+        }, structures.ENTITY_ALIAS_LIST)
 
 
 class EntityDisambiguationResource(Resource):
@@ -258,9 +261,7 @@ class EntityDisambiguationResource(Resource):
     get_parser.add_argument('revision', type=int, default=None)
 
     def get(self, entity_gid):
-        try:
-            uuid.UUID(entity_gid)
-        except ValueError:
+        if not is_uuid(entity_gid):
             abort(404)
 
         args = self.get_parser.parse_args()
@@ -295,7 +296,7 @@ class EntityDisambiguationResource(Resource):
         if disambiguation is None:
             return None
         else:
-            return marshal(disambiguation, structures.entity_disambiguation)
+            return marshal(disambiguation, structures.ENTITY_DISAMBIGUATION)
 
 
 class EntityAnnotationResource(Resource):
@@ -303,9 +304,7 @@ class EntityAnnotationResource(Resource):
     get_parser.add_argument('revision', type=int, default=None)
 
     def get(self, entity_gid):
-        try:
-            uuid.UUID(entity_gid)
-        except ValueError:
+        if not is_uuid(entity_gid):
             abort(404)
 
         args = self.get_parser.parse_args()
@@ -340,7 +339,7 @@ class EntityAnnotationResource(Resource):
         if annotation is None:
             return None
         else:
-            return marshal(annotation, structures.entity_annotation)
+            return marshal(annotation, structures.ENTITY_ANNOTATION)
 
 
 class EntityIdentifierResource(Resource):
@@ -381,7 +380,7 @@ class EntityIdentifierResource(Resource):
             'offset': 0,
             'count': len(identifiers),
             'objects': identifiers
-        }, structures.identifier_list)
+        }, structures.IDENTIFIER_LIST)
 
 
 class EntityIdentifierTypeResourceList(Resource):
@@ -392,7 +391,7 @@ class EntityIdentifierTypeResourceList(Resource):
             'offset': 0,
             'count': len(types),
             'objects': types
-        }, structures.identifier_type_list)
+        }, structures.IDENTIFIER_TYPE_LIST)
 
 
 class EntityResourceList(Resource):
@@ -403,14 +402,15 @@ class EntityResourceList(Resource):
     entity_class = None
     entity_data_class = None
     entity_stub_fields = None
+    entity_data_fields = None
     entity_list_fields = None
 
     def get(self):
         args = self.get_parser.parse_args()
-        q = db.session.query(self.entity_class).\
+        query = db.session.query(self.entity_class).\
             order_by(Entity.last_updated.desc())
-        q = q.offset(args.offset).limit(args.limit)
-        entities = q.all()
+        query = query.offset(args.offset).limit(args.limit)
+        entities = query.all()
 
         return marshal({
             'offset': args.offset,
@@ -455,15 +455,16 @@ class EntityResourceList(Resource):
             print traceback.format_exc()
             abort(400)
 
-        entity_out = marshal(revision.entity, structures.entity_expanded)
+        entity_out = marshal(revision.entity, structures.ENTITY_EXPANDED)
         data_out = marshal(revision.entity_data, self.entity_data_fields)
 
         entity_out.update(data_out)
 
         # Don't 500 if we fail to index; commit still succeeded
         try:
-            index_entity(entity_out)
-        except:
+            es_conn = Elasticsearch()
+            index_entity(es_conn, entity_out)
+        except ElasticsearchException:
             pass
 
         return marshal(revision, {
@@ -474,10 +475,11 @@ class EntityResourceList(Resource):
 def make_entity_endpoints(api, entity_class, data_class, make_list=True):
 
     entity_name = entity_class.__name__.lower()
-    entity_struct = getattr(structures, entity_name)
-    stub_struct = getattr(structures, entity_name + '_stub')
-    data_struct = getattr(structures, entity_name + '_data')
-    list_struct = getattr(structures, entity_name + '_list')
+    entity_name_upper = entity_name.upper()
+    entity_struct = getattr(structures, entity_name_upper)
+    stub_struct = getattr(structures, entity_name_upper + '_STUB')
+    data_struct = getattr(structures, entity_name_upper + '_DATA')
+    list_struct = getattr(structures, entity_name_upper + '_LIST')
 
     resource_class = type(
         entity_class.__name__ + 'Resource', (EntityResource,),

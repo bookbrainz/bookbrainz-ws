@@ -23,9 +23,9 @@ be declared in the correct order.
 """
 
 
-from flask.ext.restful import fields
+from bbschema import Creator, Edition, Publication, Publisher, Work
+from flask_restful import fields
 
-from bbschema import Creator, Publication, Edition, Publisher, Work
 
 TYPE_MAP = {
     Creator: 'creator_get_single',
@@ -73,6 +73,7 @@ class PublicationUrl(fields.Url):
         obj.entity_gid = obj.publication_gid
         return super(PublicationUrl, self).output(key, obj)
 
+
 class PublisherUrl(fields.Url):
     def __init__(self, absolute=False, scheme=None):
         super(PublisherUrl, self).__init__('publisher_get_single',
@@ -85,13 +86,13 @@ class PublisherUrl(fields.Url):
         obj.entity_gid = obj.publisher_gid
         return super(PublisherUrl, self).output(key, obj)
 
-language_stub = {
+LANGUAGE_STUB = {
     'language_id': fields.Integer(attribute='id'),
     'name': fields.String
 }
 
-language = language_stub.copy()
-language.update({
+LANGUAGE = LANGUAGE_STUB.copy()
+LANGUAGE.update({
     'iso_code_2t': fields.String,
     'iso_code_2b': fields.String,
     'iso_code_1': fields.String,
@@ -99,21 +100,21 @@ language.update({
     'frequency': fields.Integer
 })
 
-language_list = {
+LANGUAGE_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(language)),
+    'objects': fields.List(fields.Nested(LANGUAGE)),
 }
 
-entity_alias = {
+ENTITY_ALIAS = {
     'alias_id': fields.Integer,
     'name': fields.String,
     'sort_name': fields.String,
-    'language': fields.Nested(language_stub, allow_null=True),
+    'language': fields.Nested(LANGUAGE_STUB, allow_null=True),
     'primary': fields.Boolean
 }
 
-revision_stub = {
+REVISION_STUB = {
     'revision_id': fields.Integer,
     'created_at': fields.DateTime(dt_format='iso8601'),
     'note': fields.String,
@@ -124,40 +125,40 @@ revision_stub = {
     'uri': fields.Url('revision_get_single', True)
 }
 
-entity_revision = revision_stub.copy()
-entity_revision.update({
+ENTITY_REVISION = REVISION_STUB.copy()
+ENTITY_REVISION.update({
     'entity_data_id': fields.Integer(default=None),
     'entity_uri': EntityUrl(True)
 })
 
-relationship_revision = revision_stub.copy()
-relationship_revision.update({
+RELATIONSHIP_REVISION = REVISION_STUB.copy()
+RELATIONSHIP_REVISION.update({
     'relationship_data_id': fields.Integer(default=None),
     'relationship_uri': fields.Url('relationship_get_single', True)
 })
 
 
-revision_list = {
+REVISION_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(revision_stub))
+    'objects': fields.List(fields.Nested(REVISION_STUB))
 }
 
-entity_revision_list = {
+ENTITY_REVISION_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(entity_revision))
+    'objects': fields.List(fields.Nested(ENTITY_REVISION))
 }
 
 
-identifier_type_stub = {
+IDENTIFIER_TYPE_STUB = {
     'identifier_type_id': fields.Integer,
     'label': fields.String
 }
 
-identifier_type = identifier_type_stub.copy()
-identifier_type.update({
-    'parent': fields.Nested(identifier_type_stub, allow_null=True),
+IDENTIFIER_TYPE = IDENTIFIER_TYPE_STUB.copy()
+IDENTIFIER_TYPE.update({
+    'parent': fields.Nested(IDENTIFIER_TYPE_STUB, allow_null=True),
     'child_order': fields.Integer,
     'detection_regex': fields.String,
     'validation_regex': fields.String,
@@ -166,103 +167,107 @@ identifier_type.update({
 })
 
 
-identifier_type_list = {
+IDENTIFIER_TYPE_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(identifier_type))
+    'objects': fields.List(fields.Nested(IDENTIFIER_TYPE))
 }
 
 
-identifier = {
+IDENTIFIER = {
     'identifier_id': fields.Integer,
-    'identifier_type': fields.Nested(identifier_type_stub),
+    'identifier_type': fields.Nested(IDENTIFIER_TYPE_STUB),
     'value': fields.String
 }
 
 
-identifier_list = {
+IDENTIFIER_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(identifier))
+    'objects': fields.List(fields.Nested(IDENTIFIER))
 }
 
 
-entity_stub = {
+ENTITY_STUB = {
     'entity_gid': fields.String,
     'uri': EntityUrl(True),
     '_type': fields.String
 }
 
-entity = entity_stub.copy()
-entity.update({
+ENTITY = ENTITY_STUB.copy()
+ENTITY.update({
     'last_updated': fields.DateTime(dt_format='iso8601'),
     'aliases_uri': fields.Url('entity_get_aliases', True),
     'disambiguation_uri': fields.Url('entity_get_disambiguation', True),
     'annotation_uri': fields.Url('entity_get_annotation', True),
     'relationships_uri': fields.Url('relationship_get_many', True),
-    'revision': fields.Nested(entity_revision)
+    'revision': fields.Nested(ENTITY_REVISION)
 })
 
-entity_data = {
-    'default_alias': fields.Nested(entity_alias, allow_null=True)
+ENTITY_DATA = {
+    'default_alias': fields.Nested(ENTITY_ALIAS, allow_null=True)
 }
 
-entity_alias_list = {
+ENTITY_ALIAS_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(entity_alias))
+    'objects': fields.List(fields.Nested(ENTITY_ALIAS))
 }
 
 
-entity_disambiguation = {
+ENTITY_DISAMBIGUATION = {
     'disambiguation_id': fields.Integer(),
     'comment': fields.String()
 }
 
 
-entity_annotation = {
+ENTITY_ANNOTATION = {
     'annotation_id': fields.Integer(),
     'created_at': fields.DateTime(dt_format='iso8601'),
     'content': fields.String()
 }
 
 
-entity_expanded = entity_stub.copy()
-entity_expanded.update({
+ENTITY_EXPANDED = ENTITY_STUB.copy()
+ENTITY_EXPANDED.update({
     'last_updated': fields.DateTime(dt_format='iso8601'),
-    'disambiguation': fields.Nested(entity_disambiguation, allow_null=True),
-    'annotation': fields.Nested(entity_annotation, allow_null=True)
+    'disambiguation': fields.Nested(ENTITY_DISAMBIGUATION, allow_null=True),
+    'annotation': fields.Nested(ENTITY_ANNOTATION, allow_null=True)
 })
 
-entity_diff = {
-    'annotation': fields.List(fields.Nested(entity_annotation, allow_null=True)),
-    'disambiguation': fields.List(fields.Nested(entity_disambiguation, allow_null=True)),
-    'default_alias': fields.List(fields.Nested(entity_alias, allow_null=True)),
-    'aliases': fields.List(fields.List(fields.Nested(entity_alias))),
-    'identifiers': fields.List(fields.List(fields.Nested(identifier)))
+ENTITY_DIFF = {
+    'annotation': fields.List(
+        fields.Nested(ENTITY_ANNOTATION, allow_null=True)
+    ),
+    'disambiguation': fields.List(
+        fields.Nested(ENTITY_DISAMBIGUATION, allow_null=True)
+    ),
+    'default_alias': fields.List(fields.Nested(ENTITY_ALIAS, allow_null=True)),
+    'aliases': fields.List(fields.List(fields.Nested(ENTITY_ALIAS))),
+    'identifiers': fields.List(fields.List(fields.Nested(IDENTIFIER)))
 }
 
 
-entity_list = {
+ENTITY_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(entity_stub))
+    'objects': fields.List(fields.Nested(ENTITY_STUB))
 }
 
 
-relationship_stub = {
+RELATIONSHIP_STUB = {
     'relationship_id': fields.Integer,
     'uri': fields.Url('relationship_get_single', True)
 }
 
-relationship_type_stub = {
+RELATIONSHIP_TYPE_STUB = {
     'relationship_type_id': fields.Integer,
     'label': fields.String,
 }
 
-relationship_type = relationship_type_stub.copy()
-relationship_type.update({
-    'parent': fields.Nested(relationship_type_stub, allow_null=True),
+RELATIONSHIP_TYPE = RELATIONSHIP_TYPE_STUB.copy()
+RELATIONSHIP_TYPE.update({
+    'parent': fields.Nested(RELATIONSHIP_TYPE_STUB, allow_null=True),
     'child_order': fields.Integer,
     'description': fields.String,
     'template': fields.String,
@@ -270,22 +275,22 @@ relationship_type.update({
 })
 
 
-relationship_type_list = {
+RELATIONSHIP_TYPE_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(relationship_type))
+    'objects': fields.List(fields.Nested(RELATIONSHIP_TYPE))
 }
 
-relationship = relationship_stub.copy()
-relationship.update({
+RELATIONSHIP = RELATIONSHIP_STUB.copy()
+RELATIONSHIP.update({
     'master_revision_id': fields.Integer,
     'last_updated': fields.DateTime(dt_format='iso8601'),
     'relationship_type': fields.Nested(
-        relationship_type,
+        RELATIONSHIP_TYPE,
         attribute='master_revision.relationship_data.relationship_type',
     ),
     'entities': fields.List(fields.Nested({
-        'entity': fields.Nested(entity_stub),
+        'entity': fields.Nested(ENTITY_STUB),
         'position': fields.Integer
     }), attribute='master_revision.relationship_data.entities'),
     'texts': fields.List(fields.Nested({
@@ -294,11 +299,11 @@ relationship.update({
     }), attribute='master_revision.relationship_data.texts')
 })
 
-relationship_diff = {
+RELATIONSHIP_DIFF = {
     'relationship_type':
-        fields.List(fields.Nested(relationship_type, allow_null=True)),
+        fields.List(fields.Nested(RELATIONSHIP_TYPE, allow_null=True)),
     'entities': fields.List(fields.Nested({
-        'entity': fields.Nested(entity_stub),
+        'entity': fields.Nested(ENTITY_STUB),
         'position': fields.Integer
     })),
     'texts': fields.List(fields.Nested({
@@ -308,42 +313,42 @@ relationship_diff = {
 }
 
 
-relationship_list = {
+RELATIONSHIP_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(relationship))
+    'objects': fields.List(fields.Nested(RELATIONSHIP))
 }
 
-user_type = {
+USER_TYPE = {
     'user_type_id': fields.Integer,
     'label': fields.String
 }
 
-user_type_list = {
+USER_TYPE_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.Nested(user_type)
+    'objects': fields.Nested(USER_TYPE)
 }
 
-user_stub = {
+USER_STUB = {
     'user_id': fields.Integer,
     'name': fields.String
 }
 
-user = user_stub.copy()
-user.update({
+USER = USER_STUB.copy()
+USER.update({
     'reputation': fields.Integer,
     'bio': fields.String,
     'created_at': fields.DateTime(dt_format='iso8601'),
     'active_at': fields.DateTime(dt_format='iso8601'),
-    'user_type': fields.Nested(user_type),
+    'user_type': fields.Nested(USER_TYPE),
     'total_revisions': fields.Integer,
     'revisions_applied': fields.Integer,
     'revisions_reverted': fields.Integer,
 })
 
-account = user.copy()
-account.update({
+ACCOUNT = USER.copy()
+ACCOUNT.update({
     'email': fields.String,
     'birth_date': fields.DateTime(dt_format='iso8601'),
     'gender': fields.Nested({
@@ -352,23 +357,23 @@ account.update({
     }, allow_null=True),
 })
 
-user_list = {
+USER_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(user))
+    'objects': fields.List(fields.Nested(USER))
 }
 
 
 # These fields definitions are specific to BookBrainz
-creator_stub = entity_stub.copy()
-creator_stub.update({
+CREATOR_STUB = ENTITY_STUB.copy()
+CREATOR_STUB.update({
     'uri': fields.Url('creator_get_single', True)
 })
 
 
-creator = entity.copy()
-creator.update(creator_stub)
-creator.update({
+CREATOR = ENTITY.copy()
+CREATOR.update(CREATOR_STUB)
+CREATOR.update({
     'aliases_uri': fields.Url('creator_get_aliases', True),
     'identifiers_uri': fields.Url('creator_get_identifiers', True),
     'disambiguation_uri': fields.Url('creator_get_disambiguation', True),
@@ -377,15 +382,15 @@ creator.update({
 })
 
 
-creator_list = {
+CREATOR_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(creator_stub))
+    'objects': fields.List(fields.Nested(CREATOR_STUB))
 }
 
 
-creator_data = entity_data.copy()
-creator_data.update({
+CREATOR_DATA = ENTITY_DATA.copy()
+CREATOR_DATA.update({
     'begin_date': fields.String(attribute='begin'),
     'begin_date_precision': fields.String,
     'end_date': fields.String(attribute='end'),
@@ -401,8 +406,8 @@ creator_data.update({
     }, allow_null=True),
 })
 
-creator_diff = entity_diff.copy()
-creator_diff.update({
+CREATOR_DIFF = ENTITY_DIFF.copy()
+CREATOR_DIFF.update({
     'begin_date': fields.List(fields.String),
     'end_date': fields.List(fields.String),
     'ended': fields.List(fields.Boolean),
@@ -416,15 +421,15 @@ creator_diff.update({
     }, allow_null=True))
 })
 
-publication_stub = entity_stub.copy()
-publication_stub.update({
+PUBLICATION_STUB = ENTITY_STUB.copy()
+PUBLICATION_STUB.update({
     'uri': fields.Url('publication_get_single', True)
 })
 
 
-publication = entity.copy()
-publication.update(publication_stub)
-publication.update({
+PUBLICATION = ENTITY.copy()
+PUBLICATION.update(PUBLICATION_STUB)
+PUBLICATION.update({
     'aliases_uri': fields.Url('publication_get_aliases', True),
     'identifiers_uri': fields.Url('publication_get_identifiers', True),
     'disambiguation_uri': fields.Url('publication_get_disambiguation', True),
@@ -434,38 +439,38 @@ publication.update({
 })
 
 
-publication_list = {
+PUBLICATION_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(publication_stub))
+    'objects': fields.List(fields.Nested(PUBLICATION_STUB))
 }
 
 
-publication_data = entity_data.copy()
-publication_data.update({
+PUBLICATION_DATA = ENTITY_DATA.copy()
+PUBLICATION_DATA.update({
     'publication_type': fields.Nested({
         'publication_type_id': fields.Integer,
         'label': fields.String
     }, allow_null=True)
 })
 
-publication_diff = entity_diff.copy()
-publication_diff.update({
+PUBLICATION_DIFF = ENTITY_DIFF.copy()
+PUBLICATION_DIFF.update({
     'publication_type': fields.List(fields.Nested({
         'publication_type_id': fields.Integer,
         'label': fields.String
     }, allow_null=True))
 })
 
-publisher_stub = entity_stub.copy()
-publisher_stub.update({
+PUBLISHER_STUB = ENTITY_STUB.copy()
+PUBLISHER_STUB.update({
     'uri': fields.Url('publisher_get_single', True)
 })
 
 
-publisher = entity.copy()
-publisher.update(publisher_stub)
-publisher.update({
+PUBLISHER = ENTITY.copy()
+PUBLISHER.update(PUBLISHER_STUB)
+PUBLISHER.update({
     'aliases_uri': fields.Url('publisher_get_aliases', True),
     'identifiers_uri': fields.Url('publisher_get_identifiers', True),
     'disambiguation_uri': fields.Url('publisher_get_disambiguation', True),
@@ -475,15 +480,15 @@ publisher.update({
 })
 
 
-publisher_list = {
+PUBLISHER_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(publisher_stub))
+    'objects': fields.List(fields.Nested(PUBLISHER_STUB))
 }
 
 
-publisher_data = entity_data.copy()
-publisher_data.update({
+PUBLISHER_DATA = ENTITY_DATA.copy()
+PUBLISHER_DATA.update({
     'begin_date': fields.String(attribute='begin'),
     'begin_date_precision': fields.String,
     'end_date': fields.String(attribute='end'),
@@ -495,8 +500,8 @@ publisher_data.update({
     }, allow_null=True)
 })
 
-publisher_diff = entity_diff.copy()
-publisher_diff.update({
+PUBLISHER_DIFF = ENTITY_DIFF.copy()
+PUBLISHER_DIFF.update({
     'begin_date': fields.List(fields.String),
     'end_date': fields.List(fields.String),
     'ended': fields.List(fields.Boolean),
@@ -507,32 +512,31 @@ publisher_diff.update({
 })
 
 
-edition_stub = entity_stub.copy()
-edition_stub.update({
+EDITION_STUB = ENTITY_STUB.copy()
+EDITION_STUB.update({
     'uri': fields.Url('edition_get_single', True)
 })
 
 
-edition = entity.copy()
-edition.update(edition_stub)
-edition.update({
+EDITION = ENTITY.copy()
+EDITION.update(EDITION_STUB)
+EDITION.update({
     'aliases_uri': fields.Url('edition_get_aliases', True),
     'identifiers_uri': fields.Url('edition_get_identifiers', True),
     'disambiguation_uri': fields.Url('edition_get_disambiguation', True),
     'annotation_uri': fields.Url('edition_get_annotation', True),
-    'identifiers_uri': fields.Url('edition_get_identifiers', True),
     'relationships_uri': fields.Url('relationship_get_many', True)
 })
 
 
-edition_list = {
+EDITION_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(edition_stub))
+    'objects': fields.List(fields.Nested(EDITION_STUB))
 }
 
 
-creator_credit_name = {
+CREATOR_CREDIT_NAME = {
     'position': fields.Integer,
     'name': fields.String,
     'creator_uri': CreatorUrl(True),
@@ -540,18 +544,18 @@ creator_credit_name = {
 }
 
 
-creator_credit = {
+CREATOR_CREDIT = {
     'creator_credit_id': fields.Integer,
     'begin_phrase': fields.String,
-    'names': fields.List(fields.Nested(creator_credit_name))
+    'names': fields.List(fields.Nested(CREATOR_CREDIT_NAME))
 }
 
 
-edition_data = entity_data.copy()
-edition_data.update({
+EDITION_DATA = ENTITY_DATA.copy()
+EDITION_DATA.update({
     'publication_uri': PublicationUrl(True),
     'publisher_uri': PublisherUrl(True),
-    'creator_credit': fields.Nested(creator_credit),
+    'creator_credit': fields.Nested(CREATOR_CREDIT),
     'release_date': fields.String(attribute='release'),
     'release_date_precision': fields.String,
     'pages': fields.Integer(default=None),
@@ -573,8 +577,8 @@ edition_data.update({
     }, allow_null=True)
 })
 
-edition_diff = entity_diff.copy()
-edition_diff.update({
+EDITION_DIFF = ENTITY_DIFF.copy()
+EDITION_DIFF.update({
     'publication_uri': fields.List(PublicationUrl(True)),
     'publisher_uri': fields.List(PublisherUrl(True)),
     'release_date': fields.List(fields.String),
@@ -596,15 +600,15 @@ edition_diff.update({
     }, allow_null=True))
 })
 
-work_stub = entity_stub.copy()
-work_stub.update({
+WORK_STUB = ENTITY_STUB.copy()
+WORK_STUB.update({
     'uri': fields.Url('work_get_single', True)
 })
 
 
-work = entity.copy()
-work.update(work_stub)
-work.update({
+WORK = ENTITY.copy()
+WORK.update(WORK_STUB)
+WORK.update({
     'aliases_uri': fields.Url('work_get_aliases', True),
     'identifiers_uri': fields.Url('work_get_identifiers', True),
     'disambiguation_uri': fields.Url('work_get_disambiguation', True),
@@ -613,15 +617,15 @@ work.update({
 })
 
 
-work_list = {
+WORK_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(work_stub))
+    'objects': fields.List(fields.Nested(WORK_STUB))
 }
 
 
-work_data = entity_data.copy()
-work_data.update({
+WORK_DATA = ENTITY_DATA.copy()
+WORK_DATA.update({
     'languages': fields.List(fields.Nested({
         'language_id': fields.Integer(attribute='id'),
         'name': fields.String,
@@ -632,19 +636,19 @@ work_data.update({
     }, allow_null=True)
 })
 
-work_diff = entity_diff.copy()
-work_diff.update({
-        'languages': fields.List(fields.List(fields.Nested({
-            'language_id': fields.Integer(attribute='id'),
-            'name': fields.String,
-        }))),
-        'work_type': fields.List(fields.Nested({
-            'work_type_id': fields.Integer,
-            'label': fields.String
-        }, allow_null=True))
+WORK_DIFF = ENTITY_DIFF.copy()
+WORK_DIFF.update({
+    'languages': fields.List(fields.List(fields.Nested({
+        'language_id': fields.Integer(attribute='id'),
+        'name': fields.String,
+    }))),
+    'work_type': fields.List(fields.Nested({
+        'work_type_id': fields.Integer,
+        'label': fields.String
+    }, allow_null=True))
 })
 
-publication_type_list = {
+PUBLICATION_TYPE_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
@@ -653,7 +657,7 @@ publication_type_list = {
     }))
 }
 
-creator_type_list = {
+CREATOR_TYPE_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
@@ -662,7 +666,7 @@ creator_type_list = {
     }))
 }
 
-publisher_type_list = {
+PUBLISHER_TYPE_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
@@ -671,7 +675,7 @@ publisher_type_list = {
     }))
 }
 
-edition_format_list = {
+EDITION_FORMAT_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
@@ -680,7 +684,7 @@ edition_format_list = {
     }))
 }
 
-edition_status_id = {
+EDITION_STATUS_ID = {
     'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
@@ -689,7 +693,7 @@ edition_status_id = {
     }))
 }
 
-work_type_list = {
+WORK_TYPE_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
@@ -698,7 +702,7 @@ work_type_list = {
     }))
 }
 
-gender_list = {
+GENDER_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
     'objects': fields.List(fields.Nested({
@@ -707,29 +711,29 @@ gender_list = {
     }))
 }
 
-message_receipt = {
+MESSAGE_RECEIPT = {
     'message_id': fields.Integer,
-    'recipient': fields.Nested(user_stub),
+    'recipient': fields.Nested(USER_STUB),
     'archived': fields.Boolean,
 }
 
-message_stub = {
+MESSAGE_STUB = {
     'message_id': fields.Integer,
-    'sender': fields.Nested(user_stub),
+    'sender': fields.Nested(USER_STUB),
     'subject': fields.String,
 }
 
-message = message_stub.copy()
-message.update({
+MESSAGE = MESSAGE_STUB.copy()
+MESSAGE.update({
     'message_id': fields.Integer,
-    'sender': fields.Nested(user_stub),
+    'sender': fields.Nested(USER_STUB),
     'subject': fields.String,
     'content': fields.String,
-    'receipt': fields.Nested(message_receipt, allow_null=True)
+    'receipt': fields.Nested(MESSAGE_RECEIPT, allow_null=True)
 })
 
-message_list = {
+MESSAGE_LIST = {
     'offset': fields.Integer,
     'count': fields.Integer,
-    'objects': fields.List(fields.Nested(message_stub))
+    'objects': fields.List(fields.Nested(MESSAGE_STUB))
 }

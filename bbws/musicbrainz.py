@@ -16,16 +16,17 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+
 """ This module contains resources providing information from the MusicBrainz
 schema.
 """
 
 
-from flask.ext.restful import Resource, marshal
-
 from bbschema import Gender, Language
+from flask_restful import Resource, marshal
 
-from . import db, structures
+from . import structures
+from .services import db
 
 
 class GenderResourceList(Resource):
@@ -36,7 +37,7 @@ class GenderResourceList(Resource):
             'offset': 0,
             'objects': genders,
             'count': len(genders),
-        }, structures.gender_list)
+        }, structures.GENDER_LIST)
 
 
 class LanguageResourceList(Resource):
@@ -49,7 +50,7 @@ class LanguageResourceList(Resource):
             'offset': 0,
             'objects': languages,
             'count': len(languages),
-        }, structures.language_list)
+        }, structures.LANGUAGE_LIST)
 
 
 def create_views(api):

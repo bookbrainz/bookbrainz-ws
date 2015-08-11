@@ -17,14 +17,14 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-import bcrypt
 import datetime
 import uuid
 
+import bcrypt
 from bbschema import OAuthClient, User
 from flask_oauthlib.provider import OAuth2RequestValidator
 
-from . import cache, db, oauth_provider
+from .services import cache, db, oauth_provider
 
 
 class Grant(object):
@@ -39,13 +39,14 @@ class Grant(object):
 
     @classmethod
     def load(cls, code):
-        r = cache.hgetall(code)
-        if r is None:
+        token = cache.hgetall(code)
+        if token is None:
             return None
 
-        expires = datetime.datetime.strptime(r['expires'], '%Y-%m-%d %H:%M:%S')
-        return cls(r['client_id'], r['user_id'], code, r['redirect_uri'],
-                   expires, r['scopes'].split())
+        expires = datetime.datetime.strptime(token['expires'],
+                                             '%Y-%m-%d %H:%M:%S')
+        return cls(token['client_id'], token['user_id'], code,
+                   token['redirect_uri'], expires, token['scopes'].split())
 
     def save(self):
         self.expires = self.expires.replace(microsecond=0)
@@ -57,8 +58,8 @@ class Grant(object):
             'expires': str(),
             'scopes': ' '.join(self.scopes)
         })
-        dt = datetime.datetime.now() - self.expires
-        cache.expire(self.code, dt.seconds)
+        delta = datetime.datetime.now() - self.expires
+        cache.expire(self.code, delta.seconds)
 
     def delete(self):
         cache.delete(self.code)
@@ -78,24 +79,25 @@ class BearerToken(object):
     @classmethod
     def load(cls, access_token=None, refresh_token=None):
         if access_token is not None:
-            r = cache.hgetall(access_token)
+            token = cache.hgetall(access_token)
         elif refresh_token is not None:
-            r = cache.hgetall(refresh_token)
+            token = cache.hgetall(refresh_token)
         else:
             return None
 
-        if not r:
+        if not token:
             return None
 
-        expires = datetime.datetime.strptime(r['expires'], '%Y-%m-%d %H:%M:%S')
+        expires = datetime.datetime.strptime(token['expires'],
+                                             '%Y-%m-%d %H:%M:%S')
 
         return cls(
-            client_id=r['client_id'],
-            scopes=r['scopes'].split(),
+            client_id=token['client_id'],
+            scopes=token['scopes'].split(),
             expires=expires,
-            user_id=r['user_id'],
-            access_token=r['access_token'],
-            refresh_token=r['refresh_token']
+            user_id=token['user_id'],
+            access_token=token['access_token'],
+            refresh_token=token['refresh_token']
         )
 
     def save(self):
@@ -113,9 +115,9 @@ class BearerToken(object):
         cache.hmset(self.access_token, data)
         cache.hmset(self.refresh_token, data)
 
-        dt = datetime.datetime.utcnow() - self.expires
-        cache.expire(self.access_token, dt.seconds)
-        cache.expire(self.refresh_token, dt.seconds)
+        delta = datetime.datetime.utcnow() - self.expires
+        cache.expire(self.access_token, delta.seconds)
+        cache.expire(self.refresh_token, delta.seconds)
 
     @property
     def user(self):

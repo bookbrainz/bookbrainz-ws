@@ -2,7 +2,7 @@ import datetime
 import json
 
 from flask import url_for
-from flask.ext.testing import TestCase
+from flask_testing import TestCase
 
 from bbschema import User, create_all
 from bbws import create_app, db

@@ -16,46 +16,38 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+
 """ This module defines custom (non-resource) routes in the webservice. These
 should be kept to a minimum.
 """
 
-import uuid
+
+from bbschema import Creator, Edition, Entity, Publication, Publisher, Work
 from elasticsearch import Elasticsearch
 from flask import jsonify, request
-from flask.ext.restful import abort, marshal
+from flask_restful import abort, marshal
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
-from bbschema import (Alias, Creator, Edition, Entity, Publication, Publisher,
-                      Work)
+from . import structures
+from .services import cache, db
+from .util import index_entity, is_uuid
 
-from . import cache, db, structures
-
-es = Elasticsearch()
 
 TYPE_MAP = {
-    Creator: structures.creator_data,
-    Publication: structures.publication_data,
-    Edition: structures.edition_data,
-    Publisher: structures.publisher_data,
-    Work: structures.work_data
+    Creator: structures.CREATOR_DATA,
+    Publication: structures.PUBLICATION_DATA,
+    Edition: structures.EDITION_DATA,
+    Publisher: structures.PUBLISHER_DATA,
+    Work: structures.WORK_DATA
 }
-
-
-def index_entity(entity):
-    es.index(
-        index='bookbrainz',
-        doc_type=entity['_type'].lower(),
-        id=entity['entity_gid'],
-        body=entity
-    )
 
 
 def init(app):
     # Book of the Week
     @app.route('/botw', methods=['GET'])
     def botw():
+        # pylint: disable=unused-variable
         stored_gid = cache.get('botw')
         if stored_gid is None:
             abort(404)
@@ -66,21 +58,14 @@ def init(app):
         except NoResultFound:
             abort(404)
 
-        return jsonify(marshal(entity, structures.entity))
+        return jsonify(marshal(entity, structures.ENTITY))
 
     @app.route('/search/', endpoint='search_query', methods=['GET'])
     def search():
+        # pylint: disable=unused-variable
         query = request.args.get('q', '')
         mode = request.args.get('mode', 'search')
         collection = request.args.get('collection')
-
-        is_uuid = False
-        try:
-            uuid.UUID(query)
-        except ValueError:
-            pass
-        else:
-            is_uuid = True
 
         if collection not in ['creator',
                               'publication',
@@ -89,7 +74,7 @@ def init(app):
                               'work']:
             collection = None
 
-        if is_uuid:
+        if is_uuid(query):
             # Query by UUID, directly against stored IDs
             query_obj = {
                 'query': {
@@ -117,7 +102,8 @@ def init(app):
                 }
             }
 
-        search = es.search(
+        es_conn = Elasticsearch()
+        search = es_conn.search(
             index='bookbrainz',
             doc_type=collection,
             body=query_obj
@@ -127,16 +113,18 @@ def init(app):
 
     @app.route('/search/reindex', endpoint='search_reindex', methods=['GET'])
     def reindex_search():
+        # pylint: disable=unused-variable
         entities = db.session.query(Entity).options(
             joinedload('master_revision.entity_data')
         ).all()
 
+        es_conn = Elasticsearch()
         for entity in entities:
-            entity_out = marshal(entity, structures.entity_expanded)
+            entity_out = marshal(entity, structures.ENTITY_EXPANDED)
             data_out = marshal(entity.master_revision.entity_data,
                                TYPE_MAP[type(entity)])
 
             entity_out.update(data_out)
-            index_entity(entity_out)
+            index_entity(es_conn, entity_out)
 
         return jsonify({'success': True})

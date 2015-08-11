@@ -17,38 +17,16 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-""" This module stores a few program wide variables, and provides functions for
-creating an instance of the webservice application and adding CORS headers to
-webservice responses.
+""" This module provides the function for creating an instance of the
+webservice application, importing other modules to add routes.
 """
 
 
 from flask import Flask
-from flask.ext.restful import Api
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.redis import Redis
-from flask.ext.oauthlib.provider import OAuth2Provider
+from flask_restful import Api
 
-
-db = SQLAlchemy()
-cache = Redis()
-oauth_provider = OAuth2Provider()
-
-
-def add_cors_header(response):
-    """ Adds CORS headers to responses, so that cross-domain requests are
-    responded to successfully - see
-    https://github.com/jfinkels/flask-restless/issues/223
-    """
-
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = \
-        'HEAD, GET, POST, PATCH, PUT, OPTIONS, DELETE'
-    response.headers['Access-Control-Allow-Headers'] = \
-        'Origin, X-Requested-With, Content-Type, Accept'
-    response.headers['Access-Control-Allow-Credentials'] = 'true'
-
-    return response
+from .services import db, cache, oauth_provider
+from .util import add_cors_header
 
 
 def create_app(config_file):
