@@ -28,8 +28,25 @@ from .services import db, oauth_provider
 
 
 class UserResource(Resource):
-    """ A Resource representing a User of the webservice. """
     def get(self, user_id):
+        """A Resource representing a User of the webservice.
+
+        :param user_id: the ID of the user to provide information for
+
+        :>json user_id: the ID of the resulting user
+        :>json reputation: the user's reputation
+        :>json bio: the user-written bio
+        :>json created_at: the date and time the user was created
+        :>json active_at: the date and time when the user was last active
+        :>json user_type: the UserType for the user
+        :>json total_revisions: the total number of revision made by the user
+        :>json revisions_applied: the number of revisions by the user that have
+            been applied
+        :>json revisions_reverted: the number of revisions by the user that
+            have been reverted
+        :status 404: when the requested user was not found in the database
+        """
+
         try:
             user = db.session.query(User).filter_by(user_id=user_id).one()
         except NoResultFound:
