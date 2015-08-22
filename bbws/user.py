@@ -54,6 +54,7 @@ class UserResource(Resource):
 
         return marshal(user, structures.USER)
 
+    @oauth_provider.require_oauth()
     def put(self, user_id):
         """ Update information about a single User of the webservice. Currently
         only allows updating the user bio. Requires authentication. For response
@@ -76,6 +77,9 @@ class UserResource(Resource):
             have been reverted
         :status 404: when the requested user was not found in the database
         """
+
+        if user_id != request.oauth.user.user_id:
+            abort(401)
 
         try:
             user = db.session.query(User).filter_by(user_id=user_id).one()
