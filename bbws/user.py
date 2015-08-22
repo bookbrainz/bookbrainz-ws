@@ -29,20 +29,20 @@ from .services import db, oauth_provider
 
 class UserResource(Resource):
     def get(self, user_id):
-        """A Resource representing a User of the webservice.
+        """Get information about a single User of the webservice.
 
-        :param user_id: the ID of the user to provide information for
+        :param int user_id: the ID of the user to get information about
 
-        :>json user_id: the ID of the resulting user
-        :>json reputation: the user's reputation
-        :>json bio: the user-written bio
-        :>json created_at: the date and time the user was created
-        :>json active_at: the date and time when the user was last active
+        :>json int user_id: the ID of the resulting user
+        :>json int reputation: the user's reputation
+        :>json string bio: the user-written bio
+        :>json datetime created_at: the date and time the user was created
+        :>json datetime active_at: the date and time when the user was last active
         :>json user_type: the UserType for the user
-        :>json total_revisions: the total number of revision made by the user
-        :>json revisions_applied: the number of revisions by the user that have
+        :>json int total_revisions: the total number of revision made by the user
+        :>json int revisions_applied: the number of revisions by the user that have
             been applied
-        :>json revisions_reverted: the number of revisions by the user that
+        :>json int revisions_reverted: the number of revisions by the user that
             have been reverted
         :status 404: when the requested user was not found in the database
         """
@@ -55,6 +55,28 @@ class UserResource(Resource):
         return marshal(user, structures.USER)
 
     def put(self, user_id):
+        """ Update information about a single User of the webservice. Currently
+        only allows updating the user bio. Requires authentication. For response
+        format, see :ref:`GET /user/(int: id)/ <user-get>`
+
+        :param int user_id: the ID of the user to update information for
+
+        :<json string bio: the updated bio for the specified user
+
+        :>json int user_id: the ID of the resulting user
+        :>json int eputation: the user's reputation
+        :>json string bio: the user-written bio
+        :>json datetime created_at: the date and time the user was created
+        :>json datetime active_at: the date and time when the user was last active
+        :>json user_type: the UserType for the user
+        :>json int total_revisions: the total number of revision made by the user
+        :>json int revisions_applied: the number of revisions by the user that have
+            been applied
+        :>json int revisions_reverted: the number of revisions by the user that
+            have been reverted
+        :status 404: when the requested user was not found in the database
+        """
+
         try:
             user = db.session.query(User).filter_by(user_id=user_id).one()
         except NoResultFound:
@@ -70,21 +92,48 @@ class UserResource(Resource):
 
 
 class AccountResource(Resource):
-    """ Provides the user's own secrets for authenticated users. """
-
     @oauth_provider.require_oauth()
     def get(self):
+        """Get private information about the currently authenticated User.
+
+        :<header Authorization: the access token to use for the request
+
+        :>json int user_id: the ID of the resulting user
+        :>json int reputation: the user's reputation
+        :>json string bio: the user-written bio
+        :>json datetime created_at: the date and time the user was created
+        :>json datetime active_at: the date and time when the user was last active
+        :>json user_type: the UserType for the user
+        :>json int total_revisions: the total number of revision made by the user
+        :>json int revisions_applied: the number of revisions by the user that have
+            been applied
+        :>json int revisions_reverted: the number of revisions by the user that
+            have been reverted
+        :>json string email: the user's registered email address
+        :>json date birth_date: the date of birth of the user
+        :>json gender: the gender of the user
+        :status 404: when the requested user was not found in the database
+        """
         return marshal(request.oauth.user, structures.ACCOUNT)
 
 
 class UserResourceList(Resource):
-    """ A Resource representing a list of Users of the webservice. """
-
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('limit', type=int, default=20)
     get_parser.add_argument('offset', type=int, default=0)
 
     def get(self):
+        """Get a list of webservice users, with some information about each.
+
+        :query int offset: the requested offset of the first result
+        :query int limit: the maximum number of users to list
+
+        :>json offset: the offset of the first result, as specified by the user
+        :>json count: the number of results returned, less than or equal to the
+            limit parameter
+        :>json objects: an array of users
+        """
+
         args = self.get_parser.parse_args()
         query = db.session.query(User).offset(args.offset).limit(args.limit)
         users = query.all()
