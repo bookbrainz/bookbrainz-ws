@@ -304,12 +304,12 @@ def create_views(api):
     """ Create the views relating to Users, on the Restful API. """
 
     api.add_resource(UserResource, '/user/<int:user_id>/',
-                     endpoint='user_get_single')
+                     endpoint='user_single')
     api.add_resource(UserTypeResourceList, '/userType/')
-    api.add_resource(UserResourceList, '/user/', endpoint='user_get_many')
+    api.add_resource(UserResourceList, '/user/', endpoint='user_many')
 
     api.add_resource(AccountResource, '/account/',
-                     endpoint='account_get_current')
+                     endpoint='account_current')
 
     api.add_resource(UserMessageResource, '/message/<int:message_id>')
     api.add_resource(UserMessageInboxResource, '/message/inbox/')
