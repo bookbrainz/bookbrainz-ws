@@ -418,8 +418,124 @@ class EntityResourceList(Resource):
             'objects': entities
         }, self.entity_list_fields)
 
-    @oauth_provider.require_oauth()
-    def post(self):
+    def _merge(self):
+        """ A brief overview of the merge strategy:
+            * Collect relationships, identifiers and aliases for all entities
+            * Determine a unique set of existing relationships, and duplicate
+              this for the new entity.
+            * Repeat for identifiers and aliases.
+            * Use the provided entity data to complete the merge.
+            * Set the master revision of merged entities to the newly created
+              revision, and the parent of previous revisions to the new
+              revision
+        """
+
+        data = request.get_json()
+
+        bbids = data['bbids']
+
+        entities = db.session.query(Entity).options(
+            joinedload('master_revision.entity_data.identifiers'),
+            joinedload('master_revision.entity_data.aliases'),
+            joinedload('relationships')
+        ).filter(Entity.entity_gid.in_(bbids)).all()
+
+        # Check that we got back the correct number of entities
+        if len(entities) != len(bbids):
+            abort(404)
+
+        # Get a flat list of all relationships
+        all_relationship_entities = [r for e in entities
+                                     for r in e.relationships]
+
+        # ... and identifiers
+        all_identifiers = [i for e in entities
+                           for i in e.master_revision.entity_data.identifiers]
+
+        # ... and aliases
+        all_aliases = [a for e in entities
+                       for a in e.master_revision.entity_data.aliases]
+
+        # Create a list of duplicated unique relationships on the new entity
+        entity = self.entity_class()
+        for relationship_entity in all_relationship_entities:
+            new_relationship_data =\
+                relationship_entity.relationship_data.copy()
+            new_relationship_entity = [
+                e for e in new_relationship_data.entities
+                if e == relationship_entity
+            ][0]
+            new_relationship_entity.entity = entity
+            already_on_entity = any(
+                r.relationship_data == new_relationship_data
+                for r in entity.relationships
+                if r is not new_relationship_entity
+            )
+
+            # If relationship already exists on entity, clear r.entity for each
+            # entity in the relationship so that it isn't committed to the DB
+            if already_on_entity:
+                for relationship_entity in new_relationship_data.entities:
+                    relationship_entity.entity = None
+
+        # Create a new entity data instance of the target type
+        entity_data = self.entity_data_class.merge(
+            data, db.session, *entities
+        )
+
+        # This will be valid here, due to authentication.
+        user = request.oauth.user
+        user.total_revisions += 1
+        user.revisions_applied += 1
+
+        # Create a revision
+        revision = EntityRevision(user_id=user.user_id)
+        revision.entity = entity
+        revision.entity_data = entity_data
+
+        note_content = data.get('revision', {}).get('note', '')
+
+        if note_content != '':
+            note = RevisionNote(user_id=user.user_id,
+                                revision_id=revision.revision_id,
+                                content=data['revision']['note'])
+
+            revision.notes.append(note)
+
+        entity.master_revision = revision
+
+        # For each of the entities, set the parent of the master revision to
+        # the newly created revision, to signify a merge.
+        for merged_entity in entities:
+            merged_entity.master_revision.parent = revision
+
+        # Commit the revision
+        db.session.add(revision)
+
+        try:
+            db.session.commit()
+        except IntegrityError:
+            # There was an issue with the data we received, so 400
+            print traceback.format_exc()
+            abort(400)
+
+        entity_out = marshal(revision.entity, structures.ENTITY_EXPANDED)
+        data_out = marshal(revision.entity_data, self.entity_data_fields)
+
+        entity_out.update(data_out)
+
+        # Don't 500 if we fail to index; commit still succeeded
+        try:
+            es_conn = Elasticsearch()
+            index_entity(es_conn, entity_out)
+        except ElasticsearchException:
+            pass
+
+        return marshal(revision, {
+            'entity': fields.Nested(self.entity_stub_fields)
+        })
+
+    def _create(self):
         data = request.get_json()
 
         # This will be valid here, due to authentication.
@@ -470,6 +586,15 @@ class EntityResourceList(Resource):
         return marshal(revision, {
             'entity': fields.Nested(self.entity_stub_fields)
         })
+
+    @oauth_provider.require_oauth()
+    def post(self):
+        data = request.get_json()
+
+        if 'bbids' in data:
+            return self._merge()
+        else:
+            return self._create()
 
 
 def make_entity_endpoints(api, entity_class, data_class, make_list=True):
