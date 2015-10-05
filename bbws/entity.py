@@ -139,6 +139,7 @@ class EntityResource(Resource):
 
         entity.master_revision.parent = revision
         entity.master_revision = revision
+        entity.revision = revision
 
         db.session.add(revision)
 
