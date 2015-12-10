@@ -431,6 +431,9 @@ class EntityResourceList(Resource):
         entity = self.entity_class()
         entity_data = self.entity_data_class.create(data, db.session)
 
+        if entity_data is None:
+            abort(400)
+
         revision = EntityRevision(user_id=user.user_id)
         revision.entity = entity
         revision.entity_data = entity_data
