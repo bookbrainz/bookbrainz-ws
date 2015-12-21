@@ -1,3 +1,21 @@
+# -*- coding: utf8 -*-
+
+# Copyright (C) 2015 Stanisław Szcześniak
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 import random
 import uuid
 
@@ -7,8 +25,6 @@ from werkzeug.test import Headers
 
 from bbws import create_app, db
 from .fixture import load_data
-
-DEBUG = True
 
 
 class TestCreatorID(TestCase):
@@ -68,7 +84,7 @@ class TestCreatorID(TestCase):
             entity_data_id = instance.master_revision.entity_data_id
             self.assertEquals(response.json.get(u'revision').get(u'entity_data_id'), entity_data_id)
 
-            #Uris
+            # Uris
             self.uris_test()
 
     def uris_test(self):
@@ -210,7 +226,7 @@ class TestCreatorID(TestCase):
 
     def test_creator_delete(self):
         instances = db.session.query(Creator).all()
-        instances.sort(key=lambda x:x.entity_gid)
+        instances.sort(key=lambda x: x.entity_gid)
         # testing bad bbids
         if len(instances) > 0:
             self.creator_delete_id(instances, unicode(instances[0].entity_gid) + u'1', self._access_token, True)
@@ -264,6 +280,7 @@ class TestCreatorID(TestCase):
                                    instance_after.master_revision.entity_data.identifiers)
                 self.equality_test(instance.master_revision.entity_data.aliases,
                                    instance_after.master_revision.entity_data.aliases)
+
     def equality_test(self, a, b):
         if a is None and b is None:
             return
