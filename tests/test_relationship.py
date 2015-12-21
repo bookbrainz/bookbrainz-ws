@@ -18,17 +18,20 @@ class TestRelationshipViews(TestCase):
         load_data(db)
 
     def test_relationship_get_single(self):
-        response = self.client.get('/relationship/3')
-        self.assertEquals(response.json.get('relationship_id'), 3)
+        relationship_to_test = 3
+        db_response = db.session.query(Relationship).filter(Relationship.relationship_id == relationship_to_test).one()
+        response = self.client.get('/relationship/' + str(relationship_to_test))
+        self.assertEquals(response.json.get('relationship_id'), relationship_to_test)
         self.assertEquals(response.json.get('uri'),
-                          'http://localhost/relationship/3')
-        self.assertEquals(response.json.get('master_revision_id'), 6)
+                          'http://localhost/relationship/' + str(relationship_to_test))
+        self.assertEquals(response.json.get('master_revision_id'), db_response.master_revision_id)
         self.assertTrue('last_updated' in response.json)
         self.assertEquals(len(response.json.get('entities', [])), 1)
         self.assertEquals(len(response.json.get('texts', [])), 1)
 
     def test_relationship_get_many(self):
         response = self.client.get('/relationship/')
-        self.assertEquals(response.json.get('count'), 3)
+        db_numer_of_relationships = len(db.session.query(Relationship).all())
+        self.assertEquals(response.json.get('count'), db_numer_of_relationships)
         self.assertEquals(response.json.get('offset'), 0)
-        self.assertEquals(len(response.json.get('objects', [])), 3)
+        self.assertEquals(len(response.json.get('objects', [])), db_numer_of_relationships)
