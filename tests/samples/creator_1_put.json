@@ -1,0 +1,22 @@
+{
+  "aliases": [
+	[
+	  null,
+	  {
+		"language_id": 1,
+		"name": "John Michael Greer",
+		"primary": true,
+		"sort_name": "Greer, John Michael"
+	  }
+	],
+	[
+	  null,
+	  {
+		"language_id": 2,
+		"name": "جون مايكل غرير",
+		"primary": false,
+		"sort_name": "جون مايكل غرير"
+	  }
+	]
+  ]
+}
