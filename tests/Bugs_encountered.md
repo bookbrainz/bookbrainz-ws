@@ -28,4 +28,12 @@ there is an exception raised and not HTML 400 code returned
 **change to**: ``` self.put_post_bad_tests('put') ```  
 
 
++ When passing null as a value to some attribute in put, it doesn't change to null (if it wasn't already null).  
+**function:**
+```def equality_simply_objects_check(self, ws_object, db_object)```  
+**lines to delete**:  
+```
+if ws_object == None:  
+    return  
+```  
 

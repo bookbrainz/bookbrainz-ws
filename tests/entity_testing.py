@@ -28,6 +28,7 @@ from flask_testing import TestCase
 from werkzeug.test import Headers
 from bbws import create_app, db
 from .fixture import load_data
+from .sample_data_generators import get_other_type_values, get_random_unicode_string
 
 
 class EntityTestCase(TestCase):
@@ -124,7 +125,6 @@ class EntityTestCase(TestCase):
             response.json['aliases'] = response_aliases.json['objects']
         else:
             response.json['aliases'] = []
-
 
         self.check_added_data_and_new_instance(response.json, None, instance)
 
@@ -235,8 +235,8 @@ class EntityTestCase(TestCase):
 
             for i in range(len(data['aliases'])):
                 data[u'aliases'][i][0] = None
-                data[u'aliases'][i][1][u'name'] = _get_random_unicode()
-                data[u'aliases'][i][1][u'sort_name'] = _get_random_unicode()
+                data[u'aliases'][i][1][u'name'] = get_random_unicode_string()
+                data[u'aliases'][i][1][u'sort_name'] = get_random_unicode_string()
 
                 if random.randint(1, 2) == 1:
                     if len(non_null_aliases) > 0:
@@ -341,7 +341,7 @@ class EntityTestCase(TestCase):
             used_data = self.put_data
 
         for key in used_data:
-            bad_values_list = _find_other_type_values(used_data[key])
+            bad_values_list = get_other_type_values(used_data[key])
             for bad_value in bad_values_list:
                 print('passing bad_value:{bad_val} as key:{key}'.format(bad_val=bad_value, key=key))
                 sys.stdout.flush()
@@ -520,12 +520,22 @@ class EntityTestCase(TestCase):
                                  format(a=ws_object, b=db_object))
 
     def equality_simply_objects_check(self, ws_object, db_object):
+        if ws_object is None:
+            return
         if type(db_object) == datetime.date:
-            self.assertEquals(unicode(ws_object), unicode(db_object.isoformat()))
+            return self.equality_check_dates(ws_object, db_object)
         elif type(db_object) == datetime.datetime:
             self.assertEquals(unicode(ws_object), unicode(db_object.isoformat()))
         else:
             self.assertEquals(unicode(ws_object), unicode(db_object))
+
+    def equality_check_dates(self, ws_object, db_object):
+        self.assertEquals((ws_object is None), (db_object is None))
+
+        ws_str_date = unicode(ws_object)
+        db_str_date = unicode(db_object.isoformat())
+
+        return db_str_date.startswith(ws_str_date)
 
     def equality_check_dict_and_instance(self, dict_object, instance_object, entity_gid):
         if dict_object is not None and 'entity_gid' in dict_object:
@@ -534,6 +544,9 @@ class EntityTestCase(TestCase):
             for key in dict_object.keys():
                 if key in [u'aliases', u'identifiers', u'languages']:
                     continue
+                if key == 'gender':
+                    self.equality_simply_objects_check(dict_object['gender']['gender_id'],
+                                                       instance_object.master_revision.entity_data.gender_id)
                 elif not _is_uri(key):
                     self.equality_check_ws(dict_object[key], _get_key_from_instance(instance_object, key), entity_gid)
                 else:
@@ -579,6 +592,8 @@ def _get_key_from_instance(instance, key):
         return len(instance)
     if key == 'revision':
         return instance.master_revision
+    if key == 'gender':
+        return instance.master_revision.entity_data.gender_id
     if hasattr(instance, key):
         return getattr(instance, key)
 
@@ -623,17 +638,6 @@ def _is_uri(string):
                       u'aliases_uri', u'identifiers_uri', 'entity_uri']
 
 
-def _find_other_type_values(arg_value):
-    constant_values = [u'abcdef', 2015, datetime.time(12, 13, 14, 15),
-                       uuid.uuid4(), {'revision': {'note': 'some note'}},
-                       [1, 2, 3, 4], [], {}, datetime.time(0, 0, 0, 0), Headers([])]
-    result_list = []
-    for cvalue in constant_values:
-        if type(cvalue) != type(arg_value):
-            result_list.append(cvalue)
-    return result_list
-
-
 def _find_attribute_for_sorting(list_object):
     if u'entity_gid' in list_object:
         return 'entity_gid'
@@ -655,27 +659,3 @@ def _name_or_sort_name(element):
             return element.name
         else:
             return element.sort_name
-
-
-def _get_random_unicode(length=100):
-    include_ranges = [
-        ( 0x0021, 0x0021 ),
-        ( 0x0023, 0x0026 ),
-        ( 0x0028, 0x007E ),
-        ( 0x00A1, 0x00AC ),
-        ( 0x00AE, 0x00FF ),
-        ( 0x0100, 0x017F ),
-        ( 0x0180, 0x024F ),
-        ( 0x2C60, 0x2C7F ),
-        ( 0x16A0, 0x16F0 ),
-        ( 0x0370, 0x0377 ),
-        ( 0x037A, 0x037E ),
-        ( 0x0384, 0x038A ),
-        ( 0x038C, 0x038C ),
-    ]
-
-    alphabet = [
-        unichr(code_point) for current_range in include_ranges
-            for code_point in range(current_range[0], current_range[1] + 1)
-    ]
-    return ''.join(random.choice(alphabet) for i in range(length))
