@@ -213,7 +213,7 @@ class UserMessageInboxResource(Resource):
         # noinspection PyPep8
         messages = db.session.query(Message).join(MessageReceipt).\
             filter(MessageReceipt.recipient_id == request.oauth.user.user_id).\
-            filter(MessageReceipt.archived == False). \
+            filter(MessageReceipt.archived == False).\
             offset(args.offset).limit(args.limit).all()
 
         return marshal({
