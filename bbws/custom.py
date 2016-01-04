@@ -103,13 +103,13 @@ def init(app):
             }
 
         es_conn = Elasticsearch()
-        search = es_conn.search(
+        results = es_conn.search(
             index='bookbrainz',
             doc_type=collection,
             body=query_obj
         )
 
-        return jsonify(search['hits'])
+        return jsonify(results['hits'])
 
     @app.route('/search/reindex', endpoint='search_reindex', methods=['GET'])
     def reindex_search():

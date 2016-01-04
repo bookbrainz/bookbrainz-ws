@@ -14,12 +14,14 @@ class TestUserViews(TestCase):
     def create_app(self):
         return create_app('../config/test.py')
 
+    # noinspection PyPep8Naming
     def setUp(self):
         db.engine.execute("DROP SCHEMA IF EXISTS bookbrainz CASCADE")
         db.engine.execute("CREATE SCHEMA bookbrainz")
         create_all(db.engine)
         load_data(db)
 
+    # noinspection PyPep8Naming
     def tearDown(self):
         db.session.remove()
         db.engine.execute("DROP SCHEMA IF EXISTS bookbrainz CASCADE")

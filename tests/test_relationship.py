@@ -9,6 +9,7 @@ class TestRelationshipViews(TestCase):
     def create_app(self):
         return create_app('../config/test.py')
 
+    # noinspection PyPep8Naming
     def setUp(self):
         db.engine.execute("DROP SCHEMA IF EXISTS bookbrainz CASCADE")
         db.engine.execute("CREATE SCHEMA bookbrainz")
@@ -17,7 +18,8 @@ class TestRelationshipViews(TestCase):
 
     def test_relationship_get_single(self):
         relationship_to_test = 1
-        db_response = db.session.query(Relationship).filter(Relationship.relationship_id == relationship_to_test).one()
+        db_response = db.session.query(Relationship).filter(
+            Relationship.relationship_id == relationship_to_test).one()
         rel_data = db_response.master_revision.relationship_data
         response = self.client.get('/relationship/' + str(relationship_to_test))
         self.assertEquals(response.json.get('relationship_id'), relationship_to_test)

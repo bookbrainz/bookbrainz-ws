@@ -16,19 +16,16 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-
-import sys
 import random
 import uuid
 import json
 import datetime
-import copy
-from bbschema import create_all, Language
+from bbschema import create_all
 from flask_testing import TestCase
 from werkzeug.test import Headers
 from bbws import create_app, db
 from .fixture import load_data
-from .sample_data_generators import get_other_type_values, get_random_unicode_string
+from .sample_data_helper_functions import get_other_type_values
 
 
 class EntityTestCase(TestCase):
@@ -36,6 +33,7 @@ class EntityTestCase(TestCase):
         self.app = create_app('../config/test.py')
         return self.app
 
+    # noinspection PyPep8Naming
     def setUp(self):
         db.engine.execute("DROP SCHEMA IF EXISTS bookbrainz CASCADE")
         db.engine.execute("CREATE SCHEMA bookbrainz")
@@ -45,11 +43,14 @@ class EntityTestCase(TestCase):
 
         response = self.client.post('/oauth/token',
                                     data={'client_id': '9ab9da7e-a7a3-4f86-87c6-bf8b4b8213c7',
-                                          'username': 'Bob', 'password': "bb", 'grant_type': 'password'})
+                                          'username': 'Bob',
+                                          'password': "bb",
+                                          'grant_type': 'password'})
         self.assert200(response)
         self.oauth_access_token = response.json.get(u'access_token')
 
-        self.request_default_headers = Headers([('Authorization', 'Bearer ' + self.oauth_access_token),
+        self.request_default_headers = Headers([('Authorization',
+                                                 'Bearer ' + self.oauth_access_token),
                                                 ('Content-Type', 'application/json')])
 
         self.put_post_data = {}
@@ -65,6 +66,7 @@ class EntityTestCase(TestCase):
     def specific_setup(self):
         raise NotImplementedError
 
+    # noinspection PyPep8Naming
     def tearDown(self):
         db.session.remove()
         db.engine.execute("DROP SCHEMA IF EXISTS bookbrainz CASCADE")
@@ -118,7 +120,8 @@ class EntityTestCase(TestCase):
         self.assertEquals(uuid.UUID(response.json.get(u'entity_gid')), entity_gid)
 
         response_aliases = self.client.get('/{entity_type}/{entity_gid}/aliases'
-                                           .format(entity_type=self.ws_entity_name, entity_gid=instance.entity_gid))
+                                           .format(entity_type=self.ws_entity_name,
+                                                   entity_gid=instance.entity_gid))
         self.assert200(response_aliases)
         if response_aliases.json['count'] > 0:
             self.assertEquals(len(response_aliases.json['objects']), response_aliases.json['count'])
@@ -127,6 +130,7 @@ class EntityTestCase(TestCase):
             response.json['aliases'] = []
 
         self.check_added_data_and_new_instance(response.json, None, instance)
+        # TODO add relationships checking
 
     # Function to implement in derived classes
     def bbid_one_get_test_specific(self, instance, response, entity_gid):
@@ -138,7 +142,7 @@ class EntityTestCase(TestCase):
 
     def list_get_single_test(self):
         instances = db.session.query(self.entity_class).all()
-        # The first parameter should be -1, but it doesn't work for now [see Bugs_encountered.md]
+        # The first parameter should be -1, but it doesn't work for now [see bugs_encountered.md]
         rand_limit = random.randint(0, len(instances) + 3)
         response_ws = self.client.get('/' + self.ws_entity_name + '/',
                                       headers=self.request_default_headers,
@@ -157,21 +161,23 @@ class EntityTestCase(TestCase):
 
     def post_tests(self):
         self.post_good_tests()
-        # bad type requests are triggering exceptions and not HTTP 400 [see Bugs_encountered.md]
+        # bad type requests are triggering exceptions and not HTTP 400 [see bugs_encountered.md]
         # self.put_post_bad_tests('post')
 
     def put_tests(self):
         for i in range(5):
             self.put_good_tests()
             # Commented for now, because bad type requests
-            # are triggering exceptions and not HTTP 400 (same as in the post) [see Bugs_encountered.md]
+            # are triggering exceptions and not HTTP 400 (same as in the post)
+            # [see bugs_encountered.md]
             # self.put_post_bad_tests('put')
 
     def post_good_tests(self):
         instances_db = db.session.query(self.entity_class).all()
         data_to_pass = self.post_data
 
-        response_ws = self.client.post('/' + self.ws_entity_name + '/', headers=self.request_default_headers,
+        response_ws = self.client.post('/{}/'.format(self.ws_entity_name),
+                                       headers=self.request_default_headers,
                                        data=json.dumps(data_to_pass))
         self.assert200(response_ws)
 
@@ -182,7 +188,8 @@ class EntityTestCase(TestCase):
         added_instance = None
 
         for i in range(len(instances_db_after)):
-            if i == len(instances_db) or instances_db[i].entity_gid != instances_db_after[i].entity_gid:
+            if i == len(instances_db) or \
+                    instances_db[i].entity_gid != instances_db_after[i].entity_gid:
                 added_instance = instances_db_after[i]
                 del instances_db_after[i]
                 break
@@ -201,10 +208,11 @@ class EntityTestCase(TestCase):
             .master_revision.entity_data
         # db.session.add(random_instance_to_check)
 
-        data_to_pass = copy.deepcopy(self.put_data)
-        self.prepare_put_data(random_instance, data_to_pass)
+        # data_to_pass = copy.deepcopy(self.put_data)
+        data_to_pass = self.prepare_put_data(random_instance)
 
-        response_ws = self.client.put('/' + self.ws_entity_name + '/' + unicode(random_instance.entity_gid) + '/',
+        response_ws = self.client.put('/{}/{}/'.format(self.ws_entity_name,
+                                                       unicode(random_instance.entity_gid)),
                                       headers=self.request_default_headers,
                                       data=json.dumps(data_to_pass))
         self.assert200(response_ws)
@@ -226,28 +234,14 @@ class EntityTestCase(TestCase):
                 break
 
         self.assertEquals(instances_db, instances_db_after)
-        self.check_added_data_and_new_instance(data_to_pass, random_instance_to_check, changed_instance)
+        self.check_added_data_and_new_instance(data_to_pass, random_instance_to_check,
+                                               changed_instance)
 
-    def prepare_put_data(self, instance, data):
-        if instance.master_revision.entity_data.aliases not in [[], None]:
-            non_null_aliases = \
-                [alias.alias_id for alias in instance.master_revision.entity_data.aliases]
+    def prepare_put_data(self, instance):
+        raise NotImplementedError
 
-            for i in range(len(data['aliases'])):
-                data[u'aliases'][i][0] = None
-                data[u'aliases'][i][1][u'name'] = get_random_unicode_string()
-                data[u'aliases'][i][1][u'sort_name'] = get_random_unicode_string()
-
-                if random.randint(1, 2) == 1:
-                    if len(non_null_aliases) > 0:
-                        rand_pos = random.randint(0, len(non_null_aliases) - 1)
-                        non_null_alias = non_null_aliases[rand_pos]
-
-                        data[u'aliases'][i][0] = non_null_alias
-
-                        del non_null_aliases[rand_pos]
-
-    def check_added_data_and_new_instance(self, passed_data_dict, added_instance_before, added_instance_now):
+    def check_added_data_and_new_instance(self, passed_data_dict,
+                                          added_instance_before, added_instance_now):
         self.equality_check_ws(passed_data_dict, added_instance_now)
         self.equality_check_lists(passed_data_dict, added_instance_before, added_instance_now)
 
@@ -286,7 +280,8 @@ class EntityTestCase(TestCase):
         for alias_id in updated_aliases:
             alias_json = updated_aliases[alias_id]
 
-            self.assertTrue(len([alias for alias in db_aliases_before if alias.alias_id == alias_id]))
+            self.assertTrue(len([alias for alias in db_aliases_before
+                                 if alias.alias_id == alias_id]))
             for i in range(len(db_aliases_before)):
                 if db_aliases_before[i].alias_id == alias_id:
                     to_delete = i
@@ -294,7 +289,8 @@ class EntityTestCase(TestCase):
             del db_aliases_before[to_delete]
 
             if alias_json is not None:
-                self.assertTrue(len([alias for alias in db_aliases_after if alias.name == alias_json[u'name']]) == 1)
+                self.assertTrue(len([alias for alias in db_aliases_after
+                                     if alias.name == alias_json[u'name']]) == 1)
                 for i in range(len(db_aliases_after)):
                     if db_aliases_after[i].name == alias_json[u'name']:
                         to_delete = i
@@ -304,7 +300,8 @@ class EntityTestCase(TestCase):
 
                 del db_aliases_after[to_delete]
             else:
-                self.assertTrue(len([alias for alias in db_aliases_after if alias.alias_id == alias_id]) == 0)
+                self.assertTrue(len([alias for alias in db_aliases_after
+                                     if alias.alias_id == alias_id]) == 0)
 
         for alias in ws_aliases:
             to_delete = -1
@@ -335,6 +332,7 @@ class EntityTestCase(TestCase):
             self.assertEquals(alias_json[u'primary'], alias_db.primary)
 
     def put_post_bad_tests(self, type_of_query):
+        # TODO change put_data to prepare_put_data() - rewrite the rest of this function
         if type_of_query == 'post':
             used_data = self.post_data
         else:
@@ -343,8 +341,8 @@ class EntityTestCase(TestCase):
         for key in used_data:
             bad_values_list = get_other_type_values(used_data[key])
             for bad_value in bad_values_list:
-                print('passing bad_value:{bad_val} as key:{key}'.format(bad_val=bad_value, key=key))
-                sys.stdout.flush()
+                print('passing bad_value:{bad_val} as key:{key}'
+                      .format(bad_val=bad_value, key=key))
                 data_to_pass = used_data.copy()
                 data_to_pass[key] = bad_value
                 self.put_post_bad_data_test(json.dumps(data_to_pass), type_of_query)
@@ -359,7 +357,8 @@ class EntityTestCase(TestCase):
         self.put_post_bad_data_test(''.join(data_to_pass_json_bad), type_of_query)
 
     def put_post_bad_data_test(self, data_to_pass, type_of_query):
-        info_before = [[x.entity_gid, x.last_updated] for x in db.session.query(self.entity_class).all()]
+        info_before = [[x.entity_gid, x.last_updated] for x in
+                       db.session.query(self.entity_class).all()]
 
         response_ws = None
         if type_of_query == 'put':
@@ -367,7 +366,9 @@ class EntityTestCase(TestCase):
             if len(instances_db) > 0:
                 random_instance = instances_db[random.randint(0, len(instances_db) - 1)]
                 self.prepare_put_data(random_instance, data_to_pass)
-                response_ws = self.client.put('/' + self.ws_entity_name + '/' + unicode(random_instance.entity_gid),
+                response_ws = self.client.put('/{}/{}/'
+                                              .format(self.ws_entity_name,
+                                                      unicode(random_instance.entity_gid)),
                                               headers=self.request_default_headers,
                                               data=data_to_pass)
 
@@ -426,7 +427,8 @@ class EntityTestCase(TestCase):
     def bad_delete_tests(self):
         self.bad_delete_uuid_tests()
         self.bad_delete_format_tests()
-        # self.bad_delete_double_tests() Can't be tested now, because there is a bug here [see Bugs_encountered.md]
+        # self.bad_delete_double_tests() Can't be tested now,
+        # because there is a bug here [see bugs_encountered.md]
 
     def bad_delete_uuid_tests(self):
         instances_db = db.session.query(self.entity_class).all()
@@ -451,15 +453,20 @@ class EntityTestCase(TestCase):
         rand_pos = random.randint(0, len(instances_db) - 1)
         random_instance = instances_db[rand_pos]
 
-        self.bad_delete_format_single('/creature/{ent_gid}/'.format(ent_gid=unicode(random_instance.entity_gid)), 404)
-        self.bad_delete_format_single('//////{ent_gid}'.format(ent_gid=unicode(random_instance.entity_gid)), 404)
-        self.bad_delete_format_single('/{ent_gid}'.format(ent_gid=unicode(random_instance.entity_gid)), 404)
-        self.bad_delete_format_single('/{ent_gid}/'.format(ent_gid=unicode(random_instance.entity_gid)), 404)
+        self.bad_delete_format_single('/creature/{ent_gid}/'
+                                      .format(ent_gid=unicode(random_instance.entity_gid)), 404)
+        self.bad_delete_format_single(
+            '//////{ent_gid}'.format(ent_gid=unicode(random_instance.entity_gid)), 404)
+        self.bad_delete_format_single(
+            '/{ent_gid}'.format(ent_gid=unicode(random_instance.entity_gid)), 404)
+        self.bad_delete_format_single(
+            '/{ent_gid}/'.format(ent_gid=unicode(random_instance.entity_gid)), 404)
         self.bad_delete_format_single('/{ent_type}/'.format(ent_type=self.ws_entity_name), 405)
         self.bad_delete_format_single('/{ent_type}'.format(ent_type=self.ws_entity_name), 301)
         self.bad_delete_format_single('{ent_type}/{ent_gid}/'.format(
             ent_type=self.ws_entity_name, ent_gid=unicode(random_instance.entity_gid)), 401)
-        self.bad_delete_format_single('{ent_gid}'.format(ent_gid=unicode(random_instance.entity_gid)), 404)
+        self.bad_delete_format_single(
+            '{ent_gid}'.format(ent_gid=unicode(random_instance.entity_gid)), 404)
         self.bad_delete_format_single('/{ent_gid}/{ent_type}/'.format(
             ent_gid=unicode(random_instance.entity_gid), ent_type=self.ws_entity_name), 404)
 
@@ -504,10 +511,13 @@ class EntityTestCase(TestCase):
             self.equality_simply_objects_check(ws_object, db_object)
         else:
             try:
-                self.assertEquals(_is_simply_comparable(ws_object), _is_simply_comparable(db_object))
+                self.assertEquals(_is_simply_comparable(ws_object),
+                                  _is_simply_comparable(db_object))
             except:
-                raise ValueError('_is_simply_comparable(ob1) != _is_simply_comparable(ob2)\n ob1 = {ob1},\n ob2 = {ob2}'
-                                 .format(ob1=ws_object, ob2=db_object))
+                raise ValueError(
+                    '_is_simply_comparable(ob1) != '
+                    '_is_simply_comparable(ob2)\n ob1 = {ob1},\n ob2 = {ob2}'
+                    .format(ob1=ws_object, ob2=db_object))
 
             if type(ws_object) == dict and u'objects' in ws_object:
                 self.equality_check_ws(ws_object['objects'], db_object)
@@ -546,9 +556,11 @@ class EntityTestCase(TestCase):
                     continue
                 if key == 'gender':
                     self.equality_simply_objects_check(dict_object['gender']['gender_id'],
-                                                       instance_object.master_revision.entity_data.gender_id)
+                                                       instance_object.master_revision
+                                                       .entity_data.gender_id)
                 elif not _is_uri(key):
-                    self.equality_check_ws(dict_object[key], _get_key_from_instance(instance_object, key), entity_gid)
+                    self.equality_check_ws(dict_object[key],
+                                           _get_key_from_instance(instance_object, key), entity_gid)
                 else:
                     self.check_uri(dict_object, key, entity_gid)
 
@@ -569,7 +581,7 @@ class EntityTestCase(TestCase):
 
         my_type = ''
         for type_of_uri in ['aliases', 'annotation', 'relationships',
-                            'identifiers', 'disambiguation', 'entity', '']:
+                            'identifiers', 'disambiguation', 'entity', 'editions', '']:
             if type_of_uri in key_uri:
                 my_type = type_of_uri
                 break
@@ -622,7 +634,9 @@ def _change_one_character(string):
         return string
     else:
         pos = random.randint(0, len(string) - 1)
-        string_new = string[:pos] + (['L', '!', '#', '^'])[random.randint(0, 3)] + string[(pos + 1):]
+        string_new = string[:pos] + \
+            (['L', '!', '#', '^'])[random.randint(0, 3)] + \
+            string[(pos + 1):]
         return string_new
 
 
@@ -630,12 +644,13 @@ def _is_simply_comparable(object_to_check):
     if object_to_check is None:
         return True
     else:
-        return type(object_to_check) in [int, str, uuid.UUID, unicode, datetime.date, bool, datetime.datetime]
+        return type(object_to_check) in [int, str, uuid.UUID, unicode, datetime.date, bool,
+                                         datetime.datetime]
 
 
 def _is_uri(string):
     return string in [u'uri', u'annotation_uri', u'disambiguation_uri', u'relationships_uri',
-                      u'aliases_uri', u'identifiers_uri', 'entity_uri']
+                      u'aliases_uri', u'identifiers_uri', u'entity_uri', u'editions_uri']
 
 
 def _find_attribute_for_sorting(list_object):

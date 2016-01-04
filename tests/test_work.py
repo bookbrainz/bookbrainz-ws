@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 
-# Copyright (C) 2015 Stanisław Szcześniak
+# Copyright (C) 2015, 2016 Stanisław Szcześniak
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 from bbschema import Work
 from entity_testing import EntityTestCase
 import json
+from sample_data_helper_functions import *
 
 
 class TestWork(EntityTestCase):
@@ -34,6 +35,15 @@ class TestWork(EntityTestCase):
         with open('tests/samples/work_1_put.json', 'r') as file_with_sample:
             data = json.loads(file_with_sample.read())
         self.put_only_data = data
+
+    def prepare_put_data(self, instance):
+        data = {}
+
+        maybe_add(data, u'work_type', {u'work_type_id': random_work_type_id()})
+        maybe_add(data, u'languages', random_put_languages_prepare(instance))
+        mutual_put_data_prepare(data, instance)
+
+        return data
 
     def test_get_bbid(self):
         self.bbid_get_tests()

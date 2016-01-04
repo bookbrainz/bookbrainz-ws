@@ -21,7 +21,7 @@ there is an exception raised and not HTML 400 code returned
 **change to**: ``` self.put_post_bad_tests('post') ```  
 
 
-+ Bad type requests are triggering exceptions, but 400 HTTP code should be returned (similiar as in POST earlier)  
++ Bad type requests are triggering exceptions, but 400 HTTP code should be returned (similar as in POST earlier)  
 **function:** 
 ```def put_tests(self)```  
 **line**: ``` #self.put_post_bad_tests('put') ```  
