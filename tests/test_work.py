@@ -28,20 +28,21 @@ class TestWork(EntityTestCase):
         self.set_type_entity_name(u'Work')
         self.set_ws_entity_name('work')
 
-        with open('tests/samples/work_1.json', 'r') as file_with_sample:
-            data = json.loads(file_with_sample.read())
-        self.put_post_data = data
-
-        with open('tests/samples/work_1_put.json', 'r') as file_with_sample:
-            data = json.loads(file_with_sample.read())
-        self.put_only_data = data
-
     def prepare_put_data(self, instance):
         data = {}
 
         maybe_add(data, u'work_type', {u'work_type_id': random_work_type_id()})
         maybe_add(data, u'languages', random_put_languages_prepare(instance))
         mutual_put_data_prepare(data, instance)
+
+        return data
+
+    def prepare_post_data(self):
+        data = {}
+
+        maybe_add(data, u'work_type', {u'work_type_id': random_work_type_id()})
+        maybe_add(data, u'languages', random_post_languages_prepare())
+        mutual_post_data_prepare(data)
 
         return data
 
@@ -60,5 +61,5 @@ class TestWork(EntityTestCase):
     def test_delete(self):
         self.delete_tests()
 
-    def bbid_one_get_test_specific(self, instance, response, entity_gid):
+    def bbid_one_get_test_specific_checking(self, instance, response, gid):
         pass

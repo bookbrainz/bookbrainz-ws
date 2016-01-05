@@ -28,22 +28,21 @@ class TestPublication(EntityTestCase):
         self.set_type_entity_name(u'Publication')
         self.set_ws_entity_name('publication')
 
-        # There should be no aliases, disambiguations with the same name/sort_name in these files
-
-        with open('tests/samples/publication_1.json', 'r') as file_with_sample:
-            data = json.loads(file_with_sample.read())
-        self.put_post_data = data
-
-        with open('tests/samples/publication_1_put.json', 'r') as file_with_sample:
-            data = json.loads(file_with_sample.read())
-        self.put_only_data = data
-
     def prepare_put_data(self, instance):
         data = {}
 
-        maybe_add(data, u'publication_type', {u'publication_type_id': random_publication_type_id()})
-
+        maybe_add(data, u'publication_type',
+                  {u'publication_type_id': random_publication_type_id()})
         mutual_put_data_prepare(data, instance)
+
+        return data
+
+    def prepare_post_data(self):
+        data = {}
+
+        maybe_add(data, u'publication_type',
+                  {u'publication_type_id': random_publication_type_id()})
+        mutual_post_data_prepare(data)
 
         return data
 
@@ -62,5 +61,5 @@ class TestPublication(EntityTestCase):
     def test_delete(self):
         self.delete_tests()
 
-    def bbid_one_get_test_specific(self, instance, response, entity_gid):
+    def bbid_one_get_test_specific_checking(self, instance, response, gid):
         pass

@@ -35,9 +35,10 @@ _relationship_types = []
 
 
 def get_other_type_values(arg_value):
-    constant_values = [u'abcdef', 2015, datetime.time(12, 13, 14, 15),
+    constant_values = [u'HORSE', 2015, datetime.time(12, 13, 14, 15),
                        uuid.uuid4(), {'revision': {'note': 'some note'}},
-                       [1, 2, 3, 4], [], {}, datetime.time(0, 0, 0, 0), Headers([])]
+                       [1, 2, 3, 4], [], {}, datetime.time(0, 0, 0, 0),
+                       Headers([])]
     result_list = []
     for cvalue in constant_values:
         if type(cvalue) != type(arg_value):
@@ -60,7 +61,8 @@ def get_random_unicode_character():
 
 def get_random_unicode_string(max_length=100):
     actual_length = random.randint(30, max_length)
-    return u''.join(get_random_unicode_character() for i in range(actual_length))
+    return u''.join(get_random_unicode_character()
+                    for i in range(actual_length))
 
 
 def get_random_unicode_template(max_length=100):
@@ -68,7 +70,8 @@ def get_random_unicode_template(max_length=100):
     return_string = u''
     for i in range(actual_length):
         if random.randint(1, 10) == 1:
-            return_string = return_string + u'<%= subjects[{x}] %>'.format(x=random.randint(0, 1))
+            return_string = return_string + \
+                u'<%= subjects[{x}] %>'.format(x=random.randint(0, 1))
         else:
             return_string = return_string + get_random_unicode_character()
     return return_string
@@ -101,7 +104,8 @@ def string_random_date():
     elif rand_precision == 'MONTH':
         return_date = '{y}-{m}'.format(y=rand_date.year, m=rand_date.month)
     else:
-        return_date = '{y}-{m}-{d}'.format(y=rand_date.year, m=rand_date.month, d=rand_date.day)
+        return_date = '{y}-{m}-{d}'.format(
+            y=rand_date.year, m=rand_date.month, d=rand_date.day)
 
     return return_date, rand_precision
 
@@ -126,21 +130,11 @@ def random_boolean():
 
 
 def random_language_id():
-    return random.randint(1, LANGUAGES_SIZE)
+    return random.choice(_languages).id
 
 
 def random_gender_id():
-    return random.randint(1, GENDERS_SIZE)
-
-
-# TODO uncomment it and delete previous versions when POST will be automatized
-"""
-def random_language_id():
-    return random.choice(_languages).language_id
-
-def random_gender_id():
-    return random.choice(_genders).gender_id
-"""
+    return random.choice(_genders).id
 
 
 def random_creator_type_id():
@@ -184,7 +178,7 @@ def random_put_aliases_prepare(instance):
         elif x == 2:
             result.append([alias.alias_id, None])
 
-    new_aliases_count = randint_extra(0, NEW_ALIASES_COUNT)
+    new_aliases_count = randint_extra(0, NEW_ALIASES_MAX_COUNT)
     for i in range(new_aliases_count):
         result.append([None, random_json_alias()])
 
@@ -216,7 +210,7 @@ def random_put_languages_prepare(instance):
             result.append([language.id, None])
         old_languages_ids.append(language.id)
 
-    new_languages_count = randint_extra(0, NEW_LANGUAGES_COUNT)
+    new_languages_count = randint_extra(0, NEW_LANGUAGES_MAX_COUNT)
     recently_added_languages = []
     for i in range(new_languages_count):
         random_lang_id = random_language_id()
@@ -225,3 +219,25 @@ def random_put_languages_prepare(instance):
             recently_added_languages.append(random_lang_id)
     random.shuffle(result)
     return result
+
+
+def mutual_post_data_prepare(data):
+    maybe_add(data, u'disambiguation', get_random_unicode_string())
+    maybe_add(data, u'annotation', get_random_unicode_string())
+    maybe_add(data, u'aliases', random_post_aliases_prepare())
+
+
+def random_post_aliases_prepare():
+    new_aliases_count = randint_extra(0, NEW_ALIASES_MAX_COUNT)
+    return [random_json_alias() for i in range(new_aliases_count)]
+
+
+def random_post_languages_prepare():
+    new_languages_count = randint_extra(0, NEW_LANGUAGES_MAX_COUNT)
+    result_ids = []
+    for i in range(new_languages_count):
+        language_id = random_language_id()
+        if language_id not in result_ids:
+            result_ids.append(language_id)
+    return [{'language_id': x} for x in result_ids]
+

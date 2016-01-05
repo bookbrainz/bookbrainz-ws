@@ -16,9 +16,10 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from bbschema import (Creator, CreatorData, CreatorType, EntityRevision, Publication,
-                      PublicationData, PublicationType, RelationshipRevision,
-                      RelationshipData, RelationshipType, User, UserType, OAuthClient,
+from bbschema import (Creator, CreatorData, CreatorType, EntityRevision,
+                      Publication, PublicationData, PublicationType,
+                      RelationshipRevision, RelationshipData, RelationshipType,
+                      User, UserType, OAuthClient,
                       Language, Work, WorkData, WorkType, Gender, Edition,
                       EditionData, Publisher, PublisherData, PublisherType)
 
@@ -36,25 +37,33 @@ def load_data(db):
     db.session.commit()
 
     editor = User(name=u'Bob',
-                  password=u'$2b$12$AJTVpce37LM9Dk93qzRe.eMSw1ivsAmoa037.eS6VXoLAyK9cy0YG',
-                  email=u'bob@bobville.org', user_type_id=editor_type.user_type_id)
+                  password=u'$2b$12$AJTVpce37LM9Dk93qzRe.'
+                           u'eMSw1ivsAmoa037.eS6VXoLAyK9cy0YG',
+                  email=u'bob@bobville.org',
+                  user_type_id=editor_type.user_type_id)
     db.session.add(editor)
     db.session.commit()
-    client = OAuthClient(client_id='9ab9da7e-a7a3-4f86-87c6-bf8b4b8213c7', owner_id=editor.user_id)
+    client = OAuthClient(client_id='9ab9da7e-a7a3-4f86-87c6-bf8b4b8213c7',
+                         owner_id=editor.user_id)
     db.session.add(client)
     db.session.commit()
 
     languages = add_entities(db, Language, get_languages_args_generator(),
-                             LANGUAGES_SIZE, LANGUAGES_SIZE)
+                             LANGUAGES_COUNT, LANGUAGES_COUNT)
     genders = add_entities(db, Gender, get_genders_args_generator(),
-                           GENDERS_SIZE, GENDERS_SIZE)
+                           GENDERS_COUNT, GENDERS_COUNT)
     db.session.commit()
 
-    creator_types = add_entities(db, CreatorType, only_label_args_generator)
-    publication_types = add_entities(db, PublicationType, only_label_args_generator)
-    work_types = add_entities(db, WorkType, only_label_args_generator)
-    publisher_types = add_entities(db, PublisherType, only_label_args_generator)
-    relationship_types = add_entities(db, RelationshipType, relationship_type_args_generator)
+    creator_types = \
+        add_entities(db, CreatorType, only_label_args_generator)
+    publication_types = \
+        add_entities(db, PublicationType, only_label_args_generator)
+    work_types = \
+        add_entities(db, WorkType, only_label_args_generator)
+    publisher_types = \
+        add_entities(db, PublisherType, only_label_args_generator)
+    relationship_types = \
+        add_entities(db, RelationshipType, relationship_type_args_generator)
 
     sample_data_helper_functions._genders = genders
     sample_data_helper_functions._languages = languages
@@ -74,27 +83,35 @@ def load_data(db):
     db.session.commit()
 
     creator_data_entities = \
-        add_entities(db, CreatorData, get_creator_data_args_generator(creator_types),
+        add_entities(db, CreatorData,
+                     get_creator_data_args_generator(creator_types),
                      len(creator_entities), len(creator_entities))
     publication_data_entities = \
-        add_entities(db, PublicationData, get_publication_data_args_generator(publication_types),
+        add_entities(db, PublicationData,
+                     get_publication_data_args_generator(publication_types),
                      len(publication_entities), len(publication_entities))
     work_data_entities = \
-        add_entities(db, WorkData, get_work_data_args_generator(work_types, languages),
+        add_entities(db, WorkData,
+                     get_work_data_args_generator(work_types, languages),
                      len(work_entities), len(work_entities))
     edition_data_entities = \
-        add_entities(db, EditionData, get_edition_data_args_generator(),
+        add_entities(db, EditionData,
+                     get_edition_data_args_generator(),
                      len(edition_entities), len(edition_entities))
     publisher_data_entities = \
-        add_entities(db, PublisherData, get_publisher_data_args_generator(publisher_types),
+        add_entities(db, PublisherData,
+                     get_publisher_data_args_generator(publisher_types),
                      len(publisher_entities), len(publisher_entities))
 
     db.session.commit()
 
     all_entities = creator_entities + publication_entities + \
         work_entities + edition_entities + publisher_entities
-    all_entities_data = creator_data_entities + publication_data_entities +\
-        work_data_entities + edition_data_entities + publisher_data_entities
+
+    all_entities_data = creator_data_entities + publication_data_entities + \
+        work_data_entities + edition_data_entities + \
+        publisher_data_entities
+
     all_revisions = \
         add_entities(
             db, EntityRevision,
@@ -112,7 +129,8 @@ def load_data(db):
 
     relationship_data_entities = \
         add_entities(db, RelationshipData,
-                     get_relationship_data_args_generator(relationship_types, all_entities),
+                     get_relationship_data_args_generator(
+                         relationship_types, all_entities),
                      len(relationship_entities), len(relationship_entities))
 
     db.session.commit()
@@ -136,6 +154,7 @@ def load_data(db):
 def add_entities(db, entity_class, args_generator=no_args_generator,
                  min_quantity=2, max_quantity=DEFAULT_MAX_QUANTITY):
     entities_count = random.randint(min_quantity, max_quantity)
-    entities = [entity_class(**(args_generator())) for i in range(entities_count)]
+    entities = [entity_class(**(args_generator()))
+                for i in range(entities_count)]
     db.session.add_all(entities)
     return entities

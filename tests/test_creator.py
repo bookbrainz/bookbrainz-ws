@@ -28,38 +28,41 @@ class TestCreator(EntityTestCase):
         self.set_type_entity_name(u'Creator')
         self.set_ws_entity_name('creator')
 
-        # There should be no aliases, disambiguations with the same name/sort_name in these files
-
-        with open('tests/samples/creator_1.json', 'r') as file_with_sample:
-            data = json.loads(file_with_sample.read())
-        self.put_post_data = data
-
-        with open('tests/samples/creator_1_put.json', 'r') as file_with_sample:
-            data = json.loads(file_with_sample.read())
-        self.put_only_data = data
-
     def prepare_put_data(self, instance):
         data = {}
 
+        self.prepare_put_post_not_specific_data(data)
+        mutual_put_data_prepare(data, instance)
+
+        return data
+
+    def prepare_post_data(self):
+        data = {}
+
+        self.prepare_put_post_not_specific_data(data)
+        mutual_post_data_prepare(data)
+
+        return data
+
+    def prepare_put_post_not_specific_data(self, data):
         r_begin_date, r_begin_date_precision = string_random_date()
         is_added = maybe_add(data, u'begin_date', r_begin_date)
         if is_added:
-            maybe_add(data, u'begin_date_precision', r_begin_date_precision, maybe=False)
+            maybe_add(data, u'begin_date_precision',
+                      r_begin_date_precision, maybe=False)
 
         r_end_date, r_end_date_precision = string_random_date()
         is_added = maybe_add(data, u'end_date', r_end_date)
         if is_added:
-            maybe_add(data, u'end_date_precision', r_end_date_precision, maybe=False)
+            maybe_add(data, u'end_date_precision',
+                      r_end_date_precision, maybe=False)
 
         maybe_add(data, u'ended', random_boolean())
 
         maybe_add(data, u'gender', {u'gender_id': random_gender_id()})
 
-        maybe_add(data, u'creator_type', {u'creator_type_id': random_creator_type_id()})
-
-        mutual_put_data_prepare(data, instance)
-
-        return data
+        maybe_add(data, u'creator_type',
+                  {u'creator_type_id': random_creator_type_id()})
 
     def test_get_bbid(self):
         self.bbid_get_tests()
@@ -76,5 +79,5 @@ class TestCreator(EntityTestCase):
     def test_delete(self):
         self.delete_tests()
 
-    def bbid_one_get_test_specific(self, instance, response, entity_gid):
+    def bbid_one_get_test_specific_checking(self, instance, response, gid):
         pass

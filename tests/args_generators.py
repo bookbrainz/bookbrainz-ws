@@ -17,7 +17,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from sample_data_helper_functions import *
-from bbschema import RelationshipEntity, Disambiguation, Annotation, Alias, Relationship
+from bbschema import RelationshipEntity, Disambiguation, \
+    Annotation, Alias, Relationship
 import copy
 
 
@@ -30,7 +31,7 @@ def only_label_args_generator():
 
 
 def get_languages_args_generator():
-    id_range = range(1, LANGUAGES_SIZE + 1)
+    id_range = range(1, LANGUAGES_COUNT + 1000)
     random.shuffle(id_range)
 
     def result_function():
@@ -42,7 +43,7 @@ def get_languages_args_generator():
 
 
 def get_genders_args_generator():
-    id_range = range(1, GENDERS_SIZE + 1)
+    id_range = range(1, GENDERS_COUNT + 1000)
     random.shuffle(id_range)
 
     def result_function():
@@ -82,7 +83,8 @@ def get_publisher_data_args_generator(publisher_types):
     def result_function():
         result = {}
         mutual_data_generate(result)
-        result['publisher_type_id'] = random.choice(publisher_types).publisher_type_id
+        result['publisher_type_id'] = \
+            random.choice(publisher_types).publisher_type_id
         result['begin_date'] = random_date()
         result['begin_date_precision'] = random_date_precision()
         result['end_date'] = random_date()
@@ -96,7 +98,8 @@ def get_publisher_data_args_generator(publisher_types):
 def get_publication_data_args_generator(publication_types):
     def result_function():
         result = {}
-        result['publication_type_id'] = random.choice(publication_types).publication_type_id
+        result['publication_type_id'] = \
+            random.choice(publication_types).publication_type_id
         mutual_data_generate(result)
         return result
 
@@ -182,7 +185,8 @@ def get_entity_revision_args_generator(editor, _entities, _entities_data):
         result['user_id'] = editor.user_id
         if type(last_entity) == Relationship:
             result['relationship_id'] = last_entity.relationship_id
-            result['relationship_data_id'] = last_entity_data.relationship_data_id
+            result['relationship_data_id'] = \
+                last_entity_data.relationship_data_id
         else:
             result['entity_gid'] = last_entity.entity_gid
             result['entity_data_id'] = last_entity_data.entity_data_id
@@ -203,4 +207,5 @@ def generate_relationship_entities(all_entities):
 
 
 def generate_single_relationship_entity(position, all_entities):
-    return RelationshipEntity(entity_gid=random_entity_gid(all_entities), position=position)
+    return RelationshipEntity(
+        entity_gid=random_entity_gid(all_entities), position=position)

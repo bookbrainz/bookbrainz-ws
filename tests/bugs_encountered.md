@@ -17,22 +17,27 @@ there is an exception raised and not HTML 400 code returned
 + Bad type requests are triggering exceptions, but 400 HTTP code should be returned.  
 **function:** 
 ```def post_tests(self)```  
-**line**: ``` #self.put_post_bad_tests('post') ```  
-**change to**: ``` self.put_post_bad_tests('post') ```  
-
+**lines to uncomment**:  
+```python
+#for i in range(BAD_POST_TESTS_COUNT):  
+#   self.put_post_bad_tests('post')  
+```
 
 + Bad type requests are triggering exceptions, but 400 HTTP code should be returned (similar as in POST earlier)  
 **function:** 
 ```def put_tests(self)```  
-**line**: ``` #self.put_post_bad_tests('put') ```  
-**change to**: ``` self.put_post_bad_tests('put') ```  
+**lines to uncomment**:  
+```python
+#for i in range(BAD_PUT_TESTS_COUNT):   
+#   self.put_post_bad_tests('put')  
+```  
 
 
 + When passing null as a value to some attribute in put, it doesn't change to null (if it wasn't already null).  
 **function:**
 ```def equality_simply_objects_check(self, ws_object, db_object)```  
 **lines to delete**:  
-```
+```python
 if ws_object == None:  
     return  
 ```  

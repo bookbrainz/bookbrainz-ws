@@ -22,17 +22,24 @@ class TestRelationshipViews(TestCase):
             Relationship.relationship_id == relationship_to_test).one()
         rel_data = db_response.master_revision.relationship_data
         response = self.client.get('/relationship/' + str(relationship_to_test))
-        self.assertEquals(response.json.get('relationship_id'), relationship_to_test)
-        self.assertEquals(response.json.get('uri'),
-                          'http://localhost/relationship/' + str(relationship_to_test))
-        self.assertEquals(response.json.get('master_revision_id'), db_response.master_revision_id)
+        self.assertEquals(response.json.get('relationship_id'),
+                          relationship_to_test)
+        self.assertEquals(
+            response.json.get('uri'),
+            'http://localhost/relationship/' + str(relationship_to_test))
+        self.assertEquals(
+            response.json.get('master_revision_id'),
+            db_response.master_revision_id)
         self.assertTrue('last_updated' in response.json)
-        self.assertEquals(len(response.json.get('entities', [])), len(rel_data.entities))
-        self.assertEquals(len(response.json.get('texts', [])), len(rel_data.texts))
+        self.assertEquals(len(response.json.get('entities', [])),
+                          len(rel_data.entities))
+        self.assertEquals(len(response.json.get('texts', [])),
+                          len(rel_data.texts))
 
     def test_relationship_get_many(self):
         response = self.client.get('/relationship/', data={'limit': 100000})
         db_numer_of_relationships = len(db.session.query(Relationship).all())
         self.assertEquals(response.json.get('count'), db_numer_of_relationships)
         self.assertEquals(response.json.get('offset'), 0)
-        self.assertEquals(len(response.json.get('objects', [])), db_numer_of_relationships)
+        self.assertEquals(len(response.json.get('objects', [])),
+                          db_numer_of_relationships)
