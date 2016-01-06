@@ -176,8 +176,6 @@ class EntityTestCase(TestCase):
                           db_object.last_updated.isoformat())
         self.assertEquals(ws_object['master_revision_id'],
                           db_object.master_revision_id)
-        self.assertEquals(ws_object['master_revision_id'],
-                          db_object.master_revision_id)
         self.assertEquals(
             ws_object['relationship_type']['relationship_type_id'],
             db_object.master_revision.relationship_data.relationship_type_id)
