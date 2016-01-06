@@ -671,7 +671,7 @@ class EntityTestCase(TestCase):
 
         return db_str_date.startswith(ws_str_date)
 
-    def equality_check_dict_and_instance(self, dict_object, instance_object,
+    def equality_check_dict_and_instance(self, dict_object, db_object,
                                          entity_gid):
         if dict_object is not None and 'entity_gid' in dict_object:
             entity_gid = dict_object['entity_gid']
@@ -681,15 +681,20 @@ class EntityTestCase(TestCase):
                            u'relationships']:
                     continue
                 if key == 'gender':
-                    self.equality_simply_objects_check(
-                        dict_object['gender']['gender_id'],
-                        instance_object.master_revision
-                        .entity_data.gender_id)
+                    if dict_object['gender'] == None:
+                        self.assertEquals(
+                            db_object.master_revision.entity_data.gender_id,
+                            None)
+                    else:
+                        self.equality_simply_objects_check(
+                            dict_object['gender']['gender_id'],
+                            db_object.master_revision
+                            .entity_data.gender_id)
 
                 elif not _is_uri(key):
                     self.equality_check_ws(dict_object[key],
                                            _get_key_from_instance(
-                                               instance_object, key),
+                                               db_object, key),
                                            entity_gid)
                 else:
                     self.check_uri(dict_object, key, entity_gid)

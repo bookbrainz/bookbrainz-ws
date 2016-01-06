@@ -20,7 +20,7 @@ from sample_data_helper_functions import *
 from bbschema import RelationshipEntity, Disambiguation, \
     Annotation, Alias, Relationship
 import copy
-
+ma = maybe_add
 
 def no_args_generator():
     return {}
@@ -67,13 +67,14 @@ def get_creator_data_args_generator(creator_types):
     def result_function():
         result = {}
         mutual_data_generate(result)
-        result['creator_type_id'] = random.choice(creator_types).creator_type_id
-        result['gender_id'] = random_gender_id()
-        result['begin_date'] = random_date()
-        result['begin_date_precision'] = random_date_precision()
-        result['end_date'] = random_date()
-        result['end_date_precision'] = random_date_precision()
-        result['ended'] = random.choice([True, False])
+        ma(result, 'creator_type_id',
+           random.choice(creator_types).creator_type_id)
+        ma(result, 'gender_id', random_gender_id())
+        ma(result, 'begin_date', random_date())
+        ma(result, 'begin_date_precision', random_date_precision())
+        ma(result, 'end_date', random_date())
+        ma(result, 'end_date_precision', random_date_precision())
+        ma(result, 'ended', random.choice([True, False]))
         return result
 
     return result_function
@@ -83,13 +84,13 @@ def get_publisher_data_args_generator(publisher_types):
     def result_function():
         result = {}
         mutual_data_generate(result)
-        result['publisher_type_id'] = \
-            random.choice(publisher_types).publisher_type_id
-        result['begin_date'] = random_date()
-        result['begin_date_precision'] = random_date_precision()
-        result['end_date'] = random_date()
-        result['end_date_precision'] = random_date_precision()
-        result['ended'] = random.choice([True, False])
+        ma(result, 'publisher_type_id',
+            random.choice(publisher_types).publisher_type_id)
+        ma(result, 'begin_date', random_date())
+        ma(result, 'begin_date_precision', random_date_precision())
+        ma(result, 'end_date', random_date())
+        ma(result, 'end_date_precision', random_date_precision())
+        ma(result, 'ended', random.choice([True, False]))
         return result
 
     return result_function
@@ -98,8 +99,8 @@ def get_publisher_data_args_generator(publisher_types):
 def get_publication_data_args_generator(publication_types):
     def result_function():
         result = {}
-        result['publication_type_id'] = \
-            random.choice(publication_types).publication_type_id
+        ma(result, 'publication_type_id',
+            random.choice(publication_types).publication_type_id)
         mutual_data_generate(result)
         return result
 
@@ -109,8 +110,8 @@ def get_publication_data_args_generator(publication_types):
 def get_work_data_args_generator(work_types, languages):
     def result_function():
         result = {}
-        result['work_type_id'] = random.choice(work_types).work_type_id
-        result['languages'] = generate_languages(languages)
+        ma(result,'work_type_id', random.choice(work_types).work_type_id)
+        ma(result, 'languages', generate_languages(languages))
         mutual_data_generate(result)
         return result
 
@@ -120,12 +121,12 @@ def get_work_data_args_generator(work_types, languages):
 def get_edition_data_args_generator():
     def result_function():
         result = {}
-        result['pages'] = random_physical_integer_value()
-        result['width'] = random_physical_integer_value()
-        result['height'] = random_physical_integer_value()
-        result['depth'] = random_physical_integer_value()
-        result['weight'] = random_physical_integer_value()
-        # Not complete
+        ma(result, 'pages', random_physical_integer_value())
+        ma(result, 'width', random_physical_integer_value())
+        ma(result, 'height', random_physical_integer_value())
+        ma(result, 'depth', random_physical_integer_value())
+        ma(result, 'weight', random_physical_integer_value())
+        #TODO complete it
         mutual_data_generate(result)
         return result
 
@@ -135,19 +136,20 @@ def get_edition_data_args_generator():
 def get_relationship_data_args_generator(relationship_types, all_entities):
     def result_function():
         result = {}
-        result['relationship_type_id'] = \
+        result['relationship_type_id'] =\
             random.choice(relationship_types).relationship_type_id
-        result['entities'] = generate_relationship_entities(all_entities)
-        # Add entities and texts
+        ma(result, 'entities', generate_relationship_entities(all_entities))
+        #TODO Add entities and texts
         return result
 
     return result_function
 
 
 def mutual_data_generate(data):
-    data['disambiguation'] = Disambiguation(comment=get_random_unicode_string())
-    data['annotation'] = Annotation(content=get_random_unicode_string())
-    data['aliases'] = generate_aliases()
+    ma(data, 'disambiguation',
+       Disambiguation(comment=get_random_unicode_string()))
+    ma(data, 'annotation', Annotation(content=get_random_unicode_string()))
+    ma(data, 'aliases', generate_aliases())
 
 
 def generate_aliases(min_quantity=0, max_quantity=10):
