@@ -16,17 +16,24 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from bbschema import Creator
-from entity_testing import EntityTestCase
+from bbschema import Creator, CreatorType
+from entity_testing import EntityTestCases
 from sample_data_helper_functions import *
+from check_helper_functions import *
 import json
 
 
-class TestCreator(EntityTestCase):
+class TestCreator(EntityTestCases):
     def specific_setup(self):
-        self.set_entity_class(Creator)
-        self.set_type_entity_name(u'Creator')
-        self.set_ws_entity_name('creator')
+        pass
+
+    def set_specific_names(self):
+        self.specific_names['entity_class'] = Creator
+        self.specific_names['type_name'] = u'Creator'
+        self.specific_names['ws_name'] = 'creator'
+        self.specific_names['entity_type_id'] = 'creator_type_id'
+        self.specific_names['entity_type'] = 'creator_type'
+        self.specific_names['entity_type_class'] = CreatorType
 
     def prepare_put_data(self, instance):
         data = {}
@@ -79,5 +86,36 @@ class TestCreator(EntityTestCase):
     def test_delete(self):
         self.delete_tests()
 
-    def bbid_one_get_test_specific_checking(self, instance, response, gid):
-        pass
+    def bbid_one_get_tests_specific_check(self, instance, response):
+        check_date_json(
+            self,
+            response.json['begin_date'],
+            response.json['begin_date_precision'],
+            instance.master_revision.entity_data.begin_date,
+            instance.master_revision.entity_data.begin_date_precision
+        )
+
+        check_date_json(
+            self,
+            response.json['end_date'],
+            response.json['end_date_precision'],
+            instance.master_revision.entity_data.end_date,
+            instance.master_revision.entity_data.end_date_precision
+        )
+
+        self.assertEquals(
+            response.json['ended'],
+            instance.master_revision.entity_data.ended
+        )
+
+        check_country_id(
+            self,
+            response.json,
+            instance.master_revision.entity_data.country_id
+        )
+
+        check_gender_json(
+            self,
+            response.json['gender'],
+            instance.master_revision.entity_data.gender
+        )

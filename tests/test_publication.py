@@ -16,17 +16,24 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from bbschema import Publication
-from entity_testing import EntityTestCase
+from bbschema import Publication, PublicationType
+from entity_testing import EntityTestCases
 from sample_data_helper_functions import *
+from check_helper_functions import *
 import json
 
 
-class TestPublication(EntityTestCase):
+class TestPublication(EntityTestCases):
     def specific_setup(self):
-        self.set_entity_class(Publication)
-        self.set_type_entity_name(u'Publication')
-        self.set_ws_entity_name('publication')
+        pass
+
+    def set_specific_names(self):
+        self.specific_names['entity_class'] = Publication
+        self.specific_names['type_name'] = u'Publication'
+        self.specific_names['ws_name'] = 'publication'
+        self.specific_names['entity_type_id'] = 'publication_type_id'
+        self.specific_names['entity_type'] = 'publication_type'
+        self.specific_names['entity_type_class'] = PublicationType
 
     def prepare_put_data(self, instance):
         data = {}
@@ -61,5 +68,13 @@ class TestPublication(EntityTestCase):
     def test_delete(self):
         self.delete_tests()
 
-    def bbid_one_get_test_specific_checking(self, instance, response, gid):
-        pass
+    def bbid_one_get_tests_specific_check(self, instance, response):
+        check_uri_suffix(
+            self,
+            response.json['editions_uri'],
+            '/{}/{}/{}'.format(
+                'publication',
+                instance.entity_gid,
+                'editions'
+            )
+        )

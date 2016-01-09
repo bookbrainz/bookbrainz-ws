@@ -16,17 +16,23 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from bbschema import Work
-from entity_testing import EntityTestCase
-import json
+from bbschema import Work, WorkType
+from entity_testing import EntityTestCases
 from sample_data_helper_functions import *
+from check_helper_functions import *
 
 
-class TestWork(EntityTestCase):
+class TestWork(EntityTestCases):
     def specific_setup(self):
-        self.set_entity_class(Work)
-        self.set_type_entity_name(u'Work')
-        self.set_ws_entity_name('work')
+        pass
+
+    def set_specific_names(self):
+        self.specific_names['entity_class'] = Work
+        self.specific_names['type_name'] = u'Work'
+        self.specific_names['ws_name'] = 'work'
+        self.specific_names['entity_type_id'] = 'work_type_id'
+        self.specific_names['entity_type'] = 'work_type'
+        self.specific_names['entity_type_class'] = WorkType
 
     def prepare_put_data(self, instance):
         data = {}
@@ -61,5 +67,9 @@ class TestWork(EntityTestCase):
     def test_delete(self):
         self.delete_tests()
 
-    def bbid_one_get_test_specific_checking(self, instance, response, gid):
-        pass
+    def bbid_one_get_tests_specific_check(self, instance, response):
+        check_languages_json(
+            self,
+            response.json['languages'],
+            instance.master_revision.entity_data.languages
+        )

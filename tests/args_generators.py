@@ -31,26 +31,22 @@ def only_label_args_generator():
 
 
 def get_languages_args_generator():
-    id_range = range(1, LANGUAGES_COUNT + 1000)
-    random.shuffle(id_range)
 
     def result_function():
-        return {
-            'name': get_random_unicode_string(),
-            'id': id_range.pop()}
+        result = {}
+        ma(result, 'name', get_random_unicode_string(), False)
+        return result
 
     return result_function
 
 
 def get_genders_args_generator():
-    id_range = range(1, GENDERS_COUNT + 1000)
-    random.shuffle(id_range)
 
     def result_function():
-        return {
-            'name': get_random_unicode_string(),
-            'id': id_range.pop(),
-            'description': get_random_unicode_string()}
+        result = {}
+        ma(result, 'name', get_random_unicode_string(), False)
+        ma(result, 'description', get_random_unicode_string())
+        return result
 
     return result_function
 

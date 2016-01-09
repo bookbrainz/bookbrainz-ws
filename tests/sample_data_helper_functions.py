@@ -241,3 +241,13 @@ def random_post_languages_prepare():
             result_ids.append(language_id)
     return [{'language_id': x} for x in result_ids]
 
+
+def change_one_character(string):
+    if len(string) == 0:
+        return string
+    else:
+        pos = random.randint(0, len(string) - 1)
+        string_new = string[:pos] + \
+            (['L', '!', '#', '^'])[random.randint(0, 3)] + \
+            string[(pos + 1):]
+        return string_new

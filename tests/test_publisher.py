@@ -16,17 +16,22 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from bbschema import Publisher
-from entity_testing import EntityTestCase
+from bbschema import Publisher, PublisherType
+from entity_testing import EntityTestCases
 from sample_data_helper_functions import *
-import json
+from check_helper_functions import *
 
-
-class TestPublisher(EntityTestCase):
+class TestPublisher(EntityTestCases):
     def specific_setup(self):
-        self.set_entity_class(Publisher)
-        self.set_type_entity_name(u'Publisher')
-        self.set_ws_entity_name('publisher')
+        pass
+
+    def set_specific_names(self):
+        self.specific_names['entity_class'] = Publisher
+        self.specific_names['type_name'] = u'Publisher'
+        self.specific_names['ws_name'] = 'publisher'
+        self.specific_names['entity_type_id'] = 'publisher_type_id'
+        self.specific_names['entity_type'] = 'publisher_type'
+        self.specific_names['entity_type_class'] = PublisherType
 
     def prepare_put_data(self, instance):
         data = {}
@@ -77,5 +82,31 @@ class TestPublisher(EntityTestCase):
     def test_delete(self):
         self.delete_tests()
 
-    def bbid_one_get_test_specific_checking(self, instance, response, gid):
-        pass
+    def bbid_one_get_tests_specific_check(self, instance, response):
+        check_date_json(
+            self,
+            response.json['begin_date'],
+            response.json['begin_date_precision'],
+            instance.master_revision.entity_data.begin_date,
+            instance.master_revision.entity_data.begin_date_precision
+        )
+
+        check_date_json(
+            self,
+            response.json['end_date'],
+            response.json['end_date_precision'],
+            instance.master_revision.entity_data.end_date,
+            instance.master_revision.entity_data.end_date_precision
+        )
+
+        self.assertEquals(
+            response.json['ended'],
+            instance.master_revision.entity_data.ended
+        )
+
+        check_country_id(
+            self,
+            response.json,
+            instance.master_revision.entity_data.country_id
+        )
+
