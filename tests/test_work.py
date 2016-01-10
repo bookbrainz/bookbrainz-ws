@@ -73,3 +73,9 @@ class TestWork(EntityTestCases):
             response.json['languages'],
             instance.master_revision.entity_data.languages
         )
+
+    def post_data_check_specific(self, json_data, data):
+        self.post_check_languages_json(
+            json_data,
+            data.master_revision.entity_data
+        )

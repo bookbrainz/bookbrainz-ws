@@ -26,13 +26,17 @@ from werkzeug.test import Headers
 
 from bbws import create_app, db
 from constants import *
-from get_testing import GetTests
+from get_bbid_testing import GetBBIDTests
+from get_list_testing import GetListTests
 from delete_testing import DeleteTests
+from put_testing import PutTests
+from post_testing import PostTests
 from .fixture import load_data
 from .sample_data_helper_functions import get_other_type_values
 
 
-class EntityTestCases(GetTests, DeleteTests):
+class EntityTestCases(GetBBIDTests, GetListTests, DeleteTests,
+                      PutTests, PostTests):
     def create_app(self):
         self.app = create_app('../config/test.py')
         return self.app
@@ -52,7 +56,8 @@ class EntityTestCases(GetTests, DeleteTests):
                 'client_id': '9ab9da7e-a7a3-4f86-87c6-bf8b4b8213c7',
                 'username': 'Bob',
                 'password': "bb",
-                'grant_type': 'password'})
+                'grant_type': 'password'
+            })
 
         self.assert200(response)
         oauth_access_token = response.json.get(u'access_token')
@@ -65,14 +70,13 @@ class EntityTestCases(GetTests, DeleteTests):
 
         self.specific_names = {}
         self.set_specific_names()
-        #TODO add checking for specific names
+        # TODO add checking for specific names
 
     # noinspection PyPep8Naming
     def tearDown(self):
         db.session.remove()
         db.engine.execute("DROP SCHEMA IF EXISTS bookbrainz CASCADE")
 
-    # Functions to implement in derived classes
     def specific_setup(self):
         raise NotImplementedError
 
@@ -88,6 +92,9 @@ class EntityTestCases(GetTests, DeleteTests):
     def bbid_one_get_tests_specific_check(self, instance, response):
         raise NotImplementedError
 
+    def post_data_check_specific(self, json_data, data):
+        raise NotImplementedError
+
     def is_debug_mode(self):
         return True
 
@@ -97,16 +104,6 @@ class EntityTestCases(GetTests, DeleteTests):
     def get_request_default_headers(self):
         return self.request_default_headers
 
-    def post_tests(self):
-        for i in range(POST_TESTS_GOOD_COUNT):
-            self.post_good_tests()
-        # for i in range(POST_TESTS_BAD_COUNT):
-        #  self.put_post_bad_tests('post')
-        """ Commented for now, because bad type requests
-            are triggering exceptions and not HTTP 400
-            [see bugs_encountered.md]
-        """
-
     def put_tests(self):
         for i in range(PUT_TESTS_GOOD_COUNT):
             self.put_good_tests()
@@ -114,45 +111,22 @@ class EntityTestCases(GetTests, DeleteTests):
         #   self.put_post_bad_tests('put')
         """ Commented for now, because bad type requests
             are triggering exceptions and not HTTP 400 (same as in the POST)
-            [see bugs_encountered.md]
+            [see ws_bugs.md]
         """
 
-    def post_good_tests(self):
-        instances_db = db.session.query(self.get_specific_name('entity_class')).all()
-        data_to_pass = self.prepare_post_data()
-
-        response_ws = self.client.post('/{}/'.format(self.get_specific_name('ws_name')),
-                                       headers=self.request_default_headers,
-                                       data=json.dumps(data_to_pass))
-        self.assert200(response_ws)
-
-        instances_db_after = db.session.query(self.get_specific_name('entity_class')).all()
-        self.assertEquals(len(instances_db) + 1, len(instances_db_after))
-        instances_db.sort(key=lambda x: x.entity_gid)
-        instances_db_after.sort(key=lambda x: x.entity_gid)
-        added_instance = None
-
-        for i in range(len(instances_db_after)):
-            if i == len(instances_db) or \
-                    instances_db[i].entity_gid != instances_db_after[
-                    i].entity_gid:
-                added_instance = instances_db_after[i]
-                del instances_db_after[i]
-                break
-
-        self.assertEquals(len(instances_db), len(instances_db_after))
-        self.check_json_data_and_instance(data_to_pass, None,
-                                          added_instance)
-
     def put_good_tests(self):
-        instances_db = db.session.query(self.get_specific_name('entity_class')).all()
+        instances_db = \
+            db.session.query(self.get_specific_name('entity_class')).all()
         if len(instances_db) == 0:
             return
         rand_pos = random.randint(0, len(instances_db) - 1)
         random_instance = instances_db[rand_pos]
-        random_instance_to_check = db.session.query(self.get_specific_name('entity_class')) \
+        random_instance_to_check = \
+            db.session.query(self.get_specific_name('entity_class'))\
             .filter(
-            self.get_specific_name('entity_class').entity_gid == random_instance.entity_gid).one() \
+                self.get_specific_name('entity_class').entity_gid ==
+                random_instance.entity_gid)\
+            .one()\
             .master_revision.entity_data
         data_to_pass = self.prepare_put_data(random_instance)
 
@@ -164,7 +138,8 @@ class EntityTestCases(GetTests, DeleteTests):
                 data=json.dumps(data_to_pass))
         self.assert200(response_ws)
 
-        instances_db_after = db.session.query(self.get_specific_name('entity_class')).all()
+        instances_db_after = \
+            db.session.query(self.get_specific_name('entity_class')).all()
 
         self.assertEquals(len(instances_db), len(instances_db_after))
 
@@ -198,7 +173,6 @@ class EntityTestCases(GetTests, DeleteTests):
     def equality_check_lists(self, data_ws, data_db_before, data_db_after):
         self.check_aliases(data_ws, data_db_before, data_db_after)
 
-    #TODO delete this funciton, it overrides the one from get
     def check_aliases(self, data_ws, data_db_before, data_db_after):
 
         aliases_json, updated_aliases = self.determine_aliases(data_ws)
@@ -299,7 +273,8 @@ class EntityTestCases(GetTests, DeleteTests):
         if type_of_query == 'post':
             used_data = self.prepare_post_data()
         else:
-            instances_db = db.session.query(self.get_specific_name('entity_class')).all()
+            instances_db = \
+                db.session.query(self.get_specific_name('entity_class')).all()
             self.assertGreater(len(instances_db), 0)
             put_instance = random.choice(instances_db)
             used_data = self.prepare_put_data(put_instance)
@@ -329,7 +304,8 @@ class EntityTestCases(GetTests, DeleteTests):
                                put_instance=None):
 
         info_before = [[x.entity_gid, x.last_updated] for x in
-                       db.session.query(self.get_specific_name('entity_class')).all()]
+            db.session.query(self.get_specific_name('entity_class'))
+            .all()]
 
         response_ws = None
         if type_of_query == 'put':
@@ -342,13 +318,15 @@ class EntityTestCases(GetTests, DeleteTests):
                     data=data_to_pass)
 
         else:
-            response_ws = self.client.post('/' + self.get_specific_name('ws_name') + '/',
-                                           headers=self.request_default_headers,
-                                           data=data_to_pass)
+            response_ws = self.client.post(
+                '/' + self.get_specific_name('ws_name') + '/',
+                headers=self.request_default_headers,
+                data=data_to_pass)
 
         self.assert400(response_ws)
 
-        instances_db_after = db.session.query(self.get_specific_name('entity_class')).all()
+        instances_db_after =\
+            db.session.query(self.get_specific_name('entity_class')).all()
         instances_db_after.sort(key=lambda element: element.entity_gid)
 
         info_before.sort()
@@ -361,9 +339,7 @@ class EntityTestCases(GetTests, DeleteTests):
             self.assertNotEquals(
                 instances_db_after[i].master_revision.entity_data, None)
 
-
     def equality_check_ws(self, ws_object, db_object, entity_gid=''):
-        #print('ws_object:{}, db_object{}'.format(type(ws_object), type(db_object)))
         if _is_simply_comparable(ws_object) and \
                 _is_simply_comparable(db_object):
             self.equality_simply_objects_check(ws_object, db_object)
@@ -413,7 +389,6 @@ class EntityTestCases(GetTests, DeleteTests):
 
         self.check_revision(json_data, db_data)
 
-    #TODO Write it
     def check_revision(self, json_data, db_data):
         pass
 
@@ -449,7 +424,6 @@ class EntityTestCases(GetTests, DeleteTests):
             entity_gid = dict_object['entity_gid']
         if type(dict_object) == dict:
             for key in dict_object.keys():
-                #print('key = {}'.format(key))
                 if key in [u'aliases', u'identifiers', u'languages',
                            u'relationships']:
                     continue
@@ -507,6 +481,7 @@ class EntityTestCases(GetTests, DeleteTests):
 
         self.assertTrue(to_search in text)
 
+
 def _get_key_from_instance(instance, key):
     if key == 'count':
         return len(instance)
@@ -549,6 +524,7 @@ def _is_simply_comparable(object_to_check):
         return type(object_to_check) in [int, str, uuid.UUID, unicode,
                                          datetime.date, bool,
                                          datetime.datetime]
+
 
 def _is_uri(string):
     return string in [u'uri', u'annotation_uri', u'disambiguation_uri',

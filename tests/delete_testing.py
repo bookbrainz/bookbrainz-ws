@@ -90,7 +90,7 @@ class DeleteTests(TestCase):
         self.bad_delete_uuid_tests()
         self.bad_delete_format_tests()
         # self.bad_delete_double_tests() Can't be tested now,
-        # because there is a bug here [see bugs_encountered.md]
+        # because there is a bug here [see ws_bugs.md]
 
     def bad_delete_uuid_tests(self):
         instances_db = \

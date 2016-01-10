@@ -16,7 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-# TODO refactor all function names to start with get
+# TODO refactor some functions names to start with get
 
 import random
 import datetime
@@ -161,6 +161,7 @@ def mutual_put_data_prepare(data, instance):
     maybe_add(data, u'disambiguation', get_random_unicode_string())
     maybe_add(data, u'annotation', get_random_unicode_string())
     maybe_add(data, u'aliases', random_put_aliases_prepare(instance))
+    maybe_add(data, u'identifiers', random_put_identifiers_prepare())
 
 
 def random_put_aliases_prepare(instance):
@@ -221,10 +222,16 @@ def random_put_languages_prepare(instance):
     return result
 
 
+def random_put_identifiers_prepare():
+    # TODO implement it
+    return []
+
+
 def mutual_post_data_prepare(data):
     maybe_add(data, u'disambiguation', get_random_unicode_string())
     maybe_add(data, u'annotation', get_random_unicode_string())
     maybe_add(data, u'aliases', random_post_aliases_prepare())
+    maybe_add(data, u'identifiers', random_post_identifiers_prepare())
 
 
 def random_post_aliases_prepare():
@@ -242,6 +249,11 @@ def random_post_languages_prepare():
     return [{'language_id': x} for x in result_ids]
 
 
+def random_post_identifiers_prepare():
+    # TODO implement it
+    return []
+
+
 def change_one_character(string):
     if len(string) == 0:
         return string
@@ -251,3 +263,4 @@ def change_one_character(string):
             (['L', '!', '#', '^'])[random.randint(0, 3)] + \
             string[(pos + 1):]
         return string_new
+

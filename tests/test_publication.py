@@ -78,3 +78,6 @@ class TestPublication(EntityTestCases):
                 'editions'
             )
         )
+
+    def post_data_check_specific(self, json_data, data):
+        pass

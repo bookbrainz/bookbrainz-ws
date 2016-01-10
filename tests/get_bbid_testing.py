@@ -16,15 +16,18 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import random
+import uuid
 from flask_testing import TestCase
 from bbws import db
 from check_helper_functions import *
-from sample_data_helper_functions import *
 from bbschema import Relationship, RelationshipEntity, RelationshipRevision, \
     RelationshipData
+from constants import *
+from sample_data_helper_functions import change_one_character
 
 
-class GetTests(TestCase):
+class GetBBIDTests(TestCase):
     def get_specific_name(self, name):
         raise NotImplementedError
 
@@ -68,8 +71,9 @@ class GetTests(TestCase):
         gid_bad = entity_gid + '1'
         self.bbid_one_get_test(None, gid_bad, correct_result=False)
 
-        gid_bad = change_one_character(str(entity_gid))
-        self.bbid_one_get_test(None, gid_bad, correct_result=False)
+        # gid_bad = change_one_character(str(entity_gid))
+        # self.bbid_one_get_test(None, gid_bad, correct_result=False)
+        # see ws_bugs.md
 
         gid_bad = entity_gid[:-1]
         self.bbid_one_get_test(None, gid_bad, correct_result=False)
@@ -108,7 +112,7 @@ class GetTests(TestCase):
             instance.last_updated.isoformat()
         )
 
-        self.bbid_one_get_test_check_entity_type(instance, json_data)
+        check_entity_type_json(self, instance, json_data)
 
         self.bbid_one_check_relationships(instance)
         self.bbid_one_check_aliases(instance)
@@ -119,33 +123,6 @@ class GetTests(TestCase):
         self.bbid_one_check_uris(instance, json_data)
         self.bbid_one_check_revision(instance, json_data)
         self.bbid_one_check_default_alias(instance, json_data)
-
-    def bbid_one_get_test_check_entity_type(self, instance, json_data):
-        entity_type_string = self.get_specific_name('entity_type')
-        entity_type_id_string = self.get_specific_name('entity_type_id')
-        entity_type_class = self.get_specific_name('entity_type_class')
-        if entity_type_string in json_data and \
-                not json_data[entity_type_string] is None:
-            self.assertEquals(
-                json_data[entity_type_string][entity_type_id_string],
-                getattr(instance.master_revision.entity_data,
-                        entity_type_id_string))
-            entity_type = get_one_entity_type(
-                self,
-                db,
-                entity_type_class,
-                entity_type_id_string,
-                json_data[entity_type_string][entity_type_id_string]
-            )
-            assert_equals_if_exists_in_dict(
-                self,
-                json_data[entity_type_string],
-                'label',
-                entity_type.label
-            )
-        else:
-            self.assertIsNone(getattr(
-                instance.master_revision.entity_data, entity_type_string))
 
     def bbid_one_check_relationships(self, instance):
         response = self.client.get(
@@ -231,7 +208,7 @@ class GetTests(TestCase):
             )
         # TODO 'relationships/' should be changed to 'relationships'
         # to look like other entities
-        # [see bugs_encountered.md]
+        # [see ws_bugs.md]
         check_uri_suffix(
             self,
             json_data['relationships_uri'],
@@ -282,38 +259,15 @@ class GetTests(TestCase):
             # TODO add type and uri checking
 
     def bbid_one_check_aliases_json(self, json_data, instance):
-        aliases = instance.master_revision.entity_data.aliases
         json_aliases_list = json_data['objects']
+        aliases = instance.master_revision.entity_data.aliases
 
         self.assertEquals(len(aliases), json_data['count'])
-        self.assertEquals(len(aliases), len(json_aliases_list))
 
-        json_aliases_list.sort(key=lambda x: x['alias_id'])
-        aliases.sort(key=lambda x: x.alias_id)
-
-        for i in range(len(aliases)):
-            self.bbid_one_check_single_alias_json(
-                json_aliases_list[i],
-                aliases[i]
-            )
-
-    def bbid_one_check_single_alias_json(self, json_alias, alias):
-        self.assertEquals(json_alias['alias_id'], alias.alias_id)
-        self.assertEquals(json_alias['sort_name'], alias.sort_name)
-        self.assertEquals(json_alias['name'], alias.name)
-        self.bbid_one_check_json_language(json_alias, alias)
-        self.assertEquals(json_alias['primary'], alias.primary)
-
-    def bbid_one_check_json_language(self, json_alias, alias):
-        if 'language' in json_alias and not json_alias['language'] is None:
-            json_lang = json_alias['language']
-            self.assertEquals(
-                json_lang['language_id'],
-                alias.language.id
-            )
-            self.assertEquals(json_lang['name'], alias.language.name)
-        else:
-            self.assertIsNone(alias.language)
+        self.bbid_check_aliases_json(
+            json_aliases_list,
+            aliases
+        )
 
     def bbid_one_check_identifiers_json(self, json_data, instance):
         identifiers = instance.master_revision.entity_data.identifiers
@@ -380,7 +334,7 @@ class GetTests(TestCase):
         if 'default alias' in json_data and \
                 not json_data['default_alias'] is None:
             json_def = json_data['default_alias']
-            self.bbid_one_check_single_alias_json(
+            self.bbid_check_single_alias_json(
                 json_def,
                 instance.master_revision.entity_data.default_alias
             )
@@ -389,58 +343,36 @@ class GetTests(TestCase):
             self.assertIsNone(
                 instance.master_revision.entity_data.default_alias)
 
-    def list_get_tests(self):
-        if self.is_debug_mode():
-            print('\nget list tests for {}, COUNT:{}'
-                  .format(self.get_specific_name('type_name'),
-                          GET_LIST_TESTS_COUNT))
+    def bbid_check_aliases_json(self, json_aliases, aliases):
+        self.assertEquals(len(aliases), len(json_aliases))
 
-        for i in range(GET_LIST_TESTS_COUNT):
-            self.list_get_single_test()
+        json_aliases.sort(key=lambda x: x['alias_id'])
+        aliases.sort(key=lambda x: x.alias_id)
 
-    def list_get_single_test(self):
-        instances = \
-            db.session.query(self.get_specific_name('entity_class')).all()
-        # TODO The first parameter should be -1, but it doesn't work for now
-        # [see bugs_encountered.md]
-        rand_limit = random.randint(0, len(instances) + 3)
-        response_ws = self.client.get(
-            '/' + self.get_specific_name('ws_name') + '/',
-            headers=self.get_request_default_headers(),
-            data='{\"limit\":' + str(rand_limit) + '}'
-        )
-        if rand_limit > -1:
-            self.assert200(response_ws)
-        else:
-            self.assert400(response_ws)
-            return
-        rand_limit = min(rand_limit, len(instances))
-        self.assertEquals(rand_limit, response_ws.json[u'count'])
+        for i in range(len(aliases)):
+            self.bbid_check_single_alias_json(
+                json_aliases[i],
+                aliases[i],
+            )
 
-        wanted_instances = \
-            [instance for instance in instances if
-             len([x for x in response_ws.json[u'objects']
-                  if uuid.UUID(x[u'entity_gid']) ==
-                  instance.entity_gid]) > 0]
+    def bbid_check_single_alias_json(self, json_alias, alias):
+        self.assertEquals(json_alias['alias_id'], alias.alias_id)
+        self.assertEquals(json_alias['sort_name'], alias.sort_name)
+        self.assertEquals(json_alias['name'], alias.name)
+        self.assertEquals(json_alias['primary'], alias.primary)
 
-        self.list_get_list_correctness_check(
-            response_ws.json[u'objects'],
-            wanted_instances
-        )
+        self.bbid_check_json_language_in_alias(json_alias, alias)
 
-    def list_get_list_correctness_check(self, json_list, db_list):
-        self.assertEquals(len(json_list), len(db_list))
-        json_list.sort(key=lambda x: x['entity_gid'])
-        db_list.sort(key=lambda x: x.entity_gid)
-        for i in range(len(json_list)):
-            self.list_get_object_correctness_check(json_list[i], db_list[i])
-
-    def list_get_object_correctness_check(self, json_object, db_object):
-        self.assertEquals(json_object['_type'],
-                          self.get_specific_name('type_name'))
-        self.assertEquals(uuid.UUID(json_object['entity_gid']),
-                          db_object.entity_gid)
-        check_uri_suffix(self,
-                         json_object['uri'],
-                         '/{}/{}/'.format(self.get_specific_name('ws_name'),
-                                          json_object['entity_gid']))
+    def bbid_check_json_language_in_alias(self, json_alias, alias):
+            if 'language' in json_alias and not json_alias['language'] is None:
+                json_lang = json_alias['language']
+                self.assertEquals(
+                    json_lang['language_id'],
+                    alias.language.id
+                )
+                self.assertEquals(
+                    json_lang['name'],
+                    alias.language.name
+                )
+            else:
+                self.assertIsNone(alias.language)

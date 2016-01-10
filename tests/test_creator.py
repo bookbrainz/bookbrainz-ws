@@ -119,3 +119,44 @@ class TestCreator(EntityTestCases):
             response.json['gender'],
             instance.master_revision.entity_data.gender
         )
+
+    def post_data_check_specific(self, json_data, data):
+        data = data.master_revision.entity_data
+
+        if 'begin_date' in json_data:
+            self.post_check_date_json(
+                json_data['begin_date'],
+                data.begin_date,
+                data.begin_date_precision
+            )
+        else:
+            self.assertIsNone(data.begin_date)
+            self.assertIsNone(data.begin_date_precision)
+
+        if 'end_date' in json_data:
+            self.post_check_date_json(
+                json_data['end_date'],
+                data.end_date,
+                data.end_date_precision
+            )
+        else:
+            self.assertIsNone(data.end_date)
+            self.assertIsNone(data.end_date_precision)
+
+        if 'ended' in json_data:
+            self.assertEquals(json_data['ended'], data.ended)
+        else:
+            self.assertIsNone(data.ended)
+
+        if 'country_id' in json_data:
+            self.assertEquals(json_data['country_id'], data.country_id)
+        else:
+            self.assertIsNone(data.country_id)
+
+        if 'gender' in json_data:
+            self.assertEquals(
+                json_data['gender']['gender_id'],
+                data.gender_id
+            )
+        else:
+            self.assertIsNone(data.gender)
