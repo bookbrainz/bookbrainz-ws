@@ -21,6 +21,7 @@ from check_helper_functions import *
 from constants import *
 from bbws import db
 import json
+import sys
 
 
 class PostTests(TestCase):
@@ -43,17 +44,22 @@ class PostTests(TestCase):
         if self.is_debug_mode():
             print('\npost tests for {}, GOOD_COUNT:{}, BAD_COUNT:{}'
                   .format(self.get_specific_name('type_name'),
-                          GET_BBID_TESTS_GOOD_COUNT,
-                          GET_BBID_TESTS_BAD_COUNT))
+                          POST_TESTS_GOOD_COUNT,
+                          POST_TESTS_BAD_COUNT))
 
         for i in range(POST_TESTS_GOOD_COUNT):
-            self.post_good_tests()
+            if self.is_debug_mode():
+                print('G{}'.format(i + 1)),
+                sys.stdout.flush()
+            self.post_good_test()
         # for i in range(POST_TESTS_BAD_COUNT):
         #  self.put_post_bad_tests('post')
         """ Commented for now, because bad type requests
             are triggering exceptions and not sending HTTP 400 signal
             [see ws_bugs.md]
         """
+        if self.is_debug_mode():
+            print('')
 
     def make_post(self, data_dict, correct_result=True):
         response_ws = self.client.post(
@@ -67,7 +73,7 @@ class PostTests(TestCase):
 
         return response_ws
 
-    def post_good_tests(self):
+    def post_good_test(self):
         instances_db = \
             db.session.query(self.get_specific_name('entity_class')).all()
 
@@ -134,24 +140,8 @@ class PostTests(TestCase):
         json_aliases.sort(key=lambda x: x['name'])
         aliases.sort(key=lambda x: x.name)
         for i in range(len(json_aliases)):
-            self.post_check_single_alias_json(json_aliases[i], aliases[i])
+            check_single_alias_json(self, json_aliases[i], aliases[i])
             # TODO add default_alias checking
-
-    def post_check_single_alias_json(self, json_alias, alias):
-        self.assertEquals(json_alias['name'], alias.name)
-        self.assertEquals(json_alias['sort_name'], alias.sort_name)
-        assert_equals_or_both_none(
-            self,
-            json_alias,
-            'language_id',
-            alias.language_id
-        )
-        assert_equals_or_both_none(
-            self,
-            json_alias,
-            'primary',
-            alias.primary,
-        )
 
     def post_check_identifiers_json(self, json_identifiers, identifiers):
         self.assertEquals(len(json_identifiers), len(identifiers))
@@ -183,7 +173,7 @@ class PostTests(TestCase):
                 languages[i].id
             )
 
-    def post_check_date_json(self, json_date, date, date_precision):
+    def put_post_check_date_json(self, json_date, date, date_precision):
         check_date_json(
             self,
             json_date,

@@ -16,11 +16,10 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import random
+import sys
 import uuid
 
 from flask_testing import TestCase
-from bbws import db
 from check_helper_functions import *
 
 from constants import *
@@ -46,6 +45,9 @@ class GetListTests(TestCase):
                           GET_LIST_TESTS_COUNT))
 
         for i in range(GET_LIST_TESTS_COUNT):
+            if self.is_debug_mode():
+                print('G{}'.format(i + 1)),
+                sys.stdout.flush()
             self.list_get_single_test()
 
     def list_get_single_test(self):

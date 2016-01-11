@@ -17,13 +17,13 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from bbschema import Publication, PublicationType
-from entity_testing import EntityTestCases
+from entity_testing import EntityTests
 from sample_data_helper_functions import *
 from check_helper_functions import *
 import json
 
 
-class TestPublication(EntityTestCases):
+class TestPublication(EntityTests):
     def specific_setup(self):
         pass
 
@@ -80,4 +80,7 @@ class TestPublication(EntityTestCases):
         )
 
     def post_data_check_specific(self, json_data, data):
+        pass
+
+    def put_data_check_specific(self, json_data, data_old, data_new):
         pass

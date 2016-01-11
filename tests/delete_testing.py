@@ -18,6 +18,7 @@
 
 import random
 import uuid
+import sys
 from flask_testing import TestCase
 from bbws import db
 
@@ -38,7 +39,14 @@ class DeleteTests(TestCase):
                   .format(self.get_specific_name('type_name'),
                           1, 1)
                   )
+        if self.is_debug_mode():
+            print('G{}'.format(1)),
+            sys.stdout.flush()
         self.bad_delete_tests()
+
+        if self.is_debug_mode():
+            print('B{}'.format(1)),
+            sys.stdout.flush()
         self.good_delete_tests()
 
     def good_delete_tests(self):

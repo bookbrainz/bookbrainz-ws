@@ -17,12 +17,12 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from bbschema import Work, WorkType
-from entity_testing import EntityTestCases
+from entity_testing import EntityTests
 from sample_data_helper_functions import *
 from check_helper_functions import *
 
 
-class TestWork(EntityTestCases):
+class TestWork(EntityTests):
     def specific_setup(self):
         pass
 
@@ -78,4 +78,11 @@ class TestWork(EntityTestCases):
         self.post_check_languages_json(
             json_data,
             data.master_revision.entity_data
+        )
+
+    def put_data_check_specific(self, json_data, data_old, data_new):
+        self.put_data_check_languages_json(
+            json_data,
+            data_old,
+            data_new
         )

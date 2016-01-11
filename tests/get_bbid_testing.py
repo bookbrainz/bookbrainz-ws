@@ -19,12 +19,11 @@
 import random
 import uuid
 from flask_testing import TestCase
-from bbws import db
 from check_helper_functions import *
 from bbschema import Relationship, RelationshipEntity, RelationshipRevision, \
     RelationshipData
 from constants import *
-from sample_data_helper_functions import change_one_character
+import sys
 
 
 class GetBBIDTests(TestCase):
@@ -53,10 +52,19 @@ class GetBBIDTests(TestCase):
         random.shuffle(instances)
 
         for i in range(GET_BBID_TESTS_GOOD_COUNT):
+            if self.is_debug_mode():
+                print('G{}'.format(i + 1)),
+                sys.stdout.flush()
             self.good_bbid_general_get_tests(instances)
 
         for i in range(GET_BBID_TESTS_BAD_COUNT):
+            if self.is_debug_mode():
+                print('B{}'.format(i + 1)),
+                sys.stdout.flush()
             self.bad_bbid_general_get_tests(instances)
+
+        if self.is_debug_mode():
+            print('')
 
     def good_bbid_general_get_tests(self, instances):
         for instance in instances:
@@ -165,7 +173,9 @@ class GetBBIDTests(TestCase):
         response = self.client.get(
             '/entity/{entity_gid}/annotation'
             .format(
-                entity_gid=instance.entity_gid))
+                entity_gid=instance.entity_gid
+            )
+        )
         self.assert200(response)
         if response.json is not None:
             self.assertEquals(
@@ -364,15 +374,15 @@ class GetBBIDTests(TestCase):
         self.bbid_check_json_language_in_alias(json_alias, alias)
 
     def bbid_check_json_language_in_alias(self, json_alias, alias):
-            if 'language' in json_alias and not json_alias['language'] is None:
-                json_lang = json_alias['language']
-                self.assertEquals(
-                    json_lang['language_id'],
-                    alias.language.id
-                )
-                self.assertEquals(
-                    json_lang['name'],
-                    alias.language.name
-                )
-            else:
-                self.assertIsNone(alias.language)
+        if 'language' in json_alias and not json_alias['language'] is None:
+            json_lang = json_alias['language']
+            self.assertEquals(
+                json_lang['language_id'],
+                alias.language.id
+            )
+            self.assertEquals(
+                json_lang['name'],
+                alias.language.name
+            )
+        else:
+            self.assertIsNone(alias.language)

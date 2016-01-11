@@ -17,13 +17,13 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from bbschema import Creator, CreatorType
-from entity_testing import EntityTestCases
+from entity_testing import EntityTests
 from sample_data_helper_functions import *
 from check_helper_functions import *
 import json
 
 
-class TestCreator(EntityTestCases):
+class TestCreator(EntityTests):
     def specific_setup(self):
         pass
 
@@ -94,7 +94,6 @@ class TestCreator(EntityTestCases):
             instance.master_revision.entity_data.begin_date,
             instance.master_revision.entity_data.begin_date_precision
         )
-
         check_date_json(
             self,
             response.json['end_date'],
@@ -124,7 +123,7 @@ class TestCreator(EntityTestCases):
         data = data.master_revision.entity_data
 
         if 'begin_date' in json_data:
-            self.post_check_date_json(
+            self.put_post_check_date_json(
                 json_data['begin_date'],
                 data.begin_date,
                 data.begin_date_precision
@@ -134,7 +133,7 @@ class TestCreator(EntityTestCases):
             self.assertIsNone(data.begin_date_precision)
 
         if 'end_date' in json_data:
-            self.post_check_date_json(
+            self.put_post_check_date_json(
                 json_data['end_date'],
                 data.end_date,
                 data.end_date_precision
@@ -146,7 +145,7 @@ class TestCreator(EntityTestCases):
         if 'ended' in json_data:
             self.assertEquals(json_data['ended'], data.ended)
         else:
-            self.assertIsNone(data.ended)
+            self.assertFalse(data.ended)
 
         if 'country_id' in json_data:
             self.assertEquals(json_data['country_id'], data.country_id)
@@ -160,3 +159,47 @@ class TestCreator(EntityTestCases):
             )
         else:
             self.assertIsNone(data.gender)
+
+    def put_data_check_specific(self, json_data, old_data, new_data):
+        if 'begin_date' in json_data:
+            self.put_post_check_date_json(
+                json_data['begin_date'],
+                new_data.begin_date,
+                new_data.begin_date_precision
+            )
+        else:
+            self.assertEquals(new_data.begin_date, old_data.begin_date)
+            self.assertEquals(
+                new_data.begin_date_precision,
+                old_data.begin_date_precision)
+
+        if 'end_date' in json_data:
+            self.put_post_check_date_json(
+                json_data['end_date'],
+                new_data.end_date,
+                new_data.end_date_precision
+            )
+        else:
+            self.assertEquals(new_data.end_date, old_data.end_date)
+            self.assertEquals(
+                new_data.end_date_precision,
+                old_data.end_date_precision)
+
+        if 'ended' in json_data:
+            self.assertEquals(json_data['ended'], new_data.ended)
+        else:
+            self.assertEquals(old_data.ended, new_data.ended)
+
+        if 'country_id' in json_data:
+            self.assertEquals(json_data['country_id'], new_data.country_id)
+        else:
+            self.assertEquals(old_data.country_id, new_data.country_id)
+
+        if 'gender' in json_data:
+            self.assertEquals(
+                json_data['gender']['gender_id'],
+                new_data.gender_id
+            )
+        else:
+            self.assertEquals(old_data.gender, new_data.gender)
+
