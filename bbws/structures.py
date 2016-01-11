@@ -586,6 +586,7 @@ EDITION_DIFF.update({
     'height': fields.List(fields.Integer(default=None)),
     'width': fields.List(fields.Integer(default=None)),
     'depth': fields.List(fields.Integer(default=None)),
+    'weight': fields.List(fields.Integer(default=None)),
     'language': fields.List(fields.Nested({
         'language_id': fields.Integer(attribute='id'),
         'name': fields.String,
