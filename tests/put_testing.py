@@ -17,9 +17,11 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import logging
+
 from flask_testing import TestCase
-from constants import *
+
 from check_helper_functions import *
+from constants import *
 
 
 class PutTests(TestCase):
@@ -62,7 +64,8 @@ class PutTests(TestCase):
 
     def make_put_request(self, entity, data_to_pass):
         response_ws = \
-            self.client.put('/{}/{}/'
+            self.client.put(
+                '/{}/{}/'
                 .format(
                     self.get_specific_name('ws_name'),
                     unicode(entity.entity_gid)),
@@ -241,7 +244,7 @@ class PutTests(TestCase):
             left_identifiers_ids = \
                 [x.identifier_id for x in old_identifiers
                  if (x.identifier_id not in deleted_identifiers) and
-                 (x.identifier_id) not in updated_identifiers_ids]
+                 x.identifier_id not in updated_identifiers_ids]
 
             self.assertEquals(
                 len(new_identifiers),

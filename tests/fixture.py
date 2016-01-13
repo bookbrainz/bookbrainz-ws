@@ -23,8 +23,8 @@ from bbschema import (Creator, CreatorData, CreatorType, EntityRevision,
                       Language, Work, WorkData, WorkType, Gender, Edition,
                       EditionData, Publisher, PublisherData, PublisherType)
 
-from args_generators import *
 import sample_data_helper_functions
+from args_generators import *
 
 
 def load_data(db):
@@ -53,12 +53,16 @@ def load_data(db):
     genders = add_entities(db, Gender, get_genders_args_generator(),
                            GENDERS_COUNT, GENDERS_COUNT)
     edition_formats = \
-        add_entities(db, EditionFormat, only_label_args_generator,
-        EDITION_FORMATS, EDITION_FORMATS)
+        add_entities(
+            db, EditionFormat, only_label_args_generator,
+            EDITION_FORMATS, EDITION_FORMATS
+        )
 
     edition_statuses = \
-        add_entities(db, EditionStatus, only_label_args_generator,
-        EDITION_STATUSES, EDITION_STATUSES)
+        add_entities(
+            db, EditionStatus, only_label_args_generator,
+            EDITION_STATUSES, EDITION_STATUSES
+        )
 
     sample_data_helper_functions._edition_formats = edition_formats
     sample_data_helper_functions._edition_statuses = edition_statuses

@@ -17,10 +17,10 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from bbschema import Creator, CreatorType
+
+from check_helper_functions import *
 from entity_testing import EntityTests
 from sample_data_helper_functions import *
-from check_helper_functions import *
-import json
 
 
 class TestCreator(EntityTests):
@@ -52,13 +52,13 @@ class TestCreator(EntityTests):
         return data
 
     def prepare_put_post_not_specific_data(self, data):
-        r_begin_date, r_begin_date_precision = string_random_date()
+        r_begin_date, r_begin_date_precision = get_string_random_date()
         is_added = maybe_add(data, u'begin_date', r_begin_date)
         if is_added:
             maybe_add(data, u'begin_date_precision',
                       r_begin_date_precision, maybe=False)
 
-        r_end_date, r_end_date_precision = string_random_date()
+        r_end_date, r_end_date_precision = get_string_random_date()
         is_added = maybe_add(data, u'end_date', r_end_date)
         if is_added:
             maybe_add(data, u'end_date_precision',

@@ -16,11 +16,13 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import logging
 import random
 import uuid
+
 from flask_testing import TestCase
+
 from bbws import db
-import logging
 
 
 class DeleteTests(TestCase):
@@ -126,7 +128,8 @@ class DeleteTests(TestCase):
         rand_pos = random.randint(0, len(instances_db) - 1)
         random_instance = instances_db[rand_pos]
 
-        self.bad_delete_format_single('/creature/{ent_gid}/'
+        self.bad_delete_format_single(
+            '/creature/{ent_gid}/'
             .format(
                 ent_gid=unicode(random_instance.entity_gid)),
             404)

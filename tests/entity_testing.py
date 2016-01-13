@@ -16,19 +16,19 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import logging
 import random
 
 from bbschema import create_all
 from werkzeug.test import Headers
 
 from bbws import create_app, db
+from delete_testing import DeleteTests
 from get_id_testing import GetIDTests
 from get_list_testing import GetListTests
-from delete_testing import DeleteTests
-from put_testing import PutTests
 from post_testing import PostTests
+from put_testing import PutTests
 from .fixture import load_data
-import logging
 
 # TODO Make use of logging library
 

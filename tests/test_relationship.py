@@ -1,7 +1,7 @@
-from bbws import create_app, db
 from bbschema import Relationship, create_all
 from flask_testing import TestCase
-import datetime
+
+from bbws import create_app, db
 from .fixture import load_data
 
 

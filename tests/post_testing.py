@@ -16,12 +16,12 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import logging
+
 from flask_testing import TestCase
+
 from check_helper_functions import *
 from constants import *
-from bbws import db
-import json
-import logging
 
 
 class PostTests(TestCase):
@@ -66,7 +66,6 @@ class PostTests(TestCase):
             headers=self.get_request_default_headers(),
             data=json.dumps(data_dict)
         )
-        #print(json.dumps(data_dict))
 
         if correct_result:
             self.assert200(response_ws)

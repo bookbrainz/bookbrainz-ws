@@ -16,14 +16,14 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-# TODO refactor some functions names to start with get
-
-import random
-import datetime
 import calendar
+import datetime
+import random
 import uuid
-from constants import *
+
 from werkzeug.test import Headers
+
+from constants import *
 
 _genders = []
 _languages = []
@@ -88,20 +88,20 @@ def randint_extra(a, b):
         return random.randint(a + 1, b)
 
 
-def random_date():
+def get_random_date():
     y = random.randint(datetime.MINYEAR, datetime.MAXYEAR)
     m = random.randint(1, 12)
     d = random.randint(1, calendar.monthrange(y, m)[1])
     return datetime.date(y, m, d)
 
 
-def random_date_precision():
+def get_random_date_precision():
     return random.choice(['YEAR', 'MONTH', 'DAY'])
 
 
-def string_random_date():
-    rand_date = random_date()
-    rand_precision = random_date_precision()
+def get_string_random_date():
+    rand_date = get_random_date()
+    rand_precision = get_random_date_precision()
 
     if rand_precision == 'YEAR':
         return_date = '{y}'.format(y=rand_date.year)
@@ -114,11 +114,11 @@ def string_random_date():
     return return_date, rand_precision
 
 
-def random_physical_integer_value():
+def get_random_physical_integer_value():
     return random.randint(0, 1e9)
 
 
-def random_entity_gid(all_entities):
+def get_random_entity_gid(all_entities):
     return random.choice(all_entities).entity_gid
 
 
@@ -180,11 +180,11 @@ def random_publication_id():
 def mutual_put_data_prepare(data, instance):
     maybe_add(data, u'disambiguation', get_random_unicode_string())
     maybe_add(data, u'annotation', get_random_unicode_string())
-    maybe_add(data, u'aliases', random_put_aliases_prepare(instance))
-    maybe_add(data, u'identifiers', random_put_identifiers_prepare())
+    maybe_add(data, u'aliases', get_random_put_aliases(instance))
+    maybe_add(data, u'identifiers', get_random_put_identifiers())
 
 
-def random_put_aliases_prepare(instance):
+def get_random_put_aliases(instance):
     if instance.master_revision.entity_data.aliases is not None:
         old_aliases = instance.master_revision.entity_data.aliases
     else:
@@ -195,19 +195,19 @@ def random_put_aliases_prepare(instance):
     for alias in old_aliases:
         x = random.randint(1, 4)
         if x == 1:
-            result.append([alias.alias_id, random_json_alias()])
+            result.append([alias.alias_id, get_random_json_alias()])
         elif x == 2:
             result.append([alias.alias_id, None])
 
     new_aliases_count = randint_extra(0, NEW_ALIASES_MAX_COUNT)
     for i in range(new_aliases_count):
-        result.append([None, random_json_alias()])
+        result.append([None, get_random_json_alias()])
 
     random.shuffle(result)
     return result
 
 
-def random_json_alias():
+def get_random_json_alias():
     return {
         u'name': get_random_unicode_string(),
         u'sort_name': get_random_unicode_string(),
@@ -216,7 +216,7 @@ def random_json_alias():
     }
 
 
-def random_put_languages_prepare(instance):
+def get_random_put_languages(instance):
     if instance.master_revision.entity_data.languages is not None:
         old_languages = instance.master_revision.entity_data.languages
     else:
@@ -242,7 +242,7 @@ def random_put_languages_prepare(instance):
     return result
 
 
-def random_put_identifiers_prepare():
+def get_random_put_identifiers():
     # TODO implement it
     return []
 
@@ -250,16 +250,16 @@ def random_put_identifiers_prepare():
 def mutual_post_data_prepare(data):
     maybe_add(data, u'disambiguation', get_random_unicode_string())
     maybe_add(data, u'annotation', get_random_unicode_string())
-    maybe_add(data, u'aliases', random_post_aliases_prepare())
-    maybe_add(data, u'identifiers', random_post_identifiers_prepare())
+    maybe_add(data, u'aliases', get_random_post_aliases())
+    maybe_add(data, u'identifiers', get_random_post_identifiers())
 
 
-def random_post_aliases_prepare():
+def get_random_post_aliases():
     new_aliases_count = randint_extra(0, NEW_ALIASES_MAX_COUNT)
-    return [random_json_alias() for i in range(new_aliases_count)]
+    return [get_random_json_alias() for i in range(new_aliases_count)]
 
 
-def random_post_languages_prepare():
+def get_random_post_languages():
     new_languages_count = randint_extra(0, NEW_LANGUAGES_MAX_COUNT)
     result_ids = []
     for i in range(new_languages_count):
@@ -269,7 +269,7 @@ def random_post_languages_prepare():
     return [{'language_id': x} for x in result_ids]
 
 
-def random_post_identifiers_prepare():
+def get_random_post_identifiers():
     # TODO implement it
     return []
 
@@ -283,4 +283,3 @@ def change_one_character(string):
             (['L', '!', '#', '^'])[random.randint(0, 3)] + \
             string[(pos + 1):]
         return string_new
-

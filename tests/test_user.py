@@ -1,12 +1,9 @@
-import datetime
 import json
 
-from flask import url_for
+from bbschema import User, create_all
 from flask_testing import TestCase
 
-from bbschema import User, create_all
 from bbws import create_app, db
-
 from .fixture import load_data
 
 
@@ -30,8 +27,6 @@ class TestUserViews(TestCase):
         user = db.session.query(User).get(1)
 
         # TODO fix when flask restful releases next version
-        import pytz
-        from calendar import timegm
         created_at = user.created_at.isoformat()
         active_at = user.active_at.isoformat()
 

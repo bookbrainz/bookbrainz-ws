@@ -16,10 +16,12 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from sample_data_helper_functions import *
+import copy
+
 from bbschema import RelationshipEntity, Disambiguation, \
     Annotation, Alias, Relationship
-import copy
+
+from sample_data_helper_functions import *
 
 ma = maybe_add
 
@@ -66,10 +68,10 @@ def get_creator_data_args_generator(creator_types):
         ma(result, 'creator_type_id',
            random.choice(creator_types).creator_type_id)
         ma(result, 'gender_id', random_gender_id())
-        ma(result, 'begin_date', random_date())
-        ma(result, 'begin_date_precision', random_date_precision())
-        ma(result, 'end_date', random_date())
-        ma(result, 'end_date_precision', random_date_precision())
+        ma(result, 'begin_date', get_random_date())
+        ma(result, 'begin_date_precision', get_random_date_precision())
+        ma(result, 'end_date', get_random_date())
+        ma(result, 'end_date_precision', get_random_date_precision())
         ma(result, 'ended', random.choice([True, False]))
         return result
 
@@ -82,10 +84,10 @@ def get_publisher_data_args_generator(publisher_types):
         mutual_data_generate(result)
         ma(result, 'publisher_type_id',
            random.choice(publisher_types).publisher_type_id)
-        ma(result, 'begin_date', random_date())
-        ma(result, 'begin_date_precision', random_date_precision())
-        ma(result, 'end_date', random_date())
-        ma(result, 'end_date_precision', random_date_precision())
+        ma(result, 'begin_date', get_random_date())
+        ma(result, 'begin_date_precision', get_random_date_precision())
+        ma(result, 'end_date', get_random_date())
+        ma(result, 'end_date_precision', get_random_date_precision())
         ma(result, 'ended', random.choice([True, False]))
         return result
 
@@ -118,16 +120,16 @@ def get_edition_data_args_generator(publishers, publications, languages,
                                     edition_formats, edition_statuses):
     def result_function():
         result = {}
-        ma(result, 'pages', random_physical_integer_value())
-        ma(result, 'width', random_physical_integer_value())
-        ma(result, 'height', random_physical_integer_value())
-        ma(result, 'depth', random_physical_integer_value())
-        ma(result, 'weight', random_physical_integer_value())
+        ma(result, 'pages', get_random_physical_integer_value())
+        ma(result, 'width', get_random_physical_integer_value())
+        ma(result, 'height', get_random_physical_integer_value())
+        ma(result, 'depth', get_random_physical_integer_value())
+        ma(result, 'weight', get_random_physical_integer_value())
 
-        ma(result, 'country_id', random_physical_integer_value())
+        ma(result, 'country_id', get_random_physical_integer_value())
 
-        ma(result, 'release_date', random_date())
-        ma(result, 'release_date_precision', random_date_precision())
+        ma(result, 'release_date', get_random_date())
+        ma(result, 'release_date_precision', get_random_date_precision())
 
         ma(result, 'publisher', random.choice(publishers))
         ma(result, 'publication', random.choice(publications), False)
@@ -219,4 +221,4 @@ def generate_relationship_entities(all_entities):
 
 def generate_single_relationship_entity(position, all_entities):
     return RelationshipEntity(
-        entity_gid=random_entity_gid(all_entities), position=position)
+        entity_gid=get_random_entity_gid(all_entities), position=position)

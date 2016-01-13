@@ -19,7 +19,9 @@
 import inspect
 import json
 import random
-from bbschema import Language, Gender, Identifier, IdentifierType
+
+from bbschema import Language, Gender, IdentifierType
+
 from bbws import db
 from sample_data_helper_functions import get_other_type_values
 
@@ -49,33 +51,33 @@ def check_uri_suffix(test_case_object, value, suffix, is_none=False):
 
 
 def get_one_entity_type(test_case_object, db, entity_type_class,
-                        entity_type_id_string, id):
+                        entity_type_id_string, gid):
     results = db.session.query(entity_type_class) \
-        .filter(getattr(entity_type_class, entity_type_id_string) == id) \
+        .filter(getattr(entity_type_class, entity_type_id_string) == gid) \
         .all()
     test_case_object.assertEquals(len(results), 1)
     return results[0]
 
 
-def get_language(test_case_object, db, id):
+def get_language(test_case_object, db, lang_id):
     results = db.session.query(Language) \
-        .filter(Language.id == id) \
+        .filter(Language.id == lang_id) \
         .all()
     test_case_object.assertEquals(len(results), 1)
     return results[0]
 
 
-def get_gender(test_case_object, db, id):
+def get_gender(test_case_object, db, gender_id):
     results = db.session.query(Gender) \
-        .filter(Gender.id == id) \
+        .filter(Gender.id == gender_id) \
         .all()
     test_case_object.assertEquals(len(results), 1)
     return results[0]
 
 
-def get_identifier_type(test_case_object, db, id):
+def get_identifier_type(test_case_object, db, identifier_id):
     results = db.session.query(IdentifierType) \
-        .filter(IdentifierType.identifier_type_id == id) \
+        .filter(IdentifierType.identifier_type_id == identifier_id) \
         .all()
     test_case_object.assertEquals(len(results), 1)
     return results[0]
@@ -245,7 +247,6 @@ def put_post_bad_data_test(test_case, data_to_pass, type_of_query,
         [[x.entity_gid, x.last_updated] for x in db.session.query(
             test_case.get_specific_name('entity_class')).all()]
 
-    response_ws = None
     if type_of_query == 'put':
         response_ws = \
             test_case.client.put(

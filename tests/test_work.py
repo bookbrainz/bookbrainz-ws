@@ -17,9 +17,10 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from bbschema import Work, WorkType
+
+from check_helper_functions import *
 from entity_testing import EntityTests
 from sample_data_helper_functions import *
-from check_helper_functions import *
 
 
 class TestWork(EntityTests):
@@ -38,7 +39,7 @@ class TestWork(EntityTests):
         data = {}
 
         maybe_add(data, u'work_type', {u'work_type_id': random_work_type_id()})
-        maybe_add(data, u'languages', random_put_languages_prepare(instance))
+        maybe_add(data, u'languages', get_random_put_languages(instance))
         mutual_put_data_prepare(data, instance)
 
         return data
@@ -47,7 +48,7 @@ class TestWork(EntityTests):
         data = {}
 
         maybe_add(data, u'work_type', {u'work_type_id': random_work_type_id()})
-        maybe_add(data, u'languages', random_post_languages_prepare())
+        maybe_add(data, u'languages', get_random_post_languages())
         mutual_post_data_prepare(data)
 
         return data

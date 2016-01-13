@@ -16,14 +16,15 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import random
+import logging
 import uuid
-from flask_testing import TestCase
-from check_helper_functions import *
+
 from bbschema import Relationship, RelationshipEntity, RelationshipRevision, \
     RelationshipData
+from flask_testing import TestCase
+
+from check_helper_functions import *
 from constants import *
-import logging
 
 
 class GetIDTests(TestCase):

@@ -17,10 +17,10 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from bbschema import Publication, PublicationType
+
+from check_helper_functions import *
 from entity_testing import EntityTests
 from sample_data_helper_functions import *
-from check_helper_functions import *
-import json
 
 
 class TestPublication(EntityTests):

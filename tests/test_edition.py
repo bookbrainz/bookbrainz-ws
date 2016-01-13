@@ -17,9 +17,10 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from bbschema import Edition
+
+from check_helper_functions import *
 from entity_testing import EntityTests
 from sample_data_helper_functions import *
-from check_helper_functions import *
 
 EDITION_SIMPLE_ATTRIBUTES = \
     ['pages', 'width', 'height', 'depth', 'weight', 'country_id']
@@ -69,11 +70,11 @@ class TestEdition(EntityTests):
         return data
 
     def prepare_put_post_not_specific_data(self, data):
-        release_date, release_date_precision = string_random_date()
+        release_date, release_date_precision = get_string_random_date()
         maybe_add(data, 'release_date', release_date)
 
         for key in EDITION_SIMPLE_ATTRIBUTES:
-            maybe_add(data, key, random_physical_integer_value())
+            maybe_add(data, key, get_random_physical_integer_value())
 
         maybe_add(
             data,
@@ -92,8 +93,6 @@ class TestEdition(EntityTests):
             'edition_status',
             {'edition_status_id': random_edition_format_id()}
         )
-
-
 
         maybe_add(
             data,
