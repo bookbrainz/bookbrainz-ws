@@ -4,3 +4,4 @@ from test_creator import *
 from test_work import *
 from test_publication import *
 from test_publisher import *
+from test_edition import *

@@ -22,21 +22,26 @@ from bbschema import create_all
 from werkzeug.test import Headers
 
 from bbws import create_app, db
-from get_bbid_testing import GetBBIDTests
+from get_id_testing import GetIDTests
 from get_list_testing import GetListTests
 from delete_testing import DeleteTests
 from put_testing import PutTests
 from post_testing import PostTests
 from .fixture import load_data
+import logging
+
+# TODO Make use of logging library
 
 
-class EntityTests(GetBBIDTests, GetListTests, DeleteTests, PutTests, PostTests):
+class EntityTests(GetIDTests, GetListTests, DeleteTests, PutTests, PostTests):
     def create_app(self):
         self.app = create_app('../config/test.py')
         return self.app
 
     # noinspection PyPep8Naming
     def setUp(self):
+
+        logging.basicConfig(level=logging.INFO)
         db.engine.execute("DROP SCHEMA IF EXISTS bookbrainz CASCADE")
         db.engine.execute("CREATE SCHEMA bookbrainz")
         create_all(db.engine)
@@ -64,7 +69,7 @@ class EntityTests(GetBBIDTests, GetListTests, DeleteTests, PutTests, PostTests):
 
         self.specific_names = {}
         self.set_specific_names()
-        # TODO add checking for specific names
+        self.check_specific_names()
 
     # noinspection PyPep8Naming
     def tearDown(self):
@@ -92,13 +97,14 @@ class EntityTests(GetBBIDTests, GetListTests, DeleteTests, PutTests, PostTests):
     def put_data_check_specific(self, json_data, data_old, data_new):
         raise NotImplementedError
 
-    def is_debug_mode(self):
-        return True
-
     def get_specific_name(self, key):
         return self.specific_names[key]
 
     def get_request_default_headers(self):
         return self.request_default_headers
 
-
+    def check_specific_names(self):
+        keys = ['entity_class', 'type_name', 'ws_name', 'entity_type_id',
+                'entity_type', 'entity_type_class']
+        for key in keys:
+            self.assertTrue(key in self.specific_names)

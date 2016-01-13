@@ -19,7 +19,7 @@
 from bbschema import (Creator, CreatorData, CreatorType, EntityRevision,
                       Publication, PublicationData, PublicationType,
                       RelationshipRevision, RelationshipData, RelationshipType,
-                      User, UserType, OAuthClient,
+                      User, UserType, OAuthClient, EditionFormat, EditionStatus,
                       Language, Work, WorkData, WorkType, Gender, Edition,
                       EditionData, Publisher, PublisherData, PublisherType)
 
@@ -52,6 +52,17 @@ def load_data(db):
                              LANGUAGES_COUNT, LANGUAGES_COUNT)
     genders = add_entities(db, Gender, get_genders_args_generator(),
                            GENDERS_COUNT, GENDERS_COUNT)
+    edition_formats = \
+        add_entities(db, EditionFormat, only_label_args_generator,
+        EDITION_FORMATS, EDITION_FORMATS)
+
+    edition_statuses = \
+        add_entities(db, EditionStatus, only_label_args_generator,
+        EDITION_STATUSES, EDITION_STATUSES)
+
+    sample_data_helper_functions._edition_formats = edition_formats
+    sample_data_helper_functions._edition_statuses = edition_statuses
+
     db.session.commit()
 
     creator_types = \
@@ -80,6 +91,9 @@ def load_data(db):
     publisher_entities = add_entities(db, Publisher)
     relationship_entities = add_entities(db, Relationship)
 
+    sample_data_helper_functions._publishers = publisher_entities
+    sample_data_helper_functions._publications = publication_entities
+
     db.session.commit()
 
     creator_data_entities = \
@@ -94,14 +108,23 @@ def load_data(db):
         add_entities(db, WorkData,
                      get_work_data_args_generator(work_types, languages),
                      len(work_entities), len(work_entities))
-    edition_data_entities = \
-        add_entities(db, EditionData,
-                     get_edition_data_args_generator(),
-                     len(edition_entities), len(edition_entities))
     publisher_data_entities = \
         add_entities(db, PublisherData,
                      get_publisher_data_args_generator(publisher_types),
                      len(publisher_entities), len(publisher_entities))
+
+    db.session.commit()
+
+    edition_data_entities = \
+        add_entities(db, EditionData,
+                     get_edition_data_args_generator(
+                         publisher_entities,
+                         publication_entities,
+                         languages,
+                         edition_formats,
+                         edition_statuses
+                     ),
+                     len(edition_entities), len(edition_entities))
 
     db.session.commit()
 

@@ -41,8 +41,11 @@ def assert_equals_or_both_none(test_case_object, dictionary, key, value,
             test_case_object.assertIsNone(value)
 
 
-def check_uri_suffix(test_case_object, value, suffix):
-    test_case_object.assertTrue(value.endswith(suffix))
+def check_uri_suffix(test_case_object, value, suffix, is_none=False):
+    if not is_none:
+        test_case_object.assertTrue(value.endswith(suffix))
+    else:
+        test_case_object.assertIsNone(value)
 
 
 def get_one_entity_type(test_case_object, db, entity_type_class,
@@ -176,6 +179,9 @@ def identifier_hash(identifier, is_json):
 
 def check_entity_type_json(test_case_object, instance, json_data):
     entity_type_string = test_case_object.get_specific_name('entity_type')
+    if entity_type_string is None:
+        return
+
     entity_type_id_string = test_case_object.get_specific_name('entity_type_id')
     entity_type_class = test_case_object.get_specific_name('entity_type_class')
     if entity_type_string in json_data and \
@@ -200,7 +206,7 @@ def check_entity_type_json(test_case_object, instance, json_data):
             instance.master_revision.entity_data, entity_type_string))
 
 
-def put_post_bad_tests(test_case, type_of_query):
+def put_post_bad_test(test_case, type_of_query):
     put_instance = None
     if type_of_query == 'post':
         used_data = test_case.prepare_post_data()
@@ -287,3 +293,31 @@ def check_single_alias_json(test_case, json_alias, alias):
         'primary',
         alias.primary,
     )
+
+
+def check_edition_format_json(test_case, edition_format_json, edition_format):
+    if edition_format_json is None:
+        test_case.assertIsNone(edition_format)
+    else:
+        test_case.assertEquals(
+            edition_format_json['edition_format_id'],
+            edition_format.edition_format_id
+        )
+        test_case.assertEquals(
+            edition_format_json['label'],
+            edition_format.label
+        )
+
+
+def check_edition_status_json(test_case, edition_status_json, edition_status):
+    if edition_status_json is None:
+        test_case.assertIsNone(edition_status)
+    else:
+        test_case.assertEquals(
+            edition_status_json['edition_status_id'],
+            edition_status.edition_status_id
+        )
+        test_case.assertEquals(
+            edition_status_json['label'],
+            edition_status.label
+        )

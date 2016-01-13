@@ -16,8 +16,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import sys
 import uuid
+import logging
 
 from flask_testing import TestCase
 from check_helper_functions import *
@@ -35,19 +35,16 @@ class GetListTests(TestCase):
     def get_request_default_headers(self):
         raise NotImplementedError
 
-    def is_debug_mode(self):
-        raise NotImplementedError
-
     def list_get_tests(self):
-        if self.is_debug_mode():
-            print('\nget list tests for {}, COUNT:{}'
-                  .format(self.get_specific_name('type_name'),
-                          GET_LIST_TESTS_COUNT))
-
+        logging.info(
+            'GET-list request tests for {} tests:'
+            .format(
+                self.get_specific_name('type_name'),
+                GET_LIST_TESTS_COUNT
+            )
+        )
         for i in range(GET_LIST_TESTS_COUNT):
-            if self.is_debug_mode():
-                print('G{}'.format(i + 1)),
-                sys.stdout.flush()
+            logging.info(' test #{}'.format(i + 1))
             self.list_get_single_test()
 
     def list_get_single_test(self):

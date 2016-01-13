@@ -16,11 +16,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import random
-import uuid
-import json
+import logging
 from flask_testing import TestCase
-import sys
 from constants import *
 from check_helper_functions import *
 
@@ -32,9 +29,6 @@ class PutTests(TestCase):
     def get_request_default_headers(self):
         raise NotImplementedError
 
-    def is_debug_mode(self):
-        raise NotImplementedError
-
     def prepare_put_data(self, instance):
         raise NotImplementedError
 
@@ -42,26 +36,29 @@ class PutTests(TestCase):
         raise NotImplementedError
 
     def put_tests(self):
-        if self.is_debug_mode():
-            print('\nput tests for {}, GOOD_COUNT:{}, BAD_COUNT:{}'
-                  .format(self.get_specific_name('type_name'),
-                          PUT_TESTS_GOOD_COUNT,
-                          PUT_TESTS_BAD_COUNT))
+        logging.info(
+            'PUT request tests for {} good tests:{} bad tests:{}'
+            .format(
+                self.get_specific_name('type_name'),
+                PUT_TESTS_GOOD_COUNT,
+                PUT_TESTS_BAD_COUNT
+            )
+        )
+
         for i in range(PUT_TESTS_GOOD_COUNT):
-            if self.is_debug_mode():
-                print('G{}'.format(i + 1)),
-                sys.stdout.flush()
+            logging.info(' Good test #{}'.format(i + 1))
             self.put_good_test()
 
-        """ Commented for now, because bad type requests
-            are triggering exceptions and not HTTP 400 (same as in the POST)
+        """
+            Commented for now, because requests with incorrect type values
+            are triggering exceptions and not sending HTTP 400 signal
             [see ws_bugs.md]
         """
-        # for i in range(PUT_TESTS_BAD_COUNT):
-        #   self.put_post_bad_tests('put')
-
-        if self.is_debug_mode():
-            print('')
+        """
+        for i in range(PUT_TESTS_BAD_COUNT):
+            logging.info(' Bad test #{}'.format(i + 1))
+            put_post_bad_test(self, 'put')
+        """
 
     def make_put_request(self, entity, data_to_pass):
         response_ws = \

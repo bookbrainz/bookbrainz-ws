@@ -21,7 +21,7 @@ from check_helper_functions import *
 from constants import *
 from bbws import db
 import json
-import sys
+import logging
 
 
 class PostTests(TestCase):
@@ -31,9 +31,6 @@ class PostTests(TestCase):
     def get_request_default_headers(self):
         raise NotImplementedError
 
-    def is_debug_mode(self):
-        raise NotImplementedError
-
     def prepare_post_data(self):
         raise NotImplementedError
 
@@ -41,25 +38,27 @@ class PostTests(TestCase):
         raise NotImplementedError
 
     def post_tests(self):
-        if self.is_debug_mode():
-            print('\npost tests for {}, GOOD_COUNT:{}, BAD_COUNT:{}'
-                  .format(self.get_specific_name('type_name'),
-                          POST_TESTS_GOOD_COUNT,
-                          POST_TESTS_BAD_COUNT))
-
+        logging.info(
+            'POST request tests for {} good tests:{} bad tests:{}'
+            .format(
+                self.get_specific_name('type_name'),
+                POST_TESTS_GOOD_COUNT,
+                POST_TESTS_BAD_COUNT
+            )
+        )
         for i in range(POST_TESTS_GOOD_COUNT):
-            if self.is_debug_mode():
-                print('G{}'.format(i + 1)),
-                sys.stdout.flush()
+            logging.info(' Good test #{}'.format(i + 1))
             self.post_good_test()
-        # for i in range(POST_TESTS_BAD_COUNT):
-        #  self.put_post_bad_tests('post')
-        """ Commented for now, because bad type requests
+
+        """ Commented for now, because requests with incorrect type values
             are triggering exceptions and not sending HTTP 400 signal
             [see ws_bugs.md]
         """
-        if self.is_debug_mode():
-            print('')
+        """
+        for i in range(POST_TESTS_BAD_COUNT):
+            logging.info(' Bad test #{}'.format(i + 1))
+            put_post_bad_test(self, 'post')
+        """
 
     def make_post(self, data_dict, correct_result=True):
         response_ws = self.client.post(
@@ -67,6 +66,7 @@ class PostTests(TestCase):
             headers=self.get_request_default_headers(),
             data=json.dumps(data_dict)
         )
+        #print(json.dumps(data_dict))
 
         if correct_result:
             self.assert200(response_ws)

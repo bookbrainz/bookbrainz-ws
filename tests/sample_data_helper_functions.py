@@ -32,6 +32,10 @@ _publisher_types = []
 _publication_types = []
 _work_types = []
 _relationship_types = []
+_edition_statuses = []
+_edition_formats = []
+_publishers = []
+_publications = []
 
 
 def get_other_type_values(arg_value):
@@ -47,7 +51,7 @@ def get_other_type_values(arg_value):
 
 
 __include_ranges_alphabet = [
-    (0x0, 0xD7FF),
+    (0x1, 0xD7FF),
     (0xE000, 0x10FFFF)
 ]
 
@@ -155,6 +159,22 @@ def random_publication_type_id():
 
 def random_relationship_type_id():
     return random.choice(_relationship_types).relationship_type_id
+
+
+def random_edition_format_id():
+    return random.choice(_edition_formats).edition_format_id
+
+
+def random_edition_status_id():
+    return random.choice(_edition_statuses).edition_status_id
+
+
+def random_publisher_id():
+    return random.choice(_publishers).entity_gid
+
+
+def random_publication_id():
+    return random.choice(_publications).entity_gid
 
 
 def mutual_put_data_prepare(data, instance):

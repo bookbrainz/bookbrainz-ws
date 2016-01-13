@@ -18,9 +18,9 @@
 
 import random
 import uuid
-import sys
 from flask_testing import TestCase
 from bbws import db
+import logging
 
 
 class DeleteTests(TestCase):
@@ -34,19 +34,15 @@ class DeleteTests(TestCase):
         raise NotImplementedError
 
     def delete_tests(self):
-        if self.is_debug_mode():
-            print('\ndelete tests for {}, GOOD_COUNT:{}, BAD_COUNT:{}'
-                  .format(self.get_specific_name('type_name'),
-                          1, 1)
-                  )
-        if self.is_debug_mode():
-            print('G{}'.format(1)),
-            sys.stdout.flush()
+        logging.info(
+            'DELETE request tests for {} good tests:{} bad tests:{}'
+            .format(self.get_specific_name('type_name'), 1, 1)
+        )
+
+        logging.info(' Bad test #{}'.format(1))
         self.bad_delete_tests()
 
-        if self.is_debug_mode():
-            print('B{}'.format(1)),
-            sys.stdout.flush()
+        logging.info(' Good test #{}'.format(1))
         self.good_delete_tests()
 
     def good_delete_tests(self):

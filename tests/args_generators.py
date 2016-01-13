@@ -114,7 +114,8 @@ def get_work_data_args_generator(work_types, languages):
     return result_function
 
 
-def get_edition_data_args_generator():
+def get_edition_data_args_generator(publishers, publications, languages,
+                                    edition_formats, edition_statuses):
     def result_function():
         result = {}
         ma(result, 'pages', random_physical_integer_value())
@@ -122,7 +123,19 @@ def get_edition_data_args_generator():
         ma(result, 'height', random_physical_integer_value())
         ma(result, 'depth', random_physical_integer_value())
         ma(result, 'weight', random_physical_integer_value())
-        # TODO complete it
+
+        ma(result, 'country_id', random_physical_integer_value())
+
+        ma(result, 'release_date', random_date())
+        ma(result, 'release_date_precision', random_date_precision())
+
+        ma(result, 'publisher', random.choice(publishers))
+        ma(result, 'publication', random.choice(publications), False)
+        ma(result, 'language', random.choice(languages))
+
+        ma(result, 'edition_format', random.choice(edition_formats))
+        ma(result, 'edition_status', random.choice(edition_statuses))
+
         mutual_data_generate(result)
         return result
 
@@ -158,7 +171,7 @@ def generate_languages(languages, max_quantity=10):
     for language in languages:
         if len(result) >= max_quantity:
             break
-        if random.randint(1, 2) == 1:
+        if random.randint(1, 3) == 1:
             result.append(language)
     return result
 

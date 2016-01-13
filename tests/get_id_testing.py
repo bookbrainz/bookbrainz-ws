@@ -23,10 +23,10 @@ from check_helper_functions import *
 from bbschema import Relationship, RelationshipEntity, RelationshipRevision, \
     RelationshipData
 from constants import *
-import sys
+import logging
 
 
-class GetBBIDTests(TestCase):
+class GetIDTests(TestCase):
     def get_specific_name(self, name):
         raise NotImplementedError
 
@@ -36,15 +36,15 @@ class GetBBIDTests(TestCase):
     def get_request_default_headers(self):
         raise NotImplementedError
 
-    def is_debug_mode(self):
-        raise NotImplementedError
-
     def bbid_get_tests(self):
-        if self.is_debug_mode():
-            print('\nget bbid tests for {}, GOOD_COUNT:{}, BAD_COUNT:{}'
-                  .format(self.get_specific_name('type_name'),
-                          GET_BBID_TESTS_GOOD_COUNT,
-                          GET_BBID_TESTS_BAD_COUNT))
+        logging.info(
+            'GET/:id request tests for {} good tests:{} bad tests:{}'
+            .format(
+                self.get_specific_name('type_name'),
+                GET_BBID_TESTS_GOOD_COUNT,
+                GET_BBID_TESTS_BAD_COUNT
+            )
+        )
 
         instances = \
             db.session.query(self.get_specific_name('entity_class')).all()
@@ -52,19 +52,12 @@ class GetBBIDTests(TestCase):
         random.shuffle(instances)
 
         for i in range(GET_BBID_TESTS_GOOD_COUNT):
-            if self.is_debug_mode():
-                print('G{}'.format(i + 1)),
-                sys.stdout.flush()
+            logging.info(' Good test #{}'.format(i + 1))
             self.good_bbid_general_get_tests(instances)
 
         for i in range(GET_BBID_TESTS_BAD_COUNT):
-            if self.is_debug_mode():
-                print('B{}'.format(i + 1)),
-                sys.stdout.flush()
+            logging.info(' Bad test #{}'.format(i + 1))
             self.bad_bbid_general_get_tests(instances)
-
-        if self.is_debug_mode():
-            print('')
 
     def good_bbid_general_get_tests(self, instances):
         for instance in instances:
