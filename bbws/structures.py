@@ -114,6 +114,14 @@ ENTITY_ALIAS = {
     'primary': fields.Boolean
 }
 
+DISPLAY_ALIAS = {
+    'alias_id': fields.Integer,
+    'name': fields.String,
+    'sort_name': fields.String,
+    'language': fields.Nested(LANGUAGE_STUB, allow_null=True),
+    'primary': fields.Boolean
+}
+
 REVISION_STUB = {
     'revision_id': fields.Integer,
     'created_at': fields.DateTime(dt_format='iso8601'),

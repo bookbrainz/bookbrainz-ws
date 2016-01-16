@@ -27,7 +27,7 @@ import traceback
 from bbschema import (Creator, CreatorData, Edition, EditionData, Entity,
                       EntityData, EntityRevision, IdentifierType, Publication,
                       PublicationData, Publisher, PublisherData, RevisionNote,
-                      Work, WorkData)
+                      Work, WorkData, Language, User)
 from elasticsearch import Elasticsearch, ElasticsearchException
 from flask import request
 from flask_restful import Resource, abort, fields, marshal, reqparse
@@ -51,6 +51,7 @@ class EntityResource(Resource):
 
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('revision', type=int, default=None)
+    get_parser.add_argument('user_id', type=int, default=None)
 
     entity_class = None
     entity_fields = None
@@ -96,6 +97,17 @@ class EntityResource(Resource):
         if entity_data is not None:
             data_out = marshal(entity_data, self.entity_data_fields)
             entity_out.update(data_out)
+
+        if args.user_id is not None:
+            user = \
+                db.session.query(User)\
+                .filter(User.user_id == args.user_id).one_or_none()
+        else:
+            user = None
+
+        entity_out.update(
+            get_display_alias_json(entity_data, user, db.session)
+        )
 
         return entity_out
 
@@ -556,3 +568,91 @@ def create_views(api):
         EntityIdentifierTypeResourceList,
         '/identifierType/'
     )
+
+
+def get_display_alias_json(entity_data, user, session):
+    alias = get_display_alias(entity_data, user, session)
+    if alias is not None:
+        alias_json = marshal(alias, structures.DISPLAY_ALIAS)
+    else:
+        alias_json = None
+    return {
+        'display_alias': alias_json
+    }
+
+
+def get_display_alias(entity_data, user, session):
+    user_default_language_id = native_language_id(user)
+    aliases = entity_data.aliases
+    primary_aliases = \
+        [alias for alias in aliases if alias.primary is True]
+
+    if user_default_language_id is not None:
+        result = find_alias_if(
+            primary_aliases,
+            lambda x: x.language_id == user_default_language_id
+        )
+        if result:
+            return result
+
+    entity_languages_ids = set(get_entity_language_ids(entity_data))
+    result = find_alias_if(
+        primary_aliases,
+        lambda x: x.language_id in entity_languages_ids
+    )
+    if result:
+        return result
+
+    english_id = english_language_id_find(session)
+    if english_id is not None:
+        result = find_alias_if(
+            primary_aliases,
+            lambda x: x.language_id == english_id
+        )
+        if result:
+            return result
+
+    if primary_aliases:
+        return primary_aliases[0]
+
+    if aliases:
+        return aliases[0]
+
+    return None
+
+
+def native_language_id(user):
+    if user is None:
+        return None
+    results = [lang for lang in user.languages if lang.proficiency == 'NATIVE']
+    if results:
+        return results[0].language_id
+    else:
+        return None
+
+
+def find_alias_if(aliases, func):
+    for alias in aliases:
+        if func(alias):
+            return alias
+    return None
+
+
+def get_entity_language_ids(entity_data):
+    if isinstance(entity_data, EditionData):
+        if entity_data.language_id is not None:
+            return [entity_data.language_id]
+    elif isinstance(entity_data, WorkData):
+        if entity_data.languages:
+            return [x.id for x in entity_data.languages]
+    else:
+        return []
+
+
+def english_language_id_find(session):
+    try:
+        result = session.query(Language)\
+            .filter(Language.name == 'English').one()
+        return result
+    except:
+        return None
