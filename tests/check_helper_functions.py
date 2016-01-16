@@ -75,14 +75,6 @@ def get_gender(test_case_object, db, gender_id):
     return results[0]
 
 
-def get_identifier_type(test_case_object, db, identifier_id):
-    results = db.session.query(IdentifierType) \
-        .filter(IdentifierType.identifier_type_id == identifier_id) \
-        .all()
-    test_case_object.assertEquals(len(results), 1)
-    return results[0]
-
-
 def check_date_json(test_case_object, json_date, json_date_precision,
                     date, date_precision, check_date_none=True):
     if json_date is None and check_date_none is True:
@@ -180,12 +172,12 @@ def identifier_hash(identifier, is_json):
 
 
 def check_entity_type_json(test_case_object, instance, json_data):
-    entity_type_string = test_case_object.get_specific_name('entity_type')
+    entity_type_string = test_case_object.get_specific_key('entity_type')
     if entity_type_string is None:
         return
 
-    entity_type_id_string = test_case_object.get_specific_name('entity_type_id')
-    entity_type_class = test_case_object.get_specific_name('entity_type_class')
+    entity_type_id_string = test_case_object.get_specific_key('entity_type_id')
+    entity_type_class = test_case_object.get_specific_key('entity_type_class')
     if entity_type_string in json_data and \
             not json_data[entity_type_string] is None:
         test_case_object.assertEquals(
@@ -214,7 +206,7 @@ def put_post_bad_test(test_case, type_of_query):
         used_data = test_case.prepare_post_data()
     else:
         instances_db = \
-            db.session.query(test_case.get_specific_name('entity_class')).all()
+            db.session.query(test_case.get_specific_key('entity_class')).all()
         test_case.assertGreater(len(instances_db), 0)
         put_instance = random.choice(instances_db)
         used_data = test_case.prepare_put_data(put_instance)
@@ -245,27 +237,27 @@ def put_post_bad_data_test(test_case, data_to_pass, type_of_query,
                            put_instance=None):
     info_before = \
         [[x.entity_gid, x.last_updated] for x in db.session.query(
-            test_case.get_specific_name('entity_class')).all()]
+            test_case.get_specific_key('entity_class')).all()]
 
     if type_of_query == 'put':
         response_ws = \
             test_case.client.put(
                 '/{}/{}/'.format(
-                    test_case.get_specific_name('ws_name'),
+                    test_case.get_specific_key('ws_name'),
                     unicode(put_instance.entity_gid)),
                 headers=test_case.get_request_default_headers(),
                 data=data_to_pass)
 
     else:
         response_ws = test_case.client.post(
-            '/' + test_case.get_specific_name('ws_name') + '/',
+            '/' + test_case.get_specific_key('ws_name') + '/',
             headers=test_case.get_request_default_headers(),
             data=data_to_pass)
 
     test_case.assert400(response_ws)
 
     instances_db_after = \
-        db.session.query(test_case.get_specific_name('entity_class')).all()
+        db.session.query(test_case.get_specific_key('entity_class')).all()
     instances_db_after.sort(key=lambda element: element.entity_gid)
 
     info_before.sort()

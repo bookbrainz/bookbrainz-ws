@@ -16,22 +16,34 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+
 import copy
 
 from bbschema import RelationshipEntity, Disambiguation, \
-    Annotation, Alias, Relationship
+    Annotation, Alias, Relationship, RelationshipText, Identifier
+from bbschema.user import UserLanguage
 
 from sample_data_helper_functions import *
+import sample_data_helper_functions
 
 ma = maybe_add
 
 
-def no_args_generator():
-    return {}
-
-
 def only_label_args_generator():
     return {'label': get_random_unicode_string()}
+
+
+def only_value_args_generator():
+    return {'value': get_random_unicode_string()}
+
+
+def identifier_type_args_generator():
+    result = {}
+    ma(result, 'label', get_random_unicode_string(), False)
+    ma(result, 'description', get_random_unicode_string(), False)
+    ma(result, 'validation_regex', u'*', False)
+    ma(result, 'entity_type', 'Creator', False)
+    return result
 
 
 def get_languages_args_generator():
@@ -150,7 +162,8 @@ def get_relationship_data_args_generator(relationship_types, all_entities):
         result['relationship_type_id'] = \
             random.choice(relationship_types).relationship_type_id
         ma(result, 'entities', generate_relationship_entities(all_entities))
-        # TODO Add entities and texts
+        ma(result, 'texts', generate_relationship_texts())
+
         return result
 
     return result_function
@@ -161,6 +174,7 @@ def mutual_data_generate(data):
        Disambiguation(comment=get_random_unicode_string()))
     ma(data, 'annotation', Annotation(content=get_random_unicode_string()))
     ma(data, 'aliases', generate_aliases())
+    ma(data, 'identifiers', generate_identifiers())
 
 
 def generate_aliases(min_quantity=0, max_quantity=10):
@@ -222,3 +236,50 @@ def generate_relationship_entities(all_entities):
 def generate_single_relationship_entity(position, all_entities):
     return RelationshipEntity(
         entity_gid=get_random_entity_gid(all_entities), position=position)
+
+
+def generate_relationship_texts():
+    count = randint_extra(0, RELATIONSHIP_TEXTS_MAX_COUNT)
+    r = range(1, count+1)
+    random.shuffle(r)
+    return [generate_single_relationship_text(r)
+            for i in range(count)]
+
+
+def generate_single_relationship_text(positions_left):
+    return \
+        RelationshipText(
+            position=positions_left.pop(),
+            text=get_random_unicode_string()
+        )
+
+
+def generate_identifiers():
+    count = randint_extra(0, NEW_IDENTIFIERS_MAX_COUNT)
+    return [generate_single_identifier()
+            for i in range(count)]
+
+
+def generate_single_identifier():
+    return \
+        Identifier(
+            identifier_type=random_identifier_type(),
+            value=get_random_unicode_string()
+        )
+
+
+def generate_user_languages(editor):
+    languages = [x for x in sample_data_helper_functions._languages]
+    random.shuffle(languages)
+    count = random.randint(1, min(len(languages), USER_LANGUAGES_MAX_COUNT))
+    return [generate_user_language(editor, languages) for i in range(count)]
+
+
+def generate_user_language(editor, languages_ids_left):
+    return UserLanguage(
+        user_id=editor.user_id,
+        language=languages_ids_left.pop(),
+        proficiency=random.choice(
+            ['BASIC', 'INTERMEDIATE', 'ADVANCED', 'NATIVE']
+        )
+    )

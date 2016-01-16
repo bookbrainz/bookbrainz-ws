@@ -28,7 +28,7 @@ from constants import *
 
 
 class GetIDTests(TestCase):
-    def get_specific_name(self, name):
+    def get_specific_key(self, key):
         raise NotImplementedError
 
     def bbid_one_get_tests_specific_check(self, instance, response):
@@ -41,14 +41,14 @@ class GetIDTests(TestCase):
         logging.info(
             'GET/:id request tests for {} good tests:{} bad tests:{}'
             .format(
-                self.get_specific_name('type_name'),
+                self.get_specific_key('type_name'),
                 GET_BBID_TESTS_GOOD_COUNT,
                 GET_BBID_TESTS_BAD_COUNT
             )
         )
 
         instances = \
-            db.session.query(self.get_specific_name('entity_class')).all()
+            db.session.query(self.get_specific_key('entity_class')).all()
 
         random.shuffle(instances)
 
@@ -85,7 +85,7 @@ class GetIDTests(TestCase):
 
     def bbid_one_get_test(self, instance, entity_gid, correct_result=True):
         response = self.client.get(
-            '/{}/{}/'.format(self.get_specific_name('ws_name'), entity_gid)
+            '/{}/{}/'.format(self.get_specific_key('ws_name'), entity_gid)
         )
 
         if correct_result:
@@ -101,7 +101,7 @@ class GetIDTests(TestCase):
         json_data = response.json
         self.assertEquals(
             json_data.get('_type'),
-            self.get_specific_name('type_name')
+            self.get_specific_key('type_name')
         )
 
         self.assertEquals(
@@ -138,7 +138,7 @@ class GetIDTests(TestCase):
         response = self.client.get(
             '/{ec}/{entity_gid}/aliases'
             .format(
-                ec=self.get_specific_name('ws_name'),
+                ec=self.get_specific_key('ws_name'),
                 entity_gid=instance.entity_gid))
         self.assert200(response)
         self.bbid_one_check_aliases_json(response.json, instance)
@@ -194,7 +194,7 @@ class GetIDTests(TestCase):
 
     def bbid_one_check_uris(self, instance, json_data):
         ent_gid = instance.entity_gid
-        ent_ws = self.get_specific_name('ws_name')
+        ent_ws = self.get_specific_key('ws_name')
         uri_base = '/{}/{}/'.format(ent_ws, ent_gid)
 
         pairs = [
@@ -210,7 +210,7 @@ class GetIDTests(TestCase):
                 json_data[pair[0]],
                 uri_base + pair[1]
             )
-        # TODO 'relationships/' should be changed to 'relationships'
+        # 'relationships/' should be changed to 'relationships'
         # to look like other entities
         # [see ws_bugs.md]
         check_uri_suffix(
@@ -236,31 +236,84 @@ class GetIDTests(TestCase):
                 ws_objects[i], relationships_db[i])
 
     def check_single_relationship_ws_db(self, ws_object, db_object):
-        self.assertEquals(ws_object['relationship_id'],
-                          db_object.relationship_id)
-        self.bbid_one_check_relationship_entities(
+        self.assertEquals(
+            ws_object['relationship_id'],
+            db_object.relationship_id
+        )
+        self.bbid_check_relationship_entities(
             ws_object['entities'],
-            db_object.master_revision.relationship_data.entities)
-        self.assertEquals(ws_object['last_updated'],
-                          db_object.last_updated.isoformat())
-        self.assertEquals(ws_object['master_revision_id'],
-                          db_object.master_revision_id)
+            db_object.master_revision.relationship_data.entities
+        )
+        self.assertEquals(
+            ws_object['last_updated'],
+            db_object.last_updated.isoformat()
+        )
+        self.assertEquals(
+            ws_object['master_revision_id'],
+            db_object.master_revision_id
+        )
         self.assertEquals(
             ws_object['relationship_type']['relationship_type_id'],
-            db_object.master_revision.relationship_data.relationship_type_id)
+            db_object.master_revision.relationship_data.relationship_type_id
+        )
+        self.bbid_check_relationship_texts(
+            ws_object['texts'],
+            db_object.master_revision.relationship_data.texts
+        )
 
-        # TODO add texts checking
-
-    def bbid_one_check_relationship_entities(self, ws_entities, db_entities):
+    def bbid_check_relationship_entities(self, ws_entities, db_entities):
         self.assertEquals(len(ws_entities), len(db_entities))
-        ws_entities.sort(key=lambda x: x['entity']['entity_gid'])
-        db_entities.sort(key=lambda x: x.entity_gid)
+        ws_entities.sort(key=lambda x: x['position'])
+        db_entities.sort(key=lambda x: x.position)
         for i in range(len(ws_entities)):
-            ws_object = ws_entities[i]['entity']
-            db_object = db_entities[i]
-            self.assertEquals(ws_object['entity_gid'],
-                              unicode(db_object.entity_gid))
-            # TODO add type and uri checking
+            ws_entity = ws_entities[i]
+            db_entity = db_entities[i]
+            self.bbid_check_single_relationship_entity(ws_entity, db_entity)
+
+    def bbid_check_single_relationship_entity(self, ws_entity, db_entity):
+        if ws_entity == None:
+            self.assertIsNone(db_entity)
+        else:
+            if db_entity.entity is not None:
+                self.assertEquals(
+                    ws_entity['entity']['_type'],
+                    db_entity.entity._type
+                )
+                self.assertEquals(
+                    ws_entity['entity']['entity_gid'],
+                    unicode(db_entity.entity_gid)
+                )
+                check_uri_suffix(
+                    self,
+                    ws_entity['entity']['uri'],
+                    '/{}/{}/'.format(
+                        ws_entity['entity']['_type'].lower(),
+                        ws_entity['entity']['entity_gid']
+                    )
+                )
+            else:
+                self.assertIsNone(ws_entity['entity'])
+
+            self.assertEquals(
+                ws_entity['position'],
+                db_entity.position
+            )
+
+    def bbid_check_relationship_texts(self, json_texts, texts):
+        self.assertEquals(len(json_texts), len(texts))
+        json_texts.sort(key=lambda x:x['position'])
+        texts.sort(key=lambda x:x.position)
+        for i in range(len(json_texts)):
+            self.bbid_check_single_relationship_text(
+                json_texts[i], texts[i]
+            )
+
+    def bbid_check_single_relationship_text(self, json_text, text):
+        if json_text == None:
+            self.assertIsNone(text)
+        else:
+            self.assertEquals(json_text['text'], text.text)
+            self.assertEquals(json_text['position'], text.position)
 
     def bbid_one_check_aliases_json(self, json_data, instance):
         json_aliases_list = json_data['objects']
@@ -297,7 +350,7 @@ class GetIDTests(TestCase):
                           identifier.value)
         if 'identifier_type' in json_identifier and \
                 json_identifier['identifier_type'] is not None:
-            identifier_type = get_identifier_type(self, db, identifier)
+            identifier_type = identifier.identifier_type
             self.assertEquals(
                 json_identifier['identifier_type']['identifier_type_id'],
                 identifier_type.identifier_type_id

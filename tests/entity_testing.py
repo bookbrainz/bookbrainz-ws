@@ -30,8 +30,6 @@ from post_testing import PostTests
 from put_testing import PutTests
 from .fixture import load_data
 
-# TODO Make use of logging library
-
 
 class EntityTests(GetIDTests, GetListTests, DeleteTests, PutTests, PostTests):
     def create_app(self):
@@ -97,7 +95,7 @@ class EntityTests(GetIDTests, GetListTests, DeleteTests, PutTests, PostTests):
     def put_data_check_specific(self, json_data, data_old, data_new):
         raise NotImplementedError
 
-    def get_specific_name(self, key):
+    def get_specific_key(self, key):
         return self.specific_names[key]
 
     def get_request_default_headers(self):

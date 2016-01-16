@@ -32,14 +32,16 @@ _publisher_types = []
 _publication_types = []
 _work_types = []
 _relationship_types = []
+_identifier_types = []
 _edition_statuses = []
 _edition_formats = []
 _publishers = []
 _publications = []
+_editor = None
 
 
 def get_other_type_values(arg_value):
-    constant_values = [u'HORSE', 2015, datetime.time(12, 13, 14, 15),
+    constant_values = [u'UNICODE', 2015, datetime.time(12, 13, 14, 15),
                        uuid.uuid4(), {'revision': {'note': 'some note'}},
                        [1, 2, 3, 4], [], {}, datetime.time(0, 0, 0, 0),
                        Headers([])]
@@ -48,6 +50,15 @@ def get_other_type_values(arg_value):
         if type(cvalue) != type(arg_value):
             result_list.append(cvalue)
     return result_list
+
+
+def add_entities(db, entity_class, args_generator=lambda :{},
+                 min_quantity=2, max_quantity=DEFAULT_MAX_QUANTITY):
+    entities_count = random.randint(min_quantity, max_quantity)
+    entities = [entity_class(**(args_generator()))
+                for i in range(entities_count)]
+    db.session.add_all(entities)
+    return entities
 
 
 __include_ranges_alphabet = [
@@ -63,7 +74,7 @@ def get_random_unicode_character():
     return random.choice(__alphabet)
 
 
-def get_random_unicode_string(max_length=100):
+def get_random_unicode_string(max_length=DEFAULT_MAX_STRING_SIZE):
     actual_length = random.randint(30, max_length)
     return u''.join(get_random_unicode_character()
                     for i in range(actual_length))
@@ -137,6 +148,10 @@ def random_language_id():
     return random.choice(_languages).id
 
 
+def random_language():
+    return random.choice(_languages)
+
+
 def random_gender_id():
     return random.choice(_genders).id
 
@@ -161,6 +176,14 @@ def random_relationship_type_id():
     return random.choice(_relationship_types).relationship_type_id
 
 
+def random_identifier_type():
+    return random.choice(_identifier_types)
+
+
+def random_identifier_type_id():
+    return random.choice(_identifier_types).identifier_type_id
+
+
 def random_edition_format_id():
     return random.choice(_edition_formats).edition_format_id
 
@@ -181,8 +204,7 @@ def mutual_put_data_prepare(data, instance):
     maybe_add(data, u'disambiguation', get_random_unicode_string())
     maybe_add(data, u'annotation', get_random_unicode_string())
     maybe_add(data, u'aliases', get_random_put_aliases(instance))
-    maybe_add(data, u'identifiers', get_random_put_identifiers())
-
+    maybe_add(data, u'identifiers', get_random_put_identifiers(instance))
 
 def get_random_put_aliases(instance):
     if instance.master_revision.entity_data.aliases is not None:
@@ -242,9 +264,26 @@ def get_random_put_languages(instance):
     return result
 
 
-def get_random_put_identifiers():
-    # TODO implement it
-    return []
+def get_random_put_identifiers(instance):
+    ent_data = instance.master_revision.entity_data
+    identifiers = ent_data.identifiers
+    result = []
+    for i in range(len(identifiers)):
+        r = random.randint(1,5)
+        if r == 1:
+            result.append([identifiers[i].identifier_id, None])
+        elif r == 2:
+            result.append([
+                identifiers[i].identifier_id,
+                get_single_random_identifier()
+            ])
+
+    new_count = randint_extra(0, NEW_IDENTIFIERS_MAX_COUNT)
+    new_identifiers =\
+    [[None, get_single_random_identifier()] for i in range(new_count)]
+    result.extend(new_identifiers)
+
+    return result
 
 
 def mutual_post_data_prepare(data):
@@ -270,9 +309,17 @@ def get_random_post_languages():
 
 
 def get_random_post_identifiers():
-    # TODO implement it
-    return []
+    count = randint_extra(0, NEW_IDENTIFIERS_MAX_COUNT)
+    return [get_single_random_identifier() for i in range(count)]
 
+
+def get_single_random_identifier():
+    result = {}
+    maybe_add(result, 'identifier_type',
+              {'identifier_type_id':random_identifier_type_id()}, False)
+    maybe_add(result, 'value', get_random_unicode_string(), False)
+
+    return result
 
 def change_one_character(string):
     if len(string) == 0:

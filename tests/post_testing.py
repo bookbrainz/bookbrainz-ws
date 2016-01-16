@@ -25,7 +25,7 @@ from constants import *
 
 
 class PostTests(TestCase):
-    def get_specific_name(self, name):
+    def get_specific_key(self, name):
         raise NotImplementedError
 
     def get_request_default_headers(self):
@@ -41,7 +41,7 @@ class PostTests(TestCase):
         logging.info(
             'POST request tests for {} good tests:{} bad tests:{}'
             .format(
-                self.get_specific_name('type_name'),
+                self.get_specific_key('type_name'),
                 POST_TESTS_GOOD_COUNT,
                 POST_TESTS_BAD_COUNT
             )
@@ -62,7 +62,7 @@ class PostTests(TestCase):
 
     def make_post(self, data_dict, correct_result=True):
         response_ws = self.client.post(
-            '/{}/'.format(self.get_specific_name('ws_name')),
+            '/{}/'.format(self.get_specific_key('ws_name')),
             headers=self.get_request_default_headers(),
             data=json.dumps(data_dict)
         )
@@ -74,13 +74,13 @@ class PostTests(TestCase):
 
     def post_good_test(self):
         instances_db = \
-            db.session.query(self.get_specific_name('entity_class')).all()
+            db.session.query(self.get_specific_key('entity_class')).all()
 
         data_to_pass = self.prepare_post_data()
         self.make_post(data_to_pass)
 
         instances_db_after = \
-            db.session.query(self.get_specific_name('entity_class')).all()
+            db.session.query(self.get_specific_key('entity_class')).all()
 
         self.assertEquals(len(instances_db) + 1, len(instances_db_after))
 
@@ -140,7 +140,6 @@ class PostTests(TestCase):
         aliases.sort(key=lambda x: x.name)
         for i in range(len(json_aliases)):
             check_single_alias_json(self, json_aliases[i], aliases[i])
-            # TODO add default_alias checking
 
     def post_check_identifiers_json(self, json_identifiers, identifiers):
         self.assertEquals(len(json_identifiers), len(identifiers))

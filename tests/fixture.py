@@ -21,15 +21,27 @@ from bbschema import (Creator, CreatorData, CreatorType, EntityRevision,
                       RelationshipRevision, RelationshipData, RelationshipType,
                       User, UserType, OAuthClient, EditionFormat, EditionStatus,
                       Language, Work, WorkData, WorkType, Gender, Edition,
-                      EditionData, Publisher, PublisherData, PublisherType)
+                      EditionData, Publisher, PublisherData, PublisherType,
+                      IdentifierType)
 
-import sample_data_helper_functions
 from args_generators import *
 
 
 def load_data(db):
     db.session.execute("TRUNCATE TABLE musicbrainz.language CASCADE")
     db.session.execute("TRUNCATE TABLE musicbrainz.gender CASCADE")
+    db.session.commit()
+
+    languages = add_entities(db, Language, get_languages_args_generator(),
+                             LANGUAGES_COUNT, LANGUAGES_COUNT)
+    if random.randint(1,2):
+        random.choice(languages).name=u'English'
+    sample_data_helper_functions._languages = languages
+
+    genders = add_entities(db, Gender, get_genders_args_generator(),
+                           GENDERS_COUNT, GENDERS_COUNT)
+    sample_data_helper_functions._genders = genders
+
     db.session.commit()
 
     editor_type = UserType(label=u'Editor')
@@ -41,17 +53,18 @@ def load_data(db):
                            u'eMSw1ivsAmoa037.eS6VXoLAyK9cy0YG',
                   email=u'bob@bobville.org',
                   user_type_id=editor_type.user_type_id)
+    sample_data_helper_functions._editor = editor
     db.session.add(editor)
+    editor.languages = generate_user_languages(editor)
+
     db.session.commit()
     client = OAuthClient(client_id='9ab9da7e-a7a3-4f86-87c6-bf8b4b8213c7',
                          owner_id=editor.user_id)
     db.session.add(client)
     db.session.commit()
 
-    languages = add_entities(db, Language, get_languages_args_generator(),
-                             LANGUAGES_COUNT, LANGUAGES_COUNT)
-    genders = add_entities(db, Gender, get_genders_args_generator(),
-                           GENDERS_COUNT, GENDERS_COUNT)
+
+
     edition_formats = \
         add_entities(
             db, EditionFormat, only_label_args_generator,
@@ -79,14 +92,18 @@ def load_data(db):
         add_entities(db, PublisherType, only_label_args_generator)
     relationship_types = \
         add_entities(db, RelationshipType, relationship_type_args_generator)
+    identifier_types = \
+        add_entities(db, IdentifierType, identifier_type_args_generator)
 
-    sample_data_helper_functions._genders = genders
-    sample_data_helper_functions._languages = languages
+    db.session.commit()
+
+
     sample_data_helper_functions._creator_types = creator_types
     sample_data_helper_functions._publisher_types = publisher_types
     sample_data_helper_functions._publication_types = publication_types
     sample_data_helper_functions._work_types = work_types
     sample_data_helper_functions._relationship_types = relationship_types
+    sample_data_helper_functions._identifier_types = identifier_types
 
     creator_entities = add_entities(db, Creator)
     publication_entities = add_entities(db, Publication)
@@ -176,12 +193,3 @@ def load_data(db):
         relationship_entities[i].master_revision = relationship_revisions[i]
 
     db.session.commit()
-
-
-def add_entities(db, entity_class, args_generator=no_args_generator,
-                 min_quantity=2, max_quantity=DEFAULT_MAX_QUANTITY):
-    entities_count = random.randint(min_quantity, max_quantity)
-    entities = [entity_class(**(args_generator()))
-                for i in range(entities_count)]
-    db.session.add_all(entities)
-    return entities
