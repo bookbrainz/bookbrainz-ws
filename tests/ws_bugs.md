@@ -27,3 +27,6 @@ def bad_bbid_general_get_tests(self, instances):
 # self.bbid_one_get_test(None, gid_bad, correct_result=False)
 # see ws_bugs.md
 ```
+
++ [BB-168](http://tickets.musicbrainz.org/browse/BB-168)
++ [BB-169](http://tickets.musicbrainz.org/browse/BB-169)
