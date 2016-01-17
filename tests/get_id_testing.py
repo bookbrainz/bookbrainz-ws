@@ -114,7 +114,7 @@ class GetIDTests(TestCase):
             instance.last_updated.isoformat()
         )
 
-        check_entity_type_json(self, instance, json_data)
+        check_entity_type_json(self, json_data, instance)
 
         self.bbid_one_check_relationships(instance)
         self.bbid_one_check_aliases(instance)
@@ -271,7 +271,7 @@ class GetIDTests(TestCase):
             self.bbid_check_single_relationship_entity(ws_entity, db_entity)
 
     def bbid_check_single_relationship_entity(self, ws_entity, db_entity):
-        if ws_entity == None:
+        if ws_entity is None:
             self.assertIsNone(db_entity)
         else:
             if db_entity.entity is not None:
@@ -301,15 +301,15 @@ class GetIDTests(TestCase):
 
     def bbid_check_relationship_texts(self, json_texts, texts):
         self.assertEquals(len(json_texts), len(texts))
-        json_texts.sort(key=lambda x:x['position'])
-        texts.sort(key=lambda x:x.position)
+        json_texts.sort(key=lambda x: x['position'])
+        texts.sort(key=lambda x: x.position)
         for i in range(len(json_texts)):
             self.bbid_check_single_relationship_text(
                 json_texts[i], texts[i]
             )
 
     def bbid_check_single_relationship_text(self, json_text, text):
-        if json_text == None:
+        if json_text is None:
             self.assertIsNone(text)
         else:
             self.assertEquals(json_text['text'], text.text)

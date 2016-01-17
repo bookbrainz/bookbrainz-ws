@@ -25,22 +25,48 @@ from bbschema import (Creator, CreatorData, CreatorType, EntityRevision,
                       IdentifierType)
 
 from args_generators import *
+import sample_data_helper_functions
 
 
 def load_data(db):
+    """ Generates sample random data in the database
+
+    All the instances except User instances are generated using
+    add_entities function. It takes as an optional argument a
+    function which should generate arguments for the given class
+    initialization in the form of dictionary.
+
+    Args generator example:
+    def languages_args_generator():
+        result = {}
+        result['name'] = u'Esperanto'
+        return result
+
+    add_entities usage example:
+        add_entities(database, Language, languages_args_generator, 3, 7)
+
+    This example would add the random number (between 3 and 7)
+    of Language instances, which are filled in with languages_args_generator.
+    In this case, all the languages would have name = u'Esperanto', because
+    this generator always returns the same arguments.
+
+    :param db: database to add the data into
+    :return: None
+    """
+
     db.session.execute("TRUNCATE TABLE musicbrainz.language CASCADE")
     db.session.execute("TRUNCATE TABLE musicbrainz.gender CASCADE")
     db.session.commit()
 
     languages = add_entities(db, Language, get_languages_args_generator(),
                              LANGUAGES_COUNT, LANGUAGES_COUNT)
-    if random.randint(1,2):
-        random.choice(languages).name=u'English'
-    sample_data_helper_functions._languages = languages
+    if random.randint(1, 2):
+        random.choice(languages).name = u'English'
+    sample_data_helper_functions.all_languages = languages
 
     genders = add_entities(db, Gender, get_genders_args_generator(),
                            GENDERS_COUNT, GENDERS_COUNT)
-    sample_data_helper_functions._genders = genders
+    sample_data_helper_functions.all_genders = genders
 
     db.session.commit()
 
@@ -53,7 +79,7 @@ def load_data(db):
                            u'eMSw1ivsAmoa037.eS6VXoLAyK9cy0YG',
                   email=u'bob@bobville.org',
                   user_type_id=editor_type.user_type_id)
-    sample_data_helper_functions._editor = editor
+    sample_data_helper_functions.main_editor = editor
     db.session.add(editor)
     editor.languages = generate_user_languages(editor)
 
@@ -62,8 +88,6 @@ def load_data(db):
                          owner_id=editor.user_id)
     db.session.add(client)
     db.session.commit()
-
-
 
     edition_formats = \
         add_entities(
@@ -77,8 +101,8 @@ def load_data(db):
             EDITION_STATUSES, EDITION_STATUSES
         )
 
-    sample_data_helper_functions._edition_formats = edition_formats
-    sample_data_helper_functions._edition_statuses = edition_statuses
+    sample_data_helper_functions.all_edition_formats = edition_formats
+    sample_data_helper_functions.all_edition_statuses = edition_statuses
 
     db.session.commit()
 
@@ -97,13 +121,12 @@ def load_data(db):
 
     db.session.commit()
 
-
-    sample_data_helper_functions._creator_types = creator_types
-    sample_data_helper_functions._publisher_types = publisher_types
-    sample_data_helper_functions._publication_types = publication_types
-    sample_data_helper_functions._work_types = work_types
-    sample_data_helper_functions._relationship_types = relationship_types
-    sample_data_helper_functions._identifier_types = identifier_types
+    sample_data_helper_functions.all_creator_types = creator_types
+    sample_data_helper_functions.all_publisher_types = publisher_types
+    sample_data_helper_functions.all_publication_types = publication_types
+    sample_data_helper_functions.all_work_types = work_types
+    sample_data_helper_functions.all_relationship_types = relationship_types
+    sample_data_helper_functions.all_identifier_types = identifier_types
 
     creator_entities = add_entities(db, Creator)
     publication_entities = add_entities(db, Publication)
@@ -112,8 +135,8 @@ def load_data(db):
     publisher_entities = add_entities(db, Publisher)
     relationship_entities = add_entities(db, Relationship)
 
-    sample_data_helper_functions._publishers = publisher_entities
-    sample_data_helper_functions._publications = publication_entities
+    sample_data_helper_functions.all_publishers = publisher_entities
+    sample_data_helper_functions.all_publications = publication_entities
 
     db.session.commit()
 

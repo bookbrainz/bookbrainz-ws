@@ -48,19 +48,12 @@ class PutTests(TestCase):
         )
 
         for i in range(PUT_TESTS_GOOD_COUNT):
-            logging.info(' Good test #{}'.format(i + 1))
+            logging.info(' Correct input test #{}'.format(i + 1))
             self.put_good_test()
 
-        """
-            Commented for now, because requests with incorrect type values
-            are triggering exceptions and not sending HTTP 400 signal
-            [see ws_bugs.md]
-        """
-        """
         for i in range(PUT_TESTS_BAD_COUNT):
-            logging.info(' Bad test #{}'.format(i + 1))
-            put_post_bad_test(self, 'put')
-        """
+            logging.info(' Incorrect input test #{}'.format(i + 1))
+            incorrect_data_tests(self, 'put')
 
     def make_put_request(self, entity, data_to_pass):
         response_ws = \
@@ -235,8 +228,8 @@ class PutTests(TestCase):
             json_identifiers = json_data['identifiers']
 
             deleted_identifiers = \
-                set([x[0] for x in json_identifiers if x[1] == None])
-            added_identifiers = [x[1] for x in json_identifiers if x[0] == None]
+                set([x[0] for x in json_identifiers if x[1] is None])
+            added_identifiers = [x[1] for x in json_identifiers if x[0] is None]
             updated_identifiers = [[x, y] for x, y in json_identifiers
                                    if not (x is None or y is None)]
             updated_identifiers_ids = [x for x, y in updated_identifiers]
@@ -294,12 +287,12 @@ class PutTests(TestCase):
         new_languages_ids = [x.id for x in new_data.languages]
         if 'languages' in json_data:
             added_languages = [x[1] for x in json_data['languages']
-                               if x[0] == None]
+                               if x[0] is None]
 
             old_languages_ids.extend(added_languages)
 
             removed_languages = [x[0] for x in json_data['languages']
-                                 if x[1] == None]
+                                 if x[1] is None]
 
             old_languages_ids = [x for x in old_languages_ids
                                  if x not in removed_languages]

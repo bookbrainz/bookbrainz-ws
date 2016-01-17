@@ -47,18 +47,12 @@ class PostTests(TestCase):
             )
         )
         for i in range(POST_TESTS_GOOD_COUNT):
-            logging.info(' Good test #{}'.format(i + 1))
+            logging.info(' Correct input test #{}'.format(i + 1))
             self.post_good_test()
 
-        """ Commented for now, because requests with incorrect type values
-            are triggering exceptions and not sending HTTP 400 signal
-            [see ws_bugs.md]
-        """
-        """
         for i in range(POST_TESTS_BAD_COUNT):
-            logging.info(' Bad test #{}'.format(i + 1))
-            put_post_bad_test(self, 'post')
-        """
+            logging.info(' Incorrect input test #{}'.format(i + 1))
+            incorrect_data_tests(self, 'post')
 
     def make_post(self, data_dict, correct_result=True):
         response_ws = self.client.post(
@@ -103,7 +97,7 @@ class PostTests(TestCase):
     def post_data_check_basic(self, json_data, data):
         ent_data = data.master_revision.entity_data
 
-        check_entity_type_json(self, data, json_data)
+        check_entity_type_json(self, json_data, data)
 
         assert_equals_or_both_none(
             self,

@@ -26,6 +26,4 @@ POST_TESTS_BAD_COUNT = 25
 # on purpose to make entities be changed more than once
 
 PUT_TESTS_GOOD_COUNT = 80
-PUT_TESTS_BAD_COUNT = 80
-
-TEST_DISPLAY_ALIASES_COUNT = 200
+PUT_TESTS_BAD_COUNT = 20

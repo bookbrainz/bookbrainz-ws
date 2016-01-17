@@ -16,6 +16,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+"""
+    args_generators.py covers the functions that generate args for
+    sample_data_helper_functions.add_entities and some helper functions
+    for these generators
+"""
 
 import copy
 
@@ -156,12 +161,12 @@ def get_edition_data_args_generator(publishers, publications, languages,
     return result_function
 
 
-def get_relationship_data_args_generator(relationship_types, all_entities):
+def get_relationship_data_args_generator(relationship_types, entities):
     def result_function():
         result = {}
         result['relationship_type_id'] = \
             random.choice(relationship_types).relationship_type_id
-        ma(result, 'entities', generate_relationship_entities(all_entities))
+        ma(result, 'entities', generate_relationship_entities(entities))
         ma(result, 'texts', generate_relationship_texts())
 
         return result
@@ -201,9 +206,9 @@ def generate_alias():
     )
 
 
-def get_entity_revision_args_generator(editor, _entities, _entities_data):
-    entities = copy.copy(_entities)
-    entities_data = copy.copy(_entities_data)
+def get_entity_revision_args_generator(editor, entities, entities_data):
+    entities = copy.copy(entities)
+    entities_data = copy.copy(entities_data)
 
     def result_function():
         result = {}
@@ -269,7 +274,7 @@ def generate_single_identifier():
 
 
 def generate_user_languages(editor):
-    languages = [x for x in sample_data_helper_functions._languages]
+    languages = [x for x in sample_data_helper_functions.all_languages]
     random.shuffle(languages)
     count = random.randint(1, min(len(languages), USER_LANGUAGES_MAX_COUNT))
     return [generate_user_language(editor, languages) for i in range(count)]

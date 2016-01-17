@@ -16,6 +16,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+"""
+    This module contains functions that are helpful for creating sample data
+    for put, post requests and in initial data generation
+"""
+
 import calendar
 import datetime
 import random
@@ -25,19 +30,19 @@ from werkzeug.test import Headers
 
 from constants import *
 
-_genders = []
-_languages = []
-_creator_types = []
-_publisher_types = []
-_publication_types = []
-_work_types = []
-_relationship_types = []
-_identifier_types = []
-_edition_statuses = []
-_edition_formats = []
-_publishers = []
-_publications = []
-_editor = None
+all_genders = []
+all_languages = []
+all_creator_types = []
+all_publisher_types = []
+all_publication_types = []
+all_work_types = []
+all_relationship_types = []
+all_identifier_types = []
+all_edition_statuses = []
+all_edition_formats = []
+all_publishers = []
+all_publications = []
+main_editor = None
 
 
 def get_other_type_values(arg_value):
@@ -52,8 +57,22 @@ def get_other_type_values(arg_value):
     return result_list
 
 
-def add_entities(db, entity_class, args_generator=lambda :{},
+def add_entities(db, entity_class, args_generator=lambda: {},
                  min_quantity=2, max_quantity=DEFAULT_MAX_QUANTITY):
+    """ Adds entities to database
+
+    Uses the provided args generating function to add to the database
+    the random number of specific type entities. This number is a random
+    number from the provided range.
+
+    :param db: database to add the entities into
+    :param entity_class: type of generated entities
+    :param args_generator: function which takes no arguments and generates
+     args for the entity class in the form of dict
+    :param min_quantity: minimum value of entities that must be added
+    :param max_quantity: maximum value of entities that must be added
+    :return: added entities
+    """
     entities_count = random.randint(min_quantity, max_quantity)
     entities = [entity_class(**(args_generator()))
                 for i in range(entities_count)]
@@ -145,66 +164,74 @@ def random_boolean():
 
 
 def random_language_id():
-    return random.choice(_languages).id
+    return random.choice(all_languages).id
 
 
 def random_language():
-    return random.choice(_languages)
+    return random.choice(all_languages)
 
 
 def random_gender_id():
-    return random.choice(_genders).id
+    return random.choice(all_genders).id
 
 
 def random_creator_type_id():
-    return random.choice(_creator_types).creator_type_id
+    return random.choice(all_creator_types).creator_type_id
 
 
 def random_work_type_id():
-    return random.choice(_work_types).work_type_id
+    return random.choice(all_work_types).work_type_id
 
 
 def random_publisher_type_id():
-    return random.choice(_publisher_types).publisher_type_id
+    return random.choice(all_publisher_types).publisher_type_id
 
 
 def random_publication_type_id():
-    return random.choice(_publication_types).publication_type_id
+    return random.choice(all_publication_types).publication_type_id
 
 
 def random_relationship_type_id():
-    return random.choice(_relationship_types).relationship_type_id
+    return random.choice(all_relationship_types).relationship_type_id
 
 
 def random_identifier_type():
-    return random.choice(_identifier_types)
+    return random.choice(all_identifier_types)
 
 
 def random_identifier_type_id():
-    return random.choice(_identifier_types).identifier_type_id
+    return random.choice(all_identifier_types).identifier_type_id
 
 
 def random_edition_format_id():
-    return random.choice(_edition_formats).edition_format_id
+    return random.choice(all_edition_formats).edition_format_id
 
 
 def random_edition_status_id():
-    return random.choice(_edition_statuses).edition_status_id
+    return random.choice(all_edition_statuses).edition_status_id
 
 
 def random_publisher_id():
-    return random.choice(_publishers).entity_gid
+    return random.choice(all_publishers).entity_gid
 
 
 def random_publication_id():
-    return random.choice(_publications).entity_gid
+    return random.choice(all_publications).entity_gid
 
 
 def mutual_put_data_prepare(data, instance):
+    """ Generates the data for put requests which is common to
+    all types of entities (is located in Entity class)
+    :param data(dict): dictionary, where the generated data should be added into
+    :param instance(Entity): Entity on which the put request for which the data
+    is prepared
+    :return: None
+    """
     maybe_add(data, u'disambiguation', get_random_unicode_string())
     maybe_add(data, u'annotation', get_random_unicode_string())
     maybe_add(data, u'aliases', get_random_put_aliases(instance))
     maybe_add(data, u'identifiers', get_random_put_identifiers(instance))
+
 
 def get_random_put_aliases(instance):
     if instance.master_revision.entity_data.aliases is not None:
@@ -269,7 +296,7 @@ def get_random_put_identifiers(instance):
     identifiers = ent_data.identifiers
     result = []
     for i in range(len(identifiers)):
-        r = random.randint(1,5)
+        r = random.randint(1, 5)
         if r == 1:
             result.append([identifiers[i].identifier_id, None])
         elif r == 2:
@@ -280,13 +307,18 @@ def get_random_put_identifiers(instance):
 
     new_count = randint_extra(0, NEW_IDENTIFIERS_MAX_COUNT)
     new_identifiers =\
-    [[None, get_single_random_identifier()] for i in range(new_count)]
+        [[None, get_single_random_identifier()] for i in range(new_count)]
     result.extend(new_identifiers)
 
     return result
 
 
 def mutual_post_data_prepare(data):
+    """ Generates the data for post requests which is common to
+    all types of entities (is located in Entity class)
+    :param data(dict): dictionary, where the generated data should be added into
+    :return: None
+    """
     maybe_add(data, u'disambiguation', get_random_unicode_string())
     maybe_add(data, u'annotation', get_random_unicode_string())
     maybe_add(data, u'aliases', get_random_post_aliases())
@@ -316,10 +348,11 @@ def get_random_post_identifiers():
 def get_single_random_identifier():
     result = {}
     maybe_add(result, 'identifier_type',
-              {'identifier_type_id':random_identifier_type_id()}, False)
+              {'identifier_type_id': random_identifier_type_id()}, False)
     maybe_add(result, 'value', get_random_unicode_string(), False)
 
     return result
+
 
 def change_one_character(string):
     if len(string) == 0:

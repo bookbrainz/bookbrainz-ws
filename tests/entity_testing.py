@@ -32,6 +32,20 @@ from .fixture import load_data
 
 
 class EntityTests(GetIDTests, GetListTests, DeleteTests, PutTests, PostTests):
+    """This class gathers testing of multiple requests for Entity objects.
+
+    See class_diagram.png for a graphical view of the classes
+    EntityTests class inherits from and the classes that inherits
+    from this class.
+
+    Tested requests:
+        - get/:id
+        - get list
+        - put
+        - post
+        - post
+
+    """
     def create_app(self):
         self.app = create_app('../config/test.py')
         return self.app
