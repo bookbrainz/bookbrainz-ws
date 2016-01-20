@@ -24,6 +24,10 @@ from sample_data_helper_functions import *
 
 
 class TestCreator(EntityTests):
+    """Class that gathers tests for Creator entities
+
+    See class_diagram.png to see how it is related to other classes.
+    """
     def specific_setup(self):
         pass
 

@@ -39,11 +39,11 @@ class EntityTests(GetIDTests, GetListTests, DeleteTests, PutTests, PostTests):
     from this class.
 
     Tested requests:
-        - get/:id
-        - get list
-        - put
-        - post
-        - post
+        -get/:id
+        -get list
+        -put
+        -post
+        -delete
 
     """
     def create_app(self):
@@ -79,6 +79,17 @@ class EntityTests(GetIDTests, GetListTests, DeleteTests, PutTests, PostTests):
 
         self.specific_setup()
 
+        """
+         Specific names are names of the attributes/keys that
+         change with different types of entities.
+         Keys:
+          'entity_class': some class which inherits from Entity (like Creator)
+          'type_name': name as a type (like u'Creator')
+          'ws_name': name in the web service urls(like 'creator')
+          'entity_type_class': (like CreatorType)
+          'entity_type': (like 'work_type')
+          'entity_type_id': (like 'work_type_id')
+        """
         self.specific_names = {}
         self.set_specific_names()
         self.check_specific_names()
@@ -91,22 +102,48 @@ class EntityTests(GetIDTests, GetListTests, DeleteTests, PutTests, PostTests):
     def specific_setup(self):
         raise NotImplementedError
 
-    def prepare_put_data(self, instance):
-        raise NotImplementedError
-
-    def prepare_post_data(self):
-        raise NotImplementedError
-
     def set_specific_names(self):
         raise NotImplementedError
 
+    def prepare_put_data(self, instance):
+        """ Generates data for put request that is valid when used on instance
+        @param instance(Entity): some entity
+        @return(dict): JSON formatted data
+        """
+        raise NotImplementedError
+
+    def prepare_post_data(self):
+        """ Generates data for post request
+        @param instance(Entity): some entity
+        @return(dict): JSON formatted data
+        """
+        raise NotImplementedError
+
     def bbid_one_get_tests_specific_check(self, instance, response):
+        """ Checks if entity specific data from get/:id response is correct
+        @param instance(Entity): Entity for which the last get request was made
+        @param response: Response from the last get request
+        @return: None
+        """
         raise NotImplementedError
 
     def post_data_check_specific(self, json_data, data):
+        """ Checks if entity specific data was changed properly after post
+        @param json_data(dict): JSON data that was used for the post request
+        @param data(EntityData): EntityData of the recently created Entity
+        @return: None
+        """
         raise NotImplementedError
 
     def put_data_check_specific(self, json_data, data_old, data_new):
+        """ Checks if entity specific data was changed properly after put
+        @param json_data(dict): JSON data that was used for the put request
+        @param data_old(EntityData): EntityData of the recently updated Entity
+         before the request
+        @param data_new(EntityData): EntityData of the recently updated Entity
+         after the request:
+        @return: None
+        """
         raise NotImplementedError
 
     def get_specific_key(self, key):

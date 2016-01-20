@@ -26,6 +26,10 @@ from bbws import db
 
 
 class DeleteTests(TestCase):
+    """Class that gathers tests for delete requests
+
+    See class_diagram.png to see how it is related to other classes.
+    """
     def get_specific_key(self, key):
         raise NotImplementedError
 

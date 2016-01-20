@@ -28,6 +28,10 @@ from constants import *
 
 
 class GetIDTests(TestCase):
+    """Class that gathers tests for get/:id requests
+
+    See class_diagram.png to see how it is related to other classes.
+    """
     def get_specific_key(self, key):
         raise NotImplementedError
 
@@ -58,7 +62,7 @@ class GetIDTests(TestCase):
 
         for i in range(GET_BBID_TESTS_BAD_COUNT):
             logging.info(' Bad test #{}'.format(i + 1))
-            self.bad_bbid_general_get_tests(instances)
+            self.bad_get_id_tests(instances)
 
     def good_bbid_general_get_tests(self, instances):
         for instance in instances:
@@ -66,7 +70,7 @@ class GetIDTests(TestCase):
                                    correct_result=True)
 
     # noinspection PyTypeChecker
-    def bad_bbid_general_get_tests(self, instances):
+    def bad_get_id_tests(self, instances):
         random_instance = random.choice(instances)
         entity_gid = str(random_instance.entity_gid)
 

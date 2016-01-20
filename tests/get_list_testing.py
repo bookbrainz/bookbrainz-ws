@@ -26,6 +26,10 @@ from constants import *
 
 
 class GetListTests(TestCase):
+    """Class that gathers tests for get-list requests
+
+     See class_diagram.png to see how it is related to other classes.
+    """
     def get_specific_key(self, name):
         raise NotImplementedError
 

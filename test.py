@@ -17,9 +17,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 """
-    test.py includes running all the tests in /tests/
-    and logging initialization
-
+    test.py runs all tests in /tests/
     To enable the tests run test.py with --logs
 """
 

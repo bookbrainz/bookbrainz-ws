@@ -25,6 +25,10 @@ from constants import *
 
 
 class PutTests(TestCase):
+    """Class that gathers tests for put requests
+
+    See class_diagram.png to see how it is related to other classes.
+    """
     def get_specific_key(self, name):
         raise NotImplementedError
 
@@ -68,6 +72,14 @@ class PutTests(TestCase):
         return response_ws
 
     def put_good_test(self):
+        """Executes one test for put with correct input
+        It uses some random entity of type get_specific_type('entity_class')
+        After putting, it checks if the data that was put is in the database
+        and that the attributes that weren't changed in this request remained
+        the same. It also checks if all the remaining entities
+        remained unchanged.
+        @return:
+        """
         entities = \
             db.session.query(self.get_specific_key('entity_class')).all()
         entities_revisions_before = \
@@ -137,7 +149,7 @@ class PutTests(TestCase):
 
     def put_check_disambiguation(self, json_data, data_old, data_new):
         if 'disambiguation' in json_data:
-            self.assert_equals_put(
+            self.assert_equals_temporary_put(
                 json_data['disambiguation'],
                 getattr(data_new.disambiguation, 'comment', None)
             )
@@ -149,7 +161,7 @@ class PutTests(TestCase):
 
     def put_check_annotation(self, json_data, data_old, data_new):
         if 'annotation' in json_data:
-            self.assert_equals_put(
+            self.assert_equals_temporary_put(
                 json_data['annotation'],
                 getattr(data_new.annotation, 'content', None)
             )
@@ -160,6 +172,17 @@ class PutTests(TestCase):
             )
 
     def put_data_check_aliases(self, json_data, data_old, data_new):
+        """Checks put aliases.
+
+        Checks if all aliases from data that was put recently
+        were successfully added/removed/updated.
+
+        @param json_data: JSON data that was used in the recent put request
+        @param data_old: EntityData before recent put request
+        @param data_new: EntityData after recent put request
+        @return: None
+
+        """
         if 'aliases' in json_data:
             json_aliases = json_data['aliases']
 
@@ -221,6 +244,16 @@ class PutTests(TestCase):
             self.assertEquals(getattr(a, attr), getattr(b, attr))
 
     def put_data_check_identifiers(self, json_data, data_old, data_new):
+        """Checks put identifiers.
+
+        Checks if all identifiers from data that was put recently
+        were successfully added/removed/updated.
+
+        @param json_data: JSON data that was used in the recent put request
+        @param data_old: EntityData before recent put request
+        @param data_new: EntityData after recent put request
+        @return: None
+        """
         old_identifiers = data_old.identifiers
         new_identifiers = [[x, False] for x in data_new.identifiers]
 
@@ -304,6 +337,6 @@ class PutTests(TestCase):
     # temporary version until the bug is solved
     # putting a null value should delete the old value, but it doesn't
     # see bugs_ws.md
-    def assert_equals_put(self, a, b):
+    def assert_equals_temporary_put(self, a, b):
         if a is not None:
             self.assertEquals(a, b)
