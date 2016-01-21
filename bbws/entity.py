@@ -639,12 +639,12 @@ def find_alias_if(aliases, func):
 
 
 def get_entity_language_ids(entity_data):
-    if isinstance(entity_data, EditionData):
-        if entity_data.language_id is not None:
-            return [entity_data.language_id]
-    elif isinstance(entity_data, WorkData):
-        if entity_data.languages:
-            return [x.id for x in entity_data.languages]
+    if isinstance(entity_data, EditionData) and\
+            entity_data.language_id:
+        return [entity_data.language_id]
+    elif isinstance(entity_data, WorkData) and\
+            entity_data.languages:
+        return [x.id for x in entity_data.languages]
     else:
         return []
 
