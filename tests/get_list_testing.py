@@ -30,7 +30,7 @@ class GetListTests(TestCase):
 
      See class_diagram.png to see how it is related to other classes.
     """
-    def get_specific_key(self, name):
+    def get_specific_name(self, name):
         raise NotImplementedError
 
     def bbid_one_get_tests_specific_check(self, instance, response):
@@ -43,7 +43,7 @@ class GetListTests(TestCase):
         logging.info(
             'GET-list request tests for {} tests:'
             .format(
-                self.get_specific_key('type_name'),
+                self.get_specific_name('type_name'),
                 GET_LIST_TESTS_COUNT
             )
         )
@@ -53,12 +53,12 @@ class GetListTests(TestCase):
 
     def list_get_single_test(self):
         instances = \
-            db.session.query(self.get_specific_key('entity_class')).all()
+            db.session.query(self.get_specific_name('entity_class')).all()
         # The first parameter should be -1, but it doesn't work for now
         # [see ws_bugs.md]
         rand_limit = random.randint(0, len(instances) + 3)
         response_ws = self.client.get(
-            '/' + self.get_specific_key('ws_name') + '/',
+            '/' + self.get_specific_name('ws_name') + '/',
             headers=self.get_request_default_headers(),
             data='{\"limit\":' + str(rand_limit) + '}'
         )
@@ -90,10 +90,10 @@ class GetListTests(TestCase):
 
     def list_get_object_correctness_check(self, json_object, db_object):
         self.assertEquals(json_object['_type'],
-                          self.get_specific_key('type_name'))
+                          self.get_specific_name('type_name'))
         self.assertEquals(uuid.UUID(json_object['entity_gid']),
                           db_object.entity_gid)
         check_uri_suffix(self,
                          json_object['uri'],
-                         '/{}/{}/'.format(self.get_specific_key('ws_name'),
+                         '/{}/{}/'.format(self.get_specific_name('ws_name'),
                                           json_object['entity_gid']))

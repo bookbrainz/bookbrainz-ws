@@ -146,7 +146,7 @@ class EntityTests(GetIDTests, GetListTests, DeleteTests, PutTests, PostTests):
         """
         raise NotImplementedError
 
-    def get_specific_key(self, key):
+    def get_specific_name(self, key):
         return self.specific_names[key]
 
     def get_request_default_headers(self):

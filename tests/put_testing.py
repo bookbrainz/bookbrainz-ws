@@ -29,7 +29,7 @@ class PutTests(TestCase):
 
     See class_diagram.png to see how it is related to other classes.
     """
-    def get_specific_key(self, name):
+    def get_specific_name(self, name):
         raise NotImplementedError
 
     def get_request_default_headers(self):
@@ -45,7 +45,7 @@ class PutTests(TestCase):
         logging.info(
             'PUT request tests for {} good tests:{} bad tests:{}'
             .format(
-                self.get_specific_key('type_name'),
+                self.get_specific_name('type_name'),
                 PUT_TESTS_GOOD_COUNT,
                 PUT_TESTS_BAD_COUNT
             )
@@ -64,7 +64,7 @@ class PutTests(TestCase):
             self.client.put(
                 '/{}/{}/'
                 .format(
-                    self.get_specific_key('ws_name'),
+                    self.get_specific_name('ws_name'),
                     unicode(entity.entity_gid)),
                 headers=self.get_request_default_headers(),
                 data=json.dumps(data_to_pass))
@@ -81,7 +81,7 @@ class PutTests(TestCase):
         @return:
         """
         entities = \
-            db.session.query(self.get_specific_key('entity_class')).all()
+            db.session.query(self.get_specific_name('entity_class')).all()
         entities_revisions_before = \
             [x.master_revision for x in entities]
 
@@ -90,7 +90,7 @@ class PutTests(TestCase):
         self.make_put_request(entity, data_to_pass)
 
         entities = \
-            db.session.query(self.get_specific_key('entity_class')).all()
+            db.session.query(self.get_specific_name('entity_class')).all()
         entities_revisions_after = \
             [x.master_revision for x in entities]
 

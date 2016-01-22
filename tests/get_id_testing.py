@@ -32,7 +32,7 @@ class GetIDTests(TestCase):
 
     See class_diagram.png to see how it is related to other classes.
     """
-    def get_specific_key(self, key):
+    def get_specific_name(self, key):
         raise NotImplementedError
 
     def bbid_one_get_tests_specific_check(self, instance, response):
@@ -45,14 +45,14 @@ class GetIDTests(TestCase):
         logging.info(
             'GET/:id request tests for {} good tests:{} bad tests:{}'
             .format(
-                self.get_specific_key('type_name'),
+                self.get_specific_name('type_name'),
                 GET_BBID_TESTS_GOOD_COUNT,
                 GET_BBID_TESTS_BAD_COUNT
             )
         )
 
         instances = \
-            db.session.query(self.get_specific_key('entity_class')).all()
+            db.session.query(self.get_specific_name('entity_class')).all()
 
         random.shuffle(instances)
 
@@ -89,7 +89,7 @@ class GetIDTests(TestCase):
 
     def bbid_one_get_test(self, instance, entity_gid, correct_result=True):
         response = self.client.get(
-            '/{}/{}/'.format(self.get_specific_key('ws_name'), entity_gid)
+            '/{}/{}/'.format(self.get_specific_name('ws_name'), entity_gid)
         )
 
         if correct_result:
@@ -105,7 +105,7 @@ class GetIDTests(TestCase):
         json_data = response.json
         self.assertEquals(
             json_data.get('_type'),
-            self.get_specific_key('type_name')
+            self.get_specific_name('type_name')
         )
 
         self.assertEquals(
@@ -142,7 +142,7 @@ class GetIDTests(TestCase):
         response = self.client.get(
             '/{ec}/{entity_gid}/aliases'
             .format(
-                ec=self.get_specific_key('ws_name'),
+                ec=self.get_specific_name('ws_name'),
                 entity_gid=instance.entity_gid))
         self.assert200(response)
         self.bbid_one_check_aliases_json(response.json, instance)
@@ -198,7 +198,7 @@ class GetIDTests(TestCase):
 
     def bbid_one_check_uris(self, instance, json_data):
         ent_gid = instance.entity_gid
-        ent_ws = self.get_specific_key('ws_name')
+        ent_ws = self.get_specific_name('ws_name')
         uri_base = '/{}/{}/'.format(ent_ws, ent_gid)
 
         pairs = [
