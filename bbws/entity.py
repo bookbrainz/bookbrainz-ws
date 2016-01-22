@@ -582,15 +582,15 @@ def get_display_alias_json(entity_data, user, session):
 
 
 def get_display_alias(entity_data, user, session):
-    user_default_language_id = native_language_id(user)
+    user_native_language_ids = native_languages_ids(user)
     aliases = entity_data.aliases
     primary_aliases = \
         [alias for alias in aliases if alias.primary is True]
 
-    if user_default_language_id is not None:
+    if user_native_language_ids is not None:
         result = find_alias_if(
             primary_aliases,
-            lambda x: x.language_id == user_default_language_id
+            lambda x: x.language_id in user_native_language_ids
         )
         if result:
             return result
@@ -621,14 +621,13 @@ def get_display_alias(entity_data, user, session):
     return None
 
 
-def native_language_id(user):
+def native_languages_ids(user):
     if user is None:
         return None
-    results = [lang for lang in user.languages if lang.proficiency == 'NATIVE']
-    if results:
-        return results[0].language_id
-    else:
-        return None
+    results = \
+        set([lang.language_id for lang in user.languages
+             if lang.proficiency == 'NATIVE'])
+    return results
 
 
 def find_alias_if(aliases, func):
