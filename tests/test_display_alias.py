@@ -7,6 +7,7 @@ from args_generators import *
 from bbws import create_app, db
 from check_helper_functions import *
 from fixture import load_data
+import sample_data_helper_functions
 
 
 class TestDisplayAlias(TestCase):
@@ -44,7 +45,7 @@ class TestDisplayAlias(TestCase):
         @return: None
         """
         self.prepare_data()
-        editor = sample_data_helper_functions._editor
+        editor = sample_data_helper_functions.main_editor
         response = self.client.get(
             '/{}/{}/'.format('work', self.work.entity_gid),
             data={'user_id': editor.user_id}
@@ -95,9 +96,9 @@ class TestDisplayAlias(TestCase):
             self.assertEquals(da_json, None)
 
     def prepare_data(self):
-        editor = sample_data_helper_functions._editor
-        work_types = sample_data_helper_functions._work_types
-        langs = sample_data_helper_functions._languages
+        editor = sample_data_helper_functions.main_editor
+        work_types = sample_data_helper_functions.all_work_types
+        langs = sample_data_helper_functions.all_languages
         self.work = Work()
         self.work_data = \
             WorkData(**(get_work_data_args_generator(work_types, langs)()))
@@ -107,7 +108,7 @@ class TestDisplayAlias(TestCase):
 
         work_revision = \
             EntityRevision(
-                user_id=sample_data_helper_functions._editor.user_id,
+                user_id=editor.user_id,
                 entity_gid=self.work.entity_gid,
                 entity_data_id=self.work_data.entity_data_id,
             )
