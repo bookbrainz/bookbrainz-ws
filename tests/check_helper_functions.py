@@ -345,3 +345,26 @@ def check_edition_status_json(test_case, edition_status_json, edition_status):
             edition_status_json['label'],
             edition_status.label
         )
+
+def bbid_check_single_alias_json(test_case, json_alias, alias):
+    test_case.assertEquals(json_alias['alias_id'], alias.alias_id)
+    test_case.assertEquals(json_alias['sort_name'], alias.sort_name)
+    test_case.assertEquals(json_alias['name'], alias.name)
+    test_case.assertEquals(json_alias['primary'], alias.primary)
+
+    bbid_check_json_language_in_alias(test_case, json_alias, alias)
+
+
+def bbid_check_json_language_in_alias(test_case, json_alias, alias):
+    if 'language' in json_alias and not json_alias['language'] is None:
+        json_lang = json_alias['language']
+        test_case.assertEquals(
+            json_lang['language_id'],
+            alias.language.id
+        )
+        test_case.assertEquals(
+            json_lang['name'],
+            alias.language.name
+        )
+    else:
+        test_case.assertIsNone(alias.language)

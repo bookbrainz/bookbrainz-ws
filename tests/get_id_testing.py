@@ -395,7 +395,8 @@ class GetIDTests(TestCase):
         if 'default alias' in json_data and \
                 not json_data['default_alias'] is None:
             json_def = json_data['default_alias']
-            self.bbid_check_single_alias_json(
+            bbid_check_single_alias_json(
+                self,
                 json_def,
                 instance.master_revision.entity_data.default_alias
             )
@@ -411,29 +412,8 @@ class GetIDTests(TestCase):
         aliases.sort(key=lambda x: x.alias_id)
 
         for i in range(len(aliases)):
-            self.bbid_check_single_alias_json(
+            bbid_check_single_alias_json(
+                self,
                 json_aliases[i],
                 aliases[i],
             )
-
-    def bbid_check_single_alias_json(self, json_alias, alias):
-        self.assertEquals(json_alias['alias_id'], alias.alias_id)
-        self.assertEquals(json_alias['sort_name'], alias.sort_name)
-        self.assertEquals(json_alias['name'], alias.name)
-        self.assertEquals(json_alias['primary'], alias.primary)
-
-        self.bbid_check_json_language_in_alias(json_alias, alias)
-
-    def bbid_check_json_language_in_alias(self, json_alias, alias):
-        if 'language' in json_alias and not json_alias['language'] is None:
-            json_lang = json_alias['language']
-            self.assertEquals(
-                json_lang['language_id'],
-                alias.language.id
-            )
-            self.assertEquals(
-                json_lang['name'],
-                alias.language.name
-            )
-        else:
-            self.assertIsNone(alias.language)
