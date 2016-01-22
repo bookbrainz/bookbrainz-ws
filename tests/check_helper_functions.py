@@ -346,6 +346,7 @@ def check_edition_status_json(test_case, edition_status_json, edition_status):
             edition_status.label
         )
 
+
 def bbid_check_single_alias_json(test_case, json_alias, alias):
     test_case.assertEquals(json_alias['alias_id'], alias.alias_id)
     test_case.assertEquals(json_alias['sort_name'], alias.sort_name)
