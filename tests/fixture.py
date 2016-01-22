@@ -60,8 +60,7 @@ def load_data(db):
 
     languages = add_entities(db, Language, get_languages_args_generator(),
                              LANGUAGES_COUNT, LANGUAGES_COUNT)
-    if random.randint(1, 2):
-        random.choice(languages).name = u'English'
+    random.choice(languages).name = u'English'
     sample_data_helper_functions.all_languages = languages
 
     genders = add_entities(db, Gender, get_genders_args_generator(),
