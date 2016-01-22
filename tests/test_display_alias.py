@@ -33,8 +33,8 @@ class TestDisplayAlias(TestCase):
 
     def test_display_alias(self):
         logging.info('Tests for display alias({})'
-                     .format(TEST_DISPLAY_ALIASES_COUNT))
-        for i in range(TEST_DISPLAY_ALIASES_COUNT):
+                     .format(TEST_DISPLAY_ALIAS_COUNT))
+        for i in range(TEST_DISPLAY_ALIAS_COUNT):
             logging.info('Test {} for display_alias '.format(i+1))
             self.display_alias_single_test()
 
