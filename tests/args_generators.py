@@ -285,6 +285,7 @@ def generate_user_language(editor, languages_ids_left):
         user_id=editor.user_id,
         language=languages_ids_left.pop(),
         proficiency=random.choice(
-            ['BASIC', 'INTERMEDIATE', 'ADVANCED', 'NATIVE']
+            ['BASIC', 'INTERMEDIATE', 'ADVANCED'] +
+            ['NATIVE' for i in range(3)]
         )
     )
