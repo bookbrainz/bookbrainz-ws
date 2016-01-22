@@ -652,6 +652,6 @@ def english_language_id_find(session):
     try:
         result = session.query(Language)\
             .filter(Language.name == 'English').one()
-        return result
+        return result.id
     except:
         return None
