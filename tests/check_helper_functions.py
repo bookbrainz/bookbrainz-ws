@@ -49,6 +49,19 @@ def assert_equals_or_both_none(test_case, dictionary, key, value,
 
 
 def check_uri_suffix(test_case, value, suffix, is_none=False):
+    """ Checks if uri is valid
+
+    It basically checks if the uri ends with the demanded suffix.
+    Sometimes the uri can be none (for example when the object it should link
+    to is None), so there is an option available to allow such situations.
+
+    @param test_case(TestCase): TestCase object
+    @param value(str or unicode): checked uri
+    @param suffix: demanded suffix
+    @param is_none: should value is None be allowed ?
+    @return: None
+    """
+
     if not is_none:
         test_case.assertTrue(value.endswith(suffix))
     else:
