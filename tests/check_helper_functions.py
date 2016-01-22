@@ -218,7 +218,7 @@ def check_entity_type_json(test_case, json_data, instance):
             instance.master_revision.entity_data, entity_type_string))
 
 
-def incorrect_data_tests(test_case, type_of_query):
+def incorrect_data_put_and_post_tests(test_case, type_of_query):
     put_instance = None
     if type_of_query == 'post':
         used_data = test_case.prepare_post_data()

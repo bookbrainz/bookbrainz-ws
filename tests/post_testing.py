@@ -56,7 +56,7 @@ class PostTests(TestCase):
 
         for i in range(POST_TESTS_BAD_COUNT):
             logging.info(' Incorrect input test #{}'.format(i + 1))
-            incorrect_data_tests(self, 'post')
+            incorrect_data_put_and_post_tests(self, 'post')
 
     def make_post(self, data_dict, correct_result=True):
         response_ws = self.client.post(

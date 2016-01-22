@@ -57,7 +57,7 @@ class PutTests(TestCase):
 
         for i in range(PUT_TESTS_BAD_COUNT):
             logging.info(' Incorrect input test #{}'.format(i + 1))
-            incorrect_data_tests(self, 'put')
+            incorrect_data_put_and_post_tests(self, 'put')
 
     def make_put_request(self, entity, data_to_pass):
         response_ws = \
