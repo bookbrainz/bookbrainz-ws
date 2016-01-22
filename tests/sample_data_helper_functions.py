@@ -100,6 +100,11 @@ def get_random_unicode_string(max_length=DEFAULT_MAX_STRING_SIZE):
 
 
 def get_random_unicode_template(max_length=100):
+    """ Returns random Unicode template for RelationshipType.template
+
+    @param max_length: Maximum length of template, that can be allowed
+    @return: None
+    """
     actual_length = random.randint(0, max_length)
     return_string = u''
     for i in range(actual_length):
@@ -222,6 +227,7 @@ def random_publication_id():
 def mutual_put_data_prepare(data, instance):
     """ Generates the data for put requests which is common to
     all types of entities (is located in Entity class)
+
     :param data(dict): dictionary, where the generated data should be added into
     :param instance(Entity): Entity on which the put request for which the data
     is prepared
@@ -316,6 +322,7 @@ def get_random_put_identifiers(instance):
 def mutual_post_data_prepare(data):
     """ Generates the data for post requests which is common to
     all types of entities (is located in Entity class)
+
     :param data(dict): dictionary, where the generated data should be added into
     :return: None
     """
