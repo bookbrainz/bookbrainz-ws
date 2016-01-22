@@ -105,6 +105,10 @@ def load_data(db):
 
     db.session.commit()
 
+    """
+        Adding EntityType objects
+    """
+
     creator_types = \
         add_entities(db, CreatorType, only_label_args_generator)
     publication_types = \
@@ -139,6 +143,10 @@ def load_data(db):
 
     db.session.commit()
 
+    """
+        Adding EntityData objects
+    """
+
     creator_data_entities = \
         add_entities(db, CreatorData,
                      get_creator_data_args_generator(creator_types),
@@ -171,6 +179,16 @@ def load_data(db):
 
     db.session.commit()
 
+    """
+        EntityRevisions adding
+
+        All entities are copied to one list and so is their data.
+        Then the revisions are created that contain consecutive pairs
+        from this lists. The revisions list is reversed because
+        get_entity_revision_args_generator is getting elements starting
+        from the last ones.
+    """
+
     all_entities = creator_entities + publication_entities + \
         work_entities + edition_entities + publisher_entities
 
@@ -193,6 +211,11 @@ def load_data(db):
 
     db.session.commit()
 
+    """
+        Adding relationships
+        Relationship entities are randomly generated from already created
+        entities of all types.
+    """
     relationship_data_entities = \
         add_entities(db, RelationshipData,
                      get_relationship_data_args_generator(
