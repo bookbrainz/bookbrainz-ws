@@ -6,6 +6,6 @@ flask-restful
 flask-sqlalchemy
 flask-oauthlib
 flask-testing
-sqlalchemy
+sqlalchemy>=1.0.0
 psycopg2
 https://bitbucket.org/lalinsky/mbdata/get/master.zip

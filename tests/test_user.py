@@ -1,12 +1,9 @@
-import datetime
 import json
 
-from flask import url_for
+from bbschema import User, create_all
 from flask_testing import TestCase
 
-from bbschema import User, create_all
 from bbws import create_app, db
-
 from .fixture import load_data
 
 
@@ -14,12 +11,14 @@ class TestUserViews(TestCase):
     def create_app(self):
         return create_app('../config/test.py')
 
+    # noinspection PyPep8Naming
     def setUp(self):
         db.engine.execute("DROP SCHEMA IF EXISTS bookbrainz CASCADE")
         db.engine.execute("CREATE SCHEMA bookbrainz")
         create_all(db.engine)
         load_data(db)
 
+    # noinspection PyPep8Naming
     def tearDown(self):
         db.session.remove()
         db.engine.execute("DROP SCHEMA IF EXISTS bookbrainz CASCADE")
@@ -28,8 +27,6 @@ class TestUserViews(TestCase):
         user = db.session.query(User).get(1)
 
         # TODO fix when flask restful releases next version
-        import pytz
-        from calendar import timegm
         created_at = user.created_at.isoformat()
         active_at = user.active_at.isoformat()
 

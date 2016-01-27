@@ -22,7 +22,6 @@ from bbschema import Message, MessageReceipt, User, UserType
 from flask import request
 from flask_restful import Resource, abort, marshal, reqparse
 from sqlalchemy.orm.exc import NoResultFound
-
 from . import structures
 from .services import db, oauth_provider
 
@@ -179,7 +178,6 @@ class UserTypeResourceList(Resource):
 
 
 class UserMessageResource(Resource):
-
     @oauth_provider.require_oauth()
     def get(self, message_id):
         try:
@@ -205,7 +203,6 @@ class UserMessageResource(Resource):
 
 
 class UserMessageInboxResource(Resource):
-
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('limit', type=int, default=20)
     get_parser.add_argument('offset', type=int, default=0)
@@ -213,6 +210,7 @@ class UserMessageInboxResource(Resource):
     @oauth_provider.require_oauth()
     def get(self):
         args = self.get_parser.parse_args()
+        # noinspection PyPep8
         messages = db.session.query(Message).join(MessageReceipt).\
             filter(MessageReceipt.recipient_id == request.oauth.user.user_id).\
             filter(MessageReceipt.archived == False).\
@@ -226,7 +224,6 @@ class UserMessageInboxResource(Resource):
 
 
 class UserMessageArchiveResource(Resource):
-
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('limit', type=int, default=20)
     get_parser.add_argument('offset', type=int, default=0)
@@ -234,6 +231,7 @@ class UserMessageArchiveResource(Resource):
     @oauth_provider.require_oauth()
     def get(self):
         args = self.get_parser.parse_args()
+        # noinspection PyPep8
         messages = db.session.query(Message).join(MessageReceipt).\
             filter(MessageReceipt.recipient_id == request.oauth.user.user_id).\
             filter(MessageReceipt.archived == True).\
@@ -247,7 +245,6 @@ class UserMessageArchiveResource(Resource):
 
 
 class UserMessageSentResource(Resource):
-
     get_parser = reqparse.RequestParser()
     get_parser.add_argument('limit', type=int, default=20)
     get_parser.add_argument('offset', type=int, default=0)
