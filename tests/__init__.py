@@ -23,3 +23,4 @@ from test_work import *
 from test_publication import *
 from test_publisher import *
 from test_edition import *
+from test_display_alias import *
