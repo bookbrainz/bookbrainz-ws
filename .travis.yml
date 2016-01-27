@@ -27,3 +27,6 @@ after_success:
 
 notifications:
   email: false
+
+services:
+  - redis-server
