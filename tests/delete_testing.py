@@ -39,19 +39,14 @@ class DeleteTests(TestCase):
     def is_debug_mode(self):
         raise NotImplementedError
 
-    def delete_tests(self):
+    def good_delete_tests(self):
         logging.info(
-            'DELETE request tests for {} good tests:{} bad tests:{}'
+            'DELETE request tests for {} good tests:{}'
             .format(self.get_specific_name('type_name'), 1, 1)
         )
 
-        logging.info(' Bad test #{}'.format(1))
-        self.bad_delete_tests()
-
         logging.info(' Good test #{}'.format(1))
-        self.good_delete_tests()
 
-    def good_delete_tests(self):
         actual_list = \
             db.session.query(self.get_specific_name('entity_class')).all()
         initial_list = [[x.entity_gid, x.last_updated] for x in actual_list]
@@ -97,10 +92,16 @@ class DeleteTests(TestCase):
             del actual_list[rand_pos]
 
     def bad_delete_tests(self):
+        logging.info(
+            'DELETE request tests for {} bad tests:{}'
+            .format(self.get_specific_name('type_name'), 1, 1)
+        )
+
+        logging.info(' Bad test #{}'.format(1))
+
         self.bad_delete_uuid_tests()
         self.bad_delete_format_tests()
-        # self.bad_delete_double_tests() Can't be tested now,
-        # because there is a bug here [see ws_bugs.md]
+        self.bad_delete_double_tests()
 
     def bad_delete_uuid_tests(self):
         instances_db = \
@@ -215,4 +216,4 @@ class DeleteTests(TestCase):
             if i == 0:
                 self.assert200(response_ws)
             else:
-                self.assert400(response_ws)
+                self.assert405(response_ws)

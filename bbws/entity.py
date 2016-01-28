@@ -196,6 +196,9 @@ class EntityResource(Resource):
         if entity.master_revision is None:
             abort(403)  # Forbidden to DELETE an entity with no data yet
 
+        if entity.master_revision.entity_data_id is None:
+            abort(405)  # DELETE not allowed on a deleted resource
+
         # To delete an entity, create a new revision with entity_data set to
         # None
         revision = EntityRevision(user_id=user.user_id)
@@ -420,6 +423,9 @@ class EntityResourceList(Resource):
 
     def get(self):
         args = self.get_parser.parse_args()
+        if args.limit < 0 or args.offset < 0:
+            abort(400)
+
         query = db.session.query(self.entity_class).\
             order_by(Entity.last_updated.desc())
         query = query.offset(args.offset).limit(args.limit)

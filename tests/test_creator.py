@@ -87,8 +87,11 @@ class TestCreator(EntityTests):
     def test_put(self):
         self.put_tests()
 
-    def test_delete(self):
-        self.delete_tests()
+    def test_delete_good(self):
+        self.good_delete_tests()
+
+    def test_delete_bad(self):
+        self.bad_delete_tests()
 
     def bbid_one_get_tests_specific_check(self, instance, response):
         check_date_json(

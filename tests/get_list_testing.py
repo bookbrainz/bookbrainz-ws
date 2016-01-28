@@ -54,9 +54,7 @@ class GetListTests(TestCase):
     def list_get_single_test(self):
         instances = \
             db.session.query(self.get_specific_name('entity_class')).all()
-        # The first parameter should be -1, but it doesn't work for now
-        # [see ws_bugs.md]
-        rand_limit = random.randint(0, len(instances) + 3)
+        rand_limit = random.randint(-1, len(instances) + 3)
         response_ws = self.client.get(
             '/' + self.get_specific_name('ws_name') + '/',
             headers=self.get_request_default_headers(),
