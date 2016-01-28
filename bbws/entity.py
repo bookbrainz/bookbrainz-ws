@@ -97,6 +97,9 @@ class EntityResource(Resource):
         if entity_data is not None:
             data_out = marshal(entity_data, self.entity_data_fields)
             entity_out.update(data_out)
+            entity_out.update(
+                get_display_alias_json(entity_data, user, db.session)
+            )
 
         if args.user_id is not None:
             user = \
@@ -104,10 +107,6 @@ class EntityResource(Resource):
                 .filter(User.user_id == args.user_id).one_or_none()
         else:
             user = None
-
-        entity_out.update(
-            get_display_alias_json(entity_data, user, db.session)
-        )
 
         return entity_out
 
