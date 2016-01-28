@@ -93,6 +93,13 @@ class EntityResource(Resource):
         entity_data = revision.entity_data
         entity.revision = revision
 
+        if args.user_id is not None:
+            user = \
+                db.session.query(User)\
+                .filter(User.user_id == args.user_id).one_or_none()
+        else:
+            user = None
+
         entity_out = marshal(entity, self.entity_fields)
         if entity_data is not None:
             data_out = marshal(entity_data, self.entity_data_fields)
@@ -100,13 +107,6 @@ class EntityResource(Resource):
             entity_out.update(
                 get_display_alias_json(entity_data, user, db.session)
             )
-
-        if args.user_id is not None:
-            user = \
-                db.session.query(User)\
-                .filter(User.user_id == args.user_id).one_or_none()
-        else:
-            user = None
 
         return entity_out
 
