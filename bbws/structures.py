@@ -206,7 +206,7 @@ ENTITY = ENTITY_STUB.copy()
 ENTITY.update({
     'last_updated': fields.DateTime(dt_format='iso8601'),
     'aliases_uri': fields.Url('entity_get_aliases', True),
-    'identifiers_uri': fields.Url('entity_get_aliases', True),
+    'identifiers_uri': fields.Url('entity_get_identifiers', True),
     'disambiguation_uri': fields.Url('entity_get_disambiguation', True),
     'annotation_uri': fields.Url('entity_get_annotation', True),
     'relationships_uri': fields.Url('relationship_get_many', True),
