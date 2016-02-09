@@ -120,11 +120,13 @@ def init(app):
 
         es_conn = Elasticsearch()
         for entity in entities:
-            entity_out = marshal(entity, structures.ENTITY_EXPANDED)
-            data_out = marshal(entity.master_revision.entity_data,
-                               TYPE_MAP[type(entity)])
+            if (entity.master_revision is not None and
+                    entity.master_revision.entity_data is not None):
+                entity_out = marshal(entity, structures.ENTITY_EXPANDED)
+                data_out = marshal(entity.master_revision.entity_data,
+                                   TYPE_MAP[type(entity)])
 
-            entity_out.update(data_out)
-            index_entity(es_conn, entity_out)
+                entity_out.update(data_out)
+                index_entity(es_conn, entity_out)
 
         return jsonify({'success': True})
