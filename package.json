@@ -1,0 +1,45 @@
+{
+  "name": "bookbrainz-api",
+  "version": "1.0.0",
+  "description": "JSON web API for accessing data stored in a BookBrainz database",
+  "main": "lib/app.js",
+  "scripts": {
+    "prestart": "babel src --out-dir lib --source-maps",
+    "start": "node lib/app.js",
+    "debug": "nodemon src/app.js --exec babel-node",
+    "lint": "eslint --ext .js src test; exit 0",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bookbrainz/bookbrainz-ws.git"
+  },
+  "keywords": [
+    "api",
+    "json",
+    "bookbrainz"
+  ],
+  "author": "Ben Ockmore",
+  "license": "GPL-2.0+",
+  "bugs": {
+    "url": "http://tickets.musicbrainz.org/browse/BB"
+  },
+  "homepage": "https://github.com/bookbrainz/bookbrainz-ws#readme",
+  "dependencies": {
+    "koa": "^1.2.1",
+    "koa-bodyparser": "^2.2.0",
+    "koa-cors": "0.0.16",
+    "koa-json": "^1.1.3",
+    "koa-passport": "^1.3.1",
+    "koa-router": "^5.4.0",
+    "koa-session": "^3.3.1",
+    "lodash": "^4.14.0",
+    "passport-localapikey": "0.0.3"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.11.4",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.11.5",
+    "babel-preset-es2015-node": "^6.1.0",
+    "eslint": "^3.2.0"
+  }
+}
